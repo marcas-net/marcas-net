@@ -9,14 +9,45 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Role {
+  ADMIN
+  ORG_ADMIN
+  USER
+  REGULATOR
+  LAB
+}
+
+enum OrgType {
+  COMPANY
+  LABORATORY
+  UNIVERSITY
+  REGULATOR
+  PROFESSIONAL
+}
+
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  name      String?
-  role      String   @default("user") // e.g., admin, company, lab, regulator, university, professional
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String        @id @default(cuid())
+  email          String        @unique
+  password       String
+  name           String?
+  role           Role          @default(USER)
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
   @@map("users")
+}
+
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  type        OrgType
+  country     String?
+  description String?
+  members     User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("organizations")
 }

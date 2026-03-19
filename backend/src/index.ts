@@ -3,15 +3,15 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
-import { PrismaClient } from '@prisma/client';
 
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
+import orgRoutes from './routes/organizations';
+import prisma from './config/database';
 
 dotenv.config();
 
 const app = express();
-const prisma = new PrismaClient();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
@@ -24,6 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/orgs', orgRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
