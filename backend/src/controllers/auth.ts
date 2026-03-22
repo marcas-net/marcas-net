@@ -4,33 +4,19 @@ import { createUser, findUserByEmail, findUserById } from '../models/user';
 import { hashPassword, comparePassword, generateToken } from '../utils/auth';
 import { AuthRequest } from '../middleware/auth';
 
-const VALID_ROLES: string[] = Object.values(Role);
-
 export const register = async (req: Request, res: Response) => {
   try {
     const { email, password, name, role } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
-    }
 
     const existingUser = await findUserByEmail(email);
     if (existingUser) {
       return res.status(400).json({ error: 'User already exists' });
     }
 
-    const assignedRole: Role = role && VALID_ROLES.includes(role.toUpperCase())
-      ? (role.toUpperCase() as Role)
-      : Role.USER;
+    const assignedRole: Role = role ?? Role.USER;
 
     const hashedPassword = await hashPassword(password);
-    const user = await createUser({
-      email,
-      password: hashedPassword,
-      name,
-      role: assignedRole,
-    });
-
+    const user = await createUser({ email, password: hashedPassword, name, role: assignedRole });
     const token = generateToken({ id: user.id, email: user.email, role: user.role });
 
     res.status(201).json({
@@ -48,10 +34,6 @@ export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
-    }
-
     const user = await findUserByEmail(email);
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
@@ -63,7 +45,6 @@ export const login = async (req: Request, res: Response) => {
     }
 
     const token = generateToken({ id: user.id, email: user.email, role: user.role });
-
     res.json({
       message: 'Login successful',
       token,

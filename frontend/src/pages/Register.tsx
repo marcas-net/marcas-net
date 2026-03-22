@@ -1,8 +1,9 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
-const ROLES = ['company', 'laboratory', 'regulator', 'university', 'professional'];
+const ROLES = ['USER', 'LAB', 'REGULATOR'];
 
 const Register = () => {
   const { register } = useAuth();
@@ -11,73 +12,79 @@ const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('professional');
-  const [error, setError] = useState('');
+  const [role, setRole] = useState('USER');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
     try {
       await register(email, password, name, role);
+      toast.success('Account created!');
       navigate('/dashboard');
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Registration failed');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } } };
+      toast.error(error.response?.data?.error ?? 'Registration failed');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: '80px auto', padding: '0 16px' }}>
-      <h1 style={{ fontFamily: 'sans-serif' }}>MARCAS</h1>
-      <h2 style={{ fontFamily: 'sans-serif' }}>Create account</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <input
-          type="text"
-          placeholder="Full name or organisation"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-          style={{ padding: '8px 12px', fontSize: 16 }}
-        />
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          style={{ padding: '8px 12px', fontSize: 16 }}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={8}
-          style={{ padding: '8px 12px', fontSize: 16 }}
-        />
-        <select
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-          style={{ padding: '8px 12px', fontSize: 16 }}
-        >
-          {ROLES.map((r) => (
-            <option key={r} value={r}>
-              {r.charAt(0).toUpperCase() + r.slice(1)}
-            </option>
-          ))}
-        </select>
-        <button type="submit" disabled={loading} style={{ padding: '10px', fontSize: 16 }}>
-          {loading ? 'Creating account...' : 'Create account'}
-        </button>
-      </form>
-      <p style={{ fontFamily: 'sans-serif', marginTop: 16 }}>
-        Already have an account? <Link to="/login">Sign in</Link>
-      </p>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+        <h1 className="text-2xl font-bold text-indigo-600 mb-1">MARCAS</h1>
+        <h2 className="text-lg font-semibold text-gray-900 mb-6">Create account</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="text"
+            placeholder="Full name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          <input
+            type="password"
+            placeholder="Password (min 8 chars)"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={8}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+          >
+            {ROLES.map((r) => (
+              <option key={r} value={r}>
+                {r.charAt(0) + r.slice(1).toLowerCase()}
+              </option>
+            ))}
+          </select>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-indigo-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition disabled:opacity-50"
+          >
+            {loading ? 'Creating account...' : 'Create account'}
+          </button>
+        </form>
+        <p className="text-sm text-gray-500 mt-5 text-center">
+          Already have an account?{' '}
+          <Link to="/login" className="text-indigo-600 hover:underline font-medium">Sign in</Link>
+        </p>
+      </div>
     </div>
   );
 };

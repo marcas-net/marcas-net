@@ -6,6 +6,8 @@ interface User {
   email: string;
   name: string | null;
   role: string;
+  organizationId?: string | null;
+  organization?: { id: string; name: string; type: string } | null;
 }
 
 interface AuthContextType {
