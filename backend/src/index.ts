@@ -42,6 +42,10 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'MARCAS Backend is running' });
 });
 
+app.get('/', (req, res) => {
+  res.json({ status: 'OK', name: 'MARCAS API', version: '1.0.0' });
+});
+
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(err.stack);
