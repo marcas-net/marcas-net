@@ -18,9 +18,9 @@ export default function CreateOrganization() {
     }
     setLoading(true);
     try {
-      const org = await createOrganization(form);
+      await createOrganization(form);
       toast.success('Organization created!');
-      navigate(`/orgs/${org.id}`);
+      navigate('/orgs');
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: string } } };
       toast.error(error.response?.data?.error ?? 'Failed to create organization');
