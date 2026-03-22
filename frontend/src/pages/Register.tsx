@@ -33,7 +33,7 @@ const Register = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-        <h1 className="text-2xl font-bold text-indigo-600 mb-1">MARCAS</h1>
+        <img src="/logo-wide.jpeg" alt="MARCAS" className="h-14 object-contain mb-3" />
         <h2 className="text-lg font-semibold text-gray-900 mb-6">Create account</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
