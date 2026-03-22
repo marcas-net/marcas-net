@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { uploadDocument } from '../services/documentService';
+import { Card } from './ui/Card';
+import { Input, Textarea } from './ui/Input';
+import { Button } from './ui/Button';
 import toast from 'react-hot-toast';
 
 interface Props {
@@ -47,50 +50,40 @@ export default function UploadDocumentForm({ orgId, onSuccess }: Props) {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-indigo-100 shadow-sm p-6">
-      <h2 className="text-base font-semibold text-gray-900 mb-4">Upload Document</h2>
+    <Card>
+      <h2 className="text-base font-semibold text-gray-900 mb-5">Upload Document</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. Quality Certification 2026"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-        </div>
+        <Input
+          label="Title *"
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="e.g. Quality Certification 2026"
+        />
+
+        <Textarea
+          label="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={2}
+          placeholder="Optional details about this document"
+        />
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={2}
-            placeholder="Optional details about this document"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">File *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">File *</label>
           <input
             type="file"
             accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
           />
-          <p className="text-xs text-gray-400 mt-1">PDF, Word, Excel, or images — max 10 MB</p>
+          <p className="text-xs text-gray-400 mt-1.5">PDF, Word, Excel, or images — max 10 MB</p>
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-indigo-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition disabled:opacity-50"
-        >
-          {loading ? 'Uploading...' : 'Upload Document'}
-        </button>
+        <Button type="submit" loading={loading} fullWidth size="lg">
+          Upload Document
+        </Button>
       </form>
-    </div>
+    </Card>
   );
 }
