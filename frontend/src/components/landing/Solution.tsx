@@ -1,0 +1,110 @@
+import { useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
+
+const benefits = [
+  {
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+      </svg>
+    ),
+    title: 'Centralized Collaboration',
+    desc: 'All organizations, members, documents, and partnerships live in one structured environment — no more hunting across different systems.',
+  },
+  {
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+      </svg>
+    ),
+    title: 'Structured Organization Management',
+    desc: 'Create and manage multiple types of institutions. Assign roles with appropriate permissions so the right people can access the right information.',
+  },
+  {
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    ),
+    title: 'Secure Document Storage',
+    desc: 'Upload certifications, lab reports, and institutional records in a secure system with full access control — no more attachments lost in email.',
+  },
+  {
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+    title: 'Network Visibility',
+    desc: 'Discover and connect with other organizations in the network. Build institutional partnerships in a transparent, structured environment.',
+  },
+];
+
+export function Solution() {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: '-80px' });
+
+  return (
+    <section className="py-24 bg-white">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          {/* Left: text */}
+          <motion.div
+            ref={ref}
+            initial={{ opacity: 0, x: -32 }}
+            animate={inView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-semibold mb-5">
+              The Solution
+            </div>
+            <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight mb-5">
+              A Unified Network for{' '}
+              <span
+                className="bg-clip-text text-transparent"
+                style={{ backgroundImage: 'linear-gradient(135deg, #2563eb, #22c55e)' }}
+              >
+                Institutional Collaboration
+              </span>
+            </h2>
+            <p className="text-gray-500 text-lg leading-relaxed mb-4">
+              MarcasNet brings organizations together into a single digital platform where institutions can collaborate more effectively.
+            </p>
+            <p className="text-gray-400 text-base leading-relaxed">
+              Instead of relying on multiple disconnected systems, organizations can manage their teams, documents, and partnerships from one structured environment. The platform helps institutions stay organized while enabling secure collaboration across their network.
+            </p>
+          </motion.div>
+
+          {/* Right: benefit cards */}
+          <div className="space-y-4">
+            {benefits.map((b, i) => {
+              const cardRef = useRef(null);
+              const cardInView = useInView(cardRef, { once: true, margin: '-60px' });
+              return (
+                <motion.div
+                  key={b.title}
+                  ref={cardRef}
+                  initial={{ opacity: 0, x: 32 }}
+                  animate={cardInView ? { opacity: 1, x: 0 } : {}}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                  className="flex gap-4 p-5 bg-gray-50 rounded-2xl border border-gray-100 hover:border-blue-100 hover:bg-blue-50/30 transition-all group"
+                >
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white shadow-sm group-hover:scale-105 transition-transform"
+                    style={{ background: 'linear-gradient(135deg, #2563eb, #22c55e)' }}
+                  >
+                    {b.icon}
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 text-sm mb-1">{b.title}</h3>
+                    <p className="text-gray-500 text-sm leading-relaxed">{b.desc}</p>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

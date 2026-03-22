@@ -1,64 +1,39 @@
-const partners = [
-  { name: 'ISO', description: 'International Standards' },
-  { name: 'INPI', description: 'Intellectual Property' },
-  { name: 'ANSES', description: 'Food Safety' },
-  { name: 'INTI', description: 'Technology Institute' },
-  { name: 'IRAM', description: 'Standards Body' },
-  { name: 'CONICET', description: 'Research Council' },
-  { name: 'SENASA', description: 'Agriculture' },
-  { name: 'INAL', description: 'Food Lab' },
-];
+import { useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
 
 export function Partners() {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: '-80px' });
+
   return (
-    <section className="py-20 bg-white border-y border-gray-100">
+    <section className="py-20 bg-gray-50 border-y border-gray-100">
       <div className="max-w-6xl mx-auto px-6">
-        <div className="text-center mb-12">
-          <p className="text-sm font-semibold text-gray-400 uppercase tracking-widest mb-2">
-            Trusted by organizations across industries
+        <motion.div
+          ref={ref}
+          initial={{ opacity: 0, y: 24 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
+          className="text-center"
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gray-100 border border-gray-200 text-gray-600 text-xs font-semibold mb-6">
+            Supporters &amp; Partners
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            Supported by Our Network
+          </h2>
+          <p className="text-gray-500 text-base mb-10 max-w-md mx-auto">
+            Partner organizations and institutions will be featured here as the network grows.
           </p>
-          <p className="text-gray-500 text-sm">
-            MarcasNet integrates with the regulatory and certification ecosystem you already work within.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
-          {partners.map((p) => (
-            <div
-              key={p.name}
-              className="group flex flex-col items-center justify-center gap-1 p-4 rounded-xl border border-gray-100 bg-gray-50 hover:bg-white hover:border-gray-200 hover:shadow-md transition-all duration-200"
-            >
-              <div
-                className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-xs font-black shadow-sm group-hover:scale-105 transition-transform duration-200"
-                style={{ background: 'linear-gradient(135deg, #2563eb, #22c55e)' }}
-              >
-                {p.name.substring(0, 2)}
-              </div>
-              <span className="text-xs font-bold text-gray-700 mt-1">{p.name}</span>
-              <span className="text-[10px] text-gray-400 text-center leading-tight hidden sm:block">{p.description}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Stats bar */}
-        <div className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-8">
-          {[
-            { value: '500+', label: 'Organizations', icon: '🏢' },
-            { value: '12k+', label: 'Documents managed', icon: '📄' },
-            { value: '98%', label: 'Compliance rate', icon: '✅' },
-          ].map((stat) => (
-            <div key={stat.label} className="flex flex-col items-center text-center">
-              <span className="text-3xl mb-1">{stat.icon}</span>
-              <span
-                className="text-4xl font-extrabold bg-clip-text text-transparent"
-                style={{ backgroundImage: 'linear-gradient(135deg, #2563eb, #22c55e)' }}
-              >
-                {stat.value}
-              </span>
-              <span className="text-gray-500 text-sm mt-1">{stat.label}</span>
-            </div>
-          ))}
-        </div>
+          <div className="inline-flex items-center gap-3 px-6 py-4 bg-white rounded-2xl border border-dashed border-gray-200 shadow-sm">
+            <svg className="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span className="text-sm text-gray-400">
+              Interested in becoming a partner?{' '}
+              <a href="#" className="text-blue-600 hover:underline font-medium">Get in touch</a>
+            </span>
+          </div>
+        </motion.div>
       </div>
     </section>
   );

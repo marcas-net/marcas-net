@@ -4,20 +4,14 @@ const footerLinks = {
   Product: [
     { label: 'Features', href: '#features' },
     { label: 'How It Works', href: '#how-it-works' },
-    { label: 'Platform', href: '#platform' },
-    { label: 'Pricing', href: '#' },
   ],
   Company: [
     { label: 'About', href: '#' },
-    { label: 'Blog', href: '#' },
-    { label: 'Careers', href: '#' },
     { label: 'Contact', href: '#' },
   ],
   Legal: [
     { label: 'Privacy Policy', href: '#' },
     { label: 'Terms of Service', href: '#' },
-    { label: 'Cookie Policy', href: '#' },
-    { label: 'Security', href: '#' },
   ],
 };
 
@@ -33,13 +27,12 @@ export function Footer() {
               <span className="font-bold text-white text-lg">MarcasNet</span>
             </Link>
             <p className="text-slate-400 text-sm leading-relaxed mb-5">
-              The unified platform for organizations, regulators, labs and professionals to connect, collaborate, and grow.
+              A structured digital network connecting organizations, professionals, laboratories, universities and regulatory bodies.
             </p>
-            {/* Social icons */}
             <div className="flex gap-3">
               {[
                 {
-                  label: 'Twitter',
+                  label: 'Twitter / X',
                   icon: (
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
@@ -82,10 +75,7 @@ export function Footer() {
               <ul className="space-y-2.5">
                 {links.map((link) => (
                   <li key={link.label}>
-                    <a
-                      href={link.href}
-                      className="text-sm text-slate-400 hover:text-white transition-colors"
-                    >
+                    <a href={link.href} className="text-sm text-slate-400 hover:text-white transition-colors">
                       {link.label}
                     </a>
                   </li>
@@ -95,15 +85,13 @@ export function Footer() {
           ))}
         </div>
 
-        {/* Bottom bar */}
         <div className="pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-slate-500 text-xs">
             © {new Date().getFullYear()} MarcasNet. All rights reserved.
           </p>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-5">
             <a href="#" className="text-xs text-slate-500 hover:text-slate-300 transition-colors">Privacy</a>
             <a href="#" className="text-xs text-slate-500 hover:text-slate-300 transition-colors">Terms</a>
-            <a href="#" className="text-xs text-slate-500 hover:text-slate-300 transition-colors">Cookies</a>
           </div>
         </div>
       </div>

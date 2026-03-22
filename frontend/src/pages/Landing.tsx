@@ -1,9 +1,11 @@
 import { Navbar } from '../components/landing/Navbar';
 import { Hero } from '../components/landing/Hero';
+import { Problem } from '../components/landing/Problem';
+import { Solution } from '../components/landing/Solution';
 import { Features } from '../components/landing/Features';
 import { HowItWorks } from '../components/landing/HowItWorks';
+import { WhoIsItFor } from '../components/landing/WhoIsItFor';
 import { Partners } from '../components/landing/Partners';
-import { PlatformPreview } from '../components/landing/PlatformPreview';
 import { CTA } from '../components/landing/CTA';
 import { Footer } from '../components/landing/Footer';
 
@@ -13,10 +15,12 @@ export default function Landing() {
       <Navbar />
       <main>
         <Hero />
+        <Problem />
+        <Solution />
         <Features />
         <HowItWorks />
+        <WhoIsItFor />
         <Partners />
-        <PlatformPreview />
         <CTA />
       </main>
       <Footer />

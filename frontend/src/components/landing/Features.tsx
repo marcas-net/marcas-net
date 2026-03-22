@@ -1,3 +1,6 @@
+import { useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
+
 const features = [
   {
     icon: (
@@ -6,10 +9,9 @@ const features = [
       </svg>
     ),
     gradient: 'from-blue-500 to-blue-600',
-    glow: 'bg-blue-100',
     title: 'Organization Management',
     description:
-      'Create and manage companies, labs, universities, and regulatory bodies in one unified workspace. Assign roles, control access, and track activity across every entity.',
+      'Create and manage organizations such as companies, laboratories, universities, and regulatory bodies. Control access levels and manage members from one central workspace.',
   },
   {
     icon: (
@@ -18,10 +20,9 @@ const features = [
       </svg>
     ),
     gradient: 'from-emerald-500 to-green-600',
-    glow: 'bg-emerald-100',
-    title: 'Collaboration',
+    title: 'Member Roles and Permissions',
     description:
-      'Invite team members, assign granular roles, and streamline cross-organization workflows. Real-time visibility into who is doing what, across every project.',
+      'Invite professionals and team members to your organization and assign roles to ensure the right people have the right access to information and resources.',
   },
   {
     icon: (
@@ -30,62 +31,73 @@ const features = [
       </svg>
     ),
     gradient: 'from-violet-500 to-purple-600',
-    glow: 'bg-violet-100',
     title: 'Document Management',
     description:
-      'Upload, organize, and share compliance documents, certifications, and reports securely. Maintain a full audit trail and ensure every document is version-controlled.',
+      'Upload and organize reports, certifications, research files, and institutional records in a secure document system with role-based access control.',
   },
   {
     icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
       </svg>
     ),
-    gradient: 'from-orange-500 to-amber-500',
-    glow: 'bg-orange-100',
-    title: 'Global Connectivity',
+    gradient: 'from-orange-400 to-amber-500',
+    title: 'Institutional Collaboration',
     description:
-      'Connect with regulatory bodies, testing laboratories, and international partners. Build a trusted network that accelerates certification and market access worldwide.',
+      'Work with other organizations within the network to share information, coordinate activities, and build structured partnerships between institutions.',
   },
 ];
 
+function FeatureCard({ feature, index }: { feature: typeof features[0]; index: number }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: '-60px' });
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 40, scale: 0.97 }}
+      animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
+      whileHover={{ y: -6, transition: { duration: 0.2 } }}
+      className="group bg-white rounded-2xl border border-gray-100 p-6 shadow-sm hover:shadow-xl transition-shadow"
+    >
+      <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white mb-5 shadow-sm bg-gradient-to-br ${feature.gradient}`}>
+        {feature.icon}
+      </div>
+      <h3 className="font-bold text-gray-900 mb-2">{feature.title}</h3>
+      <p className="text-gray-500 text-sm leading-relaxed">{feature.description}</p>
+    </motion.div>
+  );
+}
+
 export function Features() {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: '-80px' });
+
   return (
     <section id="features" className="py-24 bg-white">
       <div className="max-w-6xl mx-auto px-6">
-        {/* Section header */}
-        <div className="text-center mb-16">
+        <motion.div
+          ref={ref}
+          initial={{ opacity: 0, y: 24 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
+          className="max-w-2xl mx-auto text-center mb-14"
+        >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-xs font-semibold mb-4">
             Platform Features
           </div>
           <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
-            Everything your brand network needs
+            What You Can Do With MarcasNet
           </h2>
-          <p className="text-gray-500 text-lg max-w-xl mx-auto">
-            Built for organizations that need structure, speed, and compliance — all in one place.
+          <p className="text-gray-500 text-lg">
+            Tools designed for organizations that need structure, access control, and secure collaboration.
           </p>
-        </div>
+        </motion.div>
 
-        {/* Feature cards grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map((f) => (
-            <div
-              key={f.title}
-              className="group relative bg-white rounded-2xl border border-gray-100 p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden"
-            >
-              {/* Subtle glow on hover */}
-              <div className={`absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-300 ${f.glow} rounded-2xl`} />
-
-              {/* Icon */}
-              <div
-                className={`w-12 h-12 rounded-xl flex items-center justify-center text-white mb-5 shadow-sm bg-gradient-to-br ${f.gradient}`}
-              >
-                {f.icon}
-              </div>
-
-              <h3 className="font-bold text-gray-900 text-base mb-2">{f.title}</h3>
-              <p className="text-gray-500 text-sm leading-relaxed">{f.description}</p>
-            </div>
+          {features.map((f, i) => (
+            <FeatureCard key={f.title} feature={f} index={i} />
           ))}
         </div>
       </div>

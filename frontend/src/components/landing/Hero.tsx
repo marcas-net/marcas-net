@@ -1,160 +1,210 @@
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+
+const floatingOrbs = [
+  { size: 320, top: '-80px', right: '-60px', color: '#2563eb', delay: 0 },
+  { size: 220, bottom: '-40px', left: '-40px', color: '#22c55e', delay: 1.5 },
+  { size: 160, top: '40%', right: '15%', color: '#6366f1', delay: 0.8 },
+];
+
+const nodePositions = [
+  { cx: 200, cy: 100, label: 'Company', color: '#2563eb' },
+  { cx: 350, cy: 60,  label: 'Lab',     color: '#22c55e' },
+  { cx: 440, cy: 170, label: 'Regulator', color: '#f59e0b' },
+  { cx: 360, cy: 280, label: 'University', color: '#8b5cf6' },
+  { cx: 200, cy: 280, label: 'Professional', color: '#ec4899' },
+  { cx: 100, cy: 185, label: 'Institute', color: '#06b6d4' },
+];
+
+const edges = [
+  [0, 1], [0, 5], [1, 2], [2, 3], [3, 4], [4, 5], [0, 3], [1, 3],
+];
 
 export function Hero() {
   return (
-    <section className="relative pt-28 pb-24 overflow-hidden">
-      {/* Background gradient blobs */}
-      <div className="absolute inset-0 -z-10">
-        <div
-          className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full opacity-10 blur-3xl"
-          style={{ background: 'radial-gradient(circle, #2563eb, transparent)' }}
+    <section className="relative pt-24 pb-20 overflow-hidden min-h-screen flex items-center">
+      {/* Background */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/20" />
+      <div className="absolute inset-0 -z-10"
+        style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, rgba(37,99,235,0.06) 1px, transparent 0)`,
+          backgroundSize: '40px 40px',
+        }}
+      />
+
+      {/* Floating blobs */}
+      {floatingOrbs.map((orb, i) => (
+        <motion.div
+          key={i}
+          className="absolute rounded-full opacity-[0.07] blur-3xl -z-10"
+          style={{
+            width: orb.size,
+            height: orb.size,
+            background: orb.color,
+            top: orb.top,
+            right: (orb as { right?: string }).right,
+            bottom: (orb as { bottom?: string }).bottom,
+            left: (orb as { left?: string }).left,
+          }}
+          animate={{ y: [0, -20, 0] }}
+          transition={{ duration: 6, delay: orb.delay, repeat: Infinity, ease: 'easeInOut' }}
         />
-        <div
-          className="absolute bottom-0 left-0 w-[500px] h-[500px] rounded-full opacity-10 blur-3xl"
-          style={{ background: 'radial-gradient(circle, #22c55e, transparent)' }}
-        />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(37,99,235,0.04)_0%,_transparent_70%)]" />
-      </div>
+      ))}
 
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="max-w-3xl mx-auto text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-blue-100 bg-blue-50 text-blue-700 text-xs font-semibold mb-8 shadow-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-            Now in Public Beta
+      <div className="max-w-6xl mx-auto px-6 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          {/* Left: text */}
+          <div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-blue-100 bg-blue-50 text-blue-700 text-xs font-semibold mb-7"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+              Institutional Collaboration Platform
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="text-5xl sm:text-6xl font-extrabold text-gray-900 leading-[1.08] tracking-tight mb-6"
+            >
+              A Network for{' '}
+              <span
+                className="bg-clip-text text-transparent"
+                style={{ backgroundImage: 'linear-gradient(135deg, #2563eb, #22c55e)' }}
+              >
+                Organizations
+              </span>{' '}
+              &amp; Institutions
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-lg text-gray-500 leading-relaxed mb-4"
+            >
+              MarcasNet connects organizations, professionals, laboratories,
+              universities and regulatory bodies into a structured digital network where
+              they can collaborate, manage documents, and coordinate activities.
+            </motion.p>
+
+            <motion.p
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.25 }}
+              className="text-sm text-gray-400 leading-relaxed mb-10"
+            >
+              Many institutions work with multiple partners but lack a unified system to
+              manage collaboration and documentation. MarcasNet provides a shared
+              environment where organizations can manage their members, documents, and
+              institutional relationships in one place.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="flex flex-col sm:flex-row items-start sm:items-center gap-4"
+            >
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Link
+                  to="/register"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-white font-semibold text-sm shadow-lg hover:shadow-xl transition-shadow"
+                  style={{ background: 'linear-gradient(135deg, #2563eb, #22c55e)' }}
+                >
+                  Get Started
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </Link>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Link
+                  to="/login"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-gray-700 font-semibold text-sm bg-white border border-gray-200 shadow-sm hover:border-gray-300 hover:shadow-md transition-all"
+                >
+                  Sign In
+                </Link>
+              </motion.div>
+            </motion.div>
+
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.45 }}
+              className="mt-5 text-xs text-gray-400"
+            >
+              Free to start &nbsp;·&nbsp; Secure platform &nbsp;·&nbsp; Built for institutional collaboration
+            </motion.p>
           </div>
 
-          {/* Headline */}
-          <h1 className="text-5xl sm:text-6xl font-extrabold text-gray-900 leading-[1.1] tracking-tight mb-6">
-            Build, Manage and{' '}
-            <span
-              className="bg-clip-text text-transparent"
-              style={{ backgroundImage: 'linear-gradient(135deg, #2563eb, #22c55e)' }}
-            >
-              Grow Your Brand
-            </span>{' '}
-            Network
-          </h1>
-
-          {/* Subtext */}
-          <p className="text-lg text-gray-500 leading-relaxed mb-10 max-w-2xl mx-auto">
-            MarcasNet is the unified platform connecting{' '}
-            <strong className="text-gray-700 font-semibold">organizations</strong>,{' '}
-            <strong className="text-gray-700 font-semibold">regulators</strong>,{' '}
-            <strong className="text-gray-700 font-semibold">labs</strong> and{' '}
-            <strong className="text-gray-700 font-semibold">professionals</strong> — so your brand
-            grows faster, with confidence.
-          </p>
-
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              to="/register"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-white font-semibold text-sm shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5"
-              style={{ background: 'linear-gradient(135deg, #2563eb, #22c55e)' }}
-            >
-              Get Started — it's free
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </Link>
-            <Link
-              to="/login"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-gray-700 font-semibold text-sm bg-white border border-gray-200 shadow-sm hover:border-gray-300 hover:shadow-md transition-all duration-200"
-            >
-              <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-              </svg>
-              Sign In
-            </Link>
-          </div>
-
-          {/* Social proof */}
-          <div className="mt-10 flex items-center justify-center gap-6 text-sm text-gray-400">
-            <div className="flex items-center gap-1.5">
-              <svg className="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-              No credit card required
-            </div>
-            <div className="flex items-center gap-1.5">
-              <svg className="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-              Free to get started
-            </div>
-            <div className="flex items-center gap-1.5">
-              <svg className="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-              Secure & compliant
-            </div>
-          </div>
-        </div>
-
-        {/* Hero image / UI preview */}
-        <div className="mt-16 relative max-w-4xl mx-auto">
-          <div className="absolute inset-0 rounded-2xl blur-2xl opacity-20"
-            style={{ background: 'linear-gradient(135deg, #2563eb, #22c55e)' }} />
-          <div className="relative rounded-2xl overflow-hidden border border-gray-200 shadow-2xl bg-white">
-            {/* Mock browser bar */}
-            <div className="flex items-center gap-2 px-4 py-3 bg-gray-50 border-b border-gray-100">
-              <div className="flex gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-red-400" />
-                <div className="w-3 h-3 rounded-full bg-yellow-400" />
-                <div className="w-3 h-3 rounded-full bg-green-400" />
-              </div>
-              <div className="flex-1 mx-4 h-5 bg-gray-200 rounded-full max-w-xs" />
-            </div>
-            {/* Mock dashboard content */}
-            <div className="flex" style={{ minHeight: '320px' }}>
-              {/* Sidebar */}
-              <div className="w-48 bg-slate-900 p-4 space-y-2 flex-shrink-0">
-                <div className="flex items-center gap-2 mb-5">
-                  <div className="w-7 h-7 rounded-lg bg-blue-500" />
-                  <div className="h-3 w-20 bg-slate-700 rounded-full" />
-                </div>
-                {[80, 60, 70, 55, 65].map((w, i) => (
-                  <div
-                    key={i}
-                    className={`h-7 rounded-lg flex items-center px-3 gap-2 ${i === 0 ? 'bg-blue-500/20' : ''}`}
-                  >
-                    <div className="w-3 h-3 rounded bg-slate-600" />
-                    <div className={`h-2 rounded-full bg-slate-${i === 0 ? '400' : '700'}`} style={{ width: `${w}%` }} />
-                  </div>
-                ))}
-              </div>
-              {/* Main content */}
-              <div className="flex-1 p-6 bg-gray-50">
-                <div className="h-5 w-36 bg-gray-200 rounded-full mb-5" />
-                <div className="grid grid-cols-3 gap-4 mb-6">
-                  {[
-                    { color: 'blue', label: 'Organizations' },
-                    { color: 'green', label: 'Documents' },
-                    { color: 'purple', label: 'Members' },
-                  ].map((stat) => (
-                    <div key={stat.color} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                      <div className={`w-8 h-8 rounded-lg bg-${stat.color}-100 mb-3`} />
-                      <div className="h-5 w-8 bg-gray-900 rounded mb-1.5 text-xs font-bold" />
-                      <div className="h-2.5 w-20 bg-gray-200 rounded-full" />
-                    </div>
+          {/* Right: network illustration */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="hidden lg:flex items-center justify-center"
+          >
+            <div className="relative w-full max-w-lg">
+              {/* Glow */}
+              <div
+                className="absolute inset-0 rounded-3xl blur-3xl opacity-20"
+                style={{ background: 'linear-gradient(135deg, #2563eb, #22c55e)' }}
+              />
+              <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl border border-gray-100 shadow-2xl p-8">
+                <svg viewBox="0 0 540 360" className="w-full h-auto" style={{ minHeight: 260 }}>
+                  {/* Edges */}
+                  {edges.map(([a, b], i) => {
+                    const na = nodePositions[a];
+                    const nb = nodePositions[b];
+                    return (
+                      <motion.line
+                        key={i}
+                        x1={na.cx} y1={na.cy}
+                        x2={nb.cx} y2={nb.cy}
+                        stroke="#e2e8f0"
+                        strokeWidth="1.5"
+                        initial={{ pathLength: 0, opacity: 0 }}
+                        animate={{ pathLength: 1, opacity: 1 }}
+                        transition={{ duration: 0.6, delay: 0.6 + i * 0.08 }}
+                      />
+                    );
+                  })}
+                  {/* Nodes */}
+                  {nodePositions.map((node, i) => (
+                    <motion.g
+                      key={node.label}
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ duration: 0.4, delay: 0.4 + i * 0.1, type: 'spring', stiffness: 200 }}
+                      style={{ transformOrigin: `${node.cx}px ${node.cy}px` }}
+                    >
+                      <circle cx={node.cx} cy={node.cy} r="28" fill={node.color} fillOpacity="0.12" />
+                      <circle cx={node.cx} cy={node.cy} r="18" fill={node.color} />
+                      <text
+                        x={node.cx}
+                        y={node.cy + 42}
+                        textAnchor="middle"
+                        fontSize="11"
+                        fontWeight="600"
+                        fill="#374151"
+                        fontFamily="Inter, sans-serif"
+                      >
+                        {node.label}
+                      </text>
+                    </motion.g>
                   ))}
-                </div>
-                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-                  <div className="h-3 w-28 bg-gray-200 rounded-full mb-4" />
-                  {[90, 70, 85].map((w, i) => (
-                    <div key={i} className="flex items-center gap-3 mb-3">
-                      <div className="w-7 h-7 rounded-full bg-gray-100" />
-                      <div className="flex-1 space-y-1">
-                        <div className={`h-2 bg-gray-200 rounded-full`} style={{ width: `${w}%` }} />
-                        <div className="h-1.5 bg-gray-100 rounded-full w-1/2" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                </svg>
+                <p className="text-center text-xs text-gray-400 mt-2 font-medium">
+                  Organizations connected in one network
+                </p>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>
