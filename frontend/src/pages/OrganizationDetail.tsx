@@ -3,16 +3,13 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getOrganization, joinOrganization, type Organization } from '../services/orgService';
 import { getOrgDocuments, deleteDocument, type Document } from '../services/documentService';
 import { useAuth } from '../context/AuthContext';
+import { Badge } from '../components/ui/Badge';
+import { Button } from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
+import { Avatar } from '../components/ui/Avatar';
+import { orgTypeVariant } from '../styles/design-system';
 import UploadDocumentForm from '../components/UploadDocumentForm';
 import toast from 'react-hot-toast';
-
-const TYPE_COLORS: Record<string, string> = {
-  COMPANY: 'bg-blue-100 text-blue-800',
-  LABORATORY: 'bg-green-100 text-green-800',
-  UNIVERSITY: 'bg-purple-100 text-purple-800',
-  REGULATOR: 'bg-red-100 text-red-800',
-  PROFESSIONAL: 'bg-yellow-100 text-yellow-800',
-};
 
 type Tab = 'overview' | 'documents';
 
@@ -58,7 +55,7 @@ export default function OrganizationDetail() {
       navigate('/dashboard');
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: string } } };
-      toast.error(error.response?.data?.error ?? 'Failed to join organization');
+      toast.error(error.response?.data?.error ?? 'Failed to join');
     } finally {
       setJoining(false);
     }
@@ -75,158 +72,184 @@ export default function OrganizationDetail() {
     }
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-gray-400">Loading...</div>;
-  if (!org) return <div className="min-h-screen flex items-center justify-center text-gray-400">Organization not found.</div>;
+  const isMember = user?.organizationId === id;
+  const canManage = isMember && (user?.role === 'ADMIN' || user?.role === 'ORG_ADMIN');
 
-  const isAlreadyMember = user?.organizationId === org.id;
-  const canDelete = user?.role === 'ADMIN' || user?.role === 'ORG_ADMIN';
+  if (loading) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+
+  if (!org) return (
+    <div className="text-center py-20 text-slate-400">Organization not found.</div>
+  );
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-2xl mx-auto">
-        <button onClick={() => navigate('/orgs')} className="text-sm text-gray-500 hover:text-gray-800 mb-6 flex items-center gap-1">
-          ← Back to Organizations
-        </button>
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Back */}
+      <Link to="/orgs" className="text-sm text-slate-400 hover:text-slate-600 flex items-center gap-1 transition-colors">
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+        Organizations
+      </Link>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          {/* Header */}
-          <div className="p-8 pb-0">
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">{org.name}</h1>
-                {org.country && <p className="text-gray-500 mt-1">{org.country}</p>}
-              </div>
-              <span className={`text-sm font-medium px-3 py-1.5 rounded-full ${TYPE_COLORS[org.type] ?? 'bg-gray-100 text-gray-600'}`}>
-                {org.type}
-              </span>
+      {/* Hero card */}
+      <Card>
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+              <svg className="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
             </div>
-
-            {/* Tabs */}
-            <div className="flex gap-1 border-b border-gray-100">
-              {(['overview', 'documents'] as Tab[]).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setTab(t)}
-                  className={`px-4 py-2 text-sm font-medium capitalize transition border-b-2 -mb-px ${
-                    tab === t
-                      ? 'border-indigo-600 text-indigo-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-800'
-                  }`}
-                >
-                  {t}
-                </button>
-              ))}
+            <div>
+              <div className="flex flex-wrap items-center gap-2 mb-1">
+                <h1 className="text-xl font-bold text-slate-900">{org.name}</h1>
+                <Badge variant={orgTypeVariant[org.type] ?? 'gray'}>
+                  {org.type.charAt(0) + org.type.slice(1).toLowerCase()}
+                </Badge>
+                {isMember && <Badge variant="green">Member</Badge>}
+              </div>
+              {org.country && (
+                <p className="text-sm text-slate-400 flex items-center gap-1">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  {org.country}
+                </p>
+              )}
             </div>
           </div>
+          {!isMember && (
+            <Button onClick={handleJoin} loading={joining} size="md">
+              Join Organization
+            </Button>
+          )}
+        </div>
+        {org.description && (
+          <p className="text-sm text-slate-600 mt-4 leading-relaxed">{org.description}</p>
+        )}
+      </Card>
 
-          {/* Tab: Overview */}
-          {tab === 'overview' && (
-            <div className="p-8">
-              {org.description && (
-                <p className="text-gray-600 mb-6 leading-relaxed">{org.description}</p>
-              )}
-              <div className="flex items-center gap-2 text-sm text-gray-500 mb-8">
-                <span>{org._count?.members ?? 0} member{(org._count?.members ?? 0) !== 1 ? 's' : ''}</span>
-                <span>·</span>
-                <span>Created {new Date(org.createdAt).toLocaleDateString()}</span>
-              </div>
+      {/* Tabs */}
+      <div className="flex border-b border-gray-200">
+        {(['overview', 'documents'] as Tab[]).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`px-5 py-3 text-sm font-medium border-b-2 transition-colors capitalize ${
+              tab === t
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
 
-              {isAlreadyMember ? (
-                <div className="bg-green-50 text-green-700 rounded-lg px-4 py-3 text-sm font-medium text-center">
-                  You are a member of this organization
+      {/* Tab content */}
+      {tab === 'overview' && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Card>
+            <p className="text-xs text-slate-400 uppercase tracking-wide font-medium mb-3">Details</p>
+            <div className="space-y-3">
+              {[
+                { label: 'Name', value: org.name },
+                { label: 'Type', value: org.type.charAt(0) + org.type.slice(1).toLowerCase() },
+                { label: 'Country', value: org.country ?? '—' },
+              ].map((row) => (
+                <div key={row.label} className="flex justify-between text-sm">
+                  <span className="text-slate-400">{row.label}</span>
+                  <span className="text-slate-800 font-medium">{row.value}</span>
                 </div>
-              ) : (
-                <button
-                  onClick={handleJoin}
-                  disabled={joining}
-                  className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 transition disabled:opacity-50"
-                >
-                  {joining ? 'Joining...' : 'Join Organization'}
-                </button>
-              )}
+              ))}
             </div>
+          </Card>
+          <Card>
+            <p className="text-xs text-slate-400 uppercase tracking-wide font-medium mb-3">Members</p>
+            {org.members && org.members.length > 0 ? (
+              <div className="space-y-2">
+                {org.members.slice(0, 5).map((m) => (
+                  <div key={m.id} className="flex items-center gap-3">
+                    <Avatar name={m.name ?? m.email} size="xs" />
+                    <div>
+                      <p className="text-sm text-slate-800 font-medium leading-none">{m.name ?? m.email}</p>
+                      <p className="text-xs text-slate-400">{m.role}</p>
+                    </div>
+                  </div>
+                ))}
+                {org.members.length > 5 && (
+                  <p className="text-xs text-slate-400">+{org.members.length - 5} more</p>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-400">No members yet</p>
+            )}
+          </Card>
+        </div>
+      )}
+
+      {tab === 'documents' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-slate-500">{docs.length} document{docs.length !== 1 ? 's' : ''}</p>
+            {isMember && (
+              <Button size="sm" onClick={() => setShowUpload(!showUpload)} variant={showUpload ? 'outline' : 'primary'}>
+                {showUpload ? 'Cancel' : '+ Upload Document'}
+              </Button>
+            )}
+          </div>
+
+          {showUpload && (
+            <Card>
+              <UploadDocumentForm
+                orgId={id!}
+                onSuccess={() => { setShowUpload(false); loadDocs(); }}
+              />
+            </Card>
           )}
 
-          {/* Tab: Documents */}
-          {tab === 'documents' && (
-            <div className="p-8">
-              {isAlreadyMember && (
-                <div className="mb-5 flex justify-end">
-                  <button
-                    onClick={() => setShowUpload((v) => !v)}
-                    className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition font-medium"
-                  >
-                    {showUpload ? 'Cancel' : '+ Upload Document'}
-                  </button>
-                </div>
-              )}
-
-              {showUpload && id && (
-                <div className="mb-6">
-                  <UploadDocumentForm
-                    orgId={id}
-                    onSuccess={() => {
-                      setShowUpload(false);
-                      loadDocs();
-                    }}
-                  />
-                </div>
-              )}
-
-              {docsLoading ? (
-                <div className="text-center py-10 text-gray-400">Loading documents...</div>
-              ) : docs.length === 0 ? (
-                <div className="text-center py-10 text-gray-400">
-                  <p>No documents uploaded yet.</p>
-                  {isAlreadyMember && (
-                    <button onClick={() => setShowUpload(true)} className="text-indigo-600 text-sm hover:underline mt-2 block mx-auto">
-                      Upload the first document
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {docs.map((doc) => (
-                    <div key={doc.id} className="flex items-start gap-3 p-4 rounded-lg border border-gray-100 hover:bg-gray-50 transition">
-                      <div className="flex-1 min-w-0">
-                        <a
-                          href={doc.fileUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm font-semibold text-indigo-700 hover:underline truncate block"
-                        >
-                          {doc.title}
-                        </a>
-                        {doc.description && (
-                          <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{doc.description}</p>
-                        )}
-                        <div className="flex gap-2 mt-1 text-xs text-gray-400">
-                          <span>By {doc.uploadedBy.name ?? doc.uploadedBy.email}</span>
-                          <span>·</span>
-                          <span>{new Date(doc.createdAt).toLocaleDateString()}</span>
-                        </div>
-                      </div>
-                      <div className="flex gap-2 shrink-0 items-center">
-                        <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer"
-                          className="text-xs text-indigo-600 hover:underline font-medium">View</a>
-                        {(canDelete || doc.uploadedById === user?.id) && (
-                          <button onClick={() => handleDeleteDoc(doc.id)}
-                            className="text-xs text-red-400 hover:text-red-600 font-medium">Delete</button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                  <div className="pt-2 text-right">
-                    <Link to={`/orgs/${id}/documents`} className="text-xs text-indigo-500 hover:underline">
-                      View all documents →
-                    </Link>
+          {docsLoading ? (
+            <div className="flex justify-center py-12">
+              <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : docs.length === 0 ? (
+            <div className="text-center py-16 text-slate-400">
+              <svg className="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <p className="text-sm">No documents yet</p>
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              {docs.map((doc, idx) => (
+                <div key={doc.id} className={`flex items-center gap-4 px-5 py-4 ${idx !== docs.length - 1 ? 'border-b border-gray-50' : ''}`}>
+                  <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-semibold text-slate-800 truncate">{doc.title}</p>
+                    {doc.description && <p className="text-xs text-slate-400 truncate">{doc.description}</p>}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer">
+                      <Button size="sm" variant="outline">View</Button>
+                    </a>
+                    {(canManage || doc.uploadedBy?.id === user?.id) && (
+                      <Button size="sm" variant="danger" onClick={() => handleDeleteDoc(doc.id)}>Delete</Button>
+                    )}
                   </div>
                 </div>
-              )}
+              ))}
             </div>
           )}
         </div>
-      </div>
+      )}
     </div>
   );
 }

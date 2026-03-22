@@ -1,75 +1,143 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-
-const ROLE_COLORS: Record<string, string> = {
-  ADMIN: 'bg-red-100 text-red-800',
-  ORG_ADMIN: 'bg-orange-100 text-orange-800',
-  USER: 'bg-blue-100 text-blue-800',
-  REGULATOR: 'bg-purple-100 text-purple-800',
-  LAB: 'bg-green-100 text-green-800',
-};
+import { Badge } from '../components/ui/Badge';
+import { StatCard } from '../components/ui/Card';
+import { roleVariant } from '../styles/design-system';
 
 const Dashboard = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
+  const role = user?.role ?? 'USER';
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Nav */}
-      <nav className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-        <img src="/logo-icon.jpeg" alt="MARCAS" className="h-8 w-8 rounded-md object-cover" />
-        <div className="flex items-center gap-6 text-sm">
-          <Link to="/orgs" className="text-gray-600 hover:text-gray-900">Organizations</Link>
-          <Link to="/profile" className="text-gray-600 hover:text-gray-900">Profile</Link>
-          <button onClick={logout} className="text-gray-400 hover:text-red-500 transition">Sign out</button>
+    <div className="space-y-8">
+      {/* Welcome */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">
+            Welcome back, {user?.name?.split(' ')[0] ?? 'there'} 👋
+          </h1>
+          <p className="text-slate-500 mt-1 text-sm">Here's your MARCAS platform overview</p>
         </div>
-      </nav>
-
-      <div className="max-w-4xl mx-auto px-6 py-10">
-        <h1 className="text-3xl font-bold text-gray-900 mb-1">
-          Welcome back, {user?.name ?? user?.email}
-        </h1>
-        <p className="text-gray-500 mb-8">Here's your MARCAS overview</p>
-
-        <div className="grid gap-4 sm:grid-cols-3 mb-8">
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-            <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">Role</p>
-            <span className={`text-sm font-medium px-3 py-1.5 rounded-full ${ROLE_COLORS[user?.role ?? ''] ?? 'bg-gray-100 text-gray-600'}`}>
-              {user?.role}
-            </span>
-          </div>
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-            <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">Email</p>
-            <p className="text-sm text-gray-700 font-medium truncate">{user?.email}</p>
-          </div>
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-            <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">Organization</p>
-            {user?.organization ? (
-              <Link to={`/orgs/${user.organization.id}`} className="text-sm text-indigo-600 hover:underline font-medium">
-                {user.organization.name}
-              </Link>
-            ) : (
-              <p className="text-sm text-gray-400">Not affiliated</p>
-            )}
-          </div>
+        <div className="flex items-center gap-3">
+          <Badge variant={roleVariant[role] ?? 'blue'}>{role}</Badge>
+          {user?.organization && (
+            <Badge variant="gray">{user.organization.name}</Badge>
+          )}
         </div>
-
-        {!user?.organizationId && (
-          <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-6 flex items-center justify-between">
-            <div>
-              <h2 className="font-semibold text-indigo-900">Join or create an organization</h2>
-              <p className="text-sm text-indigo-600 mt-1">Connect with companies, labs, regulators and more.</p>
-            </div>
-            <div className="flex gap-3">
-              <Link to="/orgs" className="text-sm bg-white border border-indigo-200 text-indigo-700 px-4 py-2 rounded-lg hover:bg-indigo-50 transition font-medium">
-                Browse
-              </Link>
-              <Link to="/orgs/create" className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition font-medium">
-                Create
-              </Link>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <StatCard
+          label="Organizations"
+          value={user?.organization ? 1 : 0}
+          color="blue"
+          icon={
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+          }
+        />
+        <StatCard
+          label="Documents"
+          value="—"
+          color="green"
+          icon={
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          }
+        />
+        <StatCard
+          label="Members"
+          value="—"
+          color="purple"
+          icon={
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          }
+        />
+        <StatCard
+          label="Account Status"
+          value="Active"
+          color="orange"
+          icon={
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          }
+        />
+      </div>
+
+      {/* Two column layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Quick actions */}
+        <div className="lg:col-span-1">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <h2 className="text-sm font-semibold text-slate-700 mb-4">Quick Actions</h2>
+            <div className="space-y-2">
+              {[
+                { label: 'Browse Organizations', desc: 'Find and join organizations', href: '/orgs', color: 'bg-blue-50 text-blue-600' },
+                { label: 'Create Organization', desc: 'Start a new organization', href: '/orgs/create', color: 'bg-emerald-50 text-emerald-600' },
+                { label: 'My Profile', desc: 'View and update your profile', href: '/profile', color: 'bg-violet-50 text-violet-600' },
+              ].map((a) => (
+                <Link
+                  key={a.href}
+                  to={a.href}
+                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-all duration-150 group"
+                >
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${a.color}`}>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-[13px] font-semibold text-slate-800 group-hover:text-slate-900">{a.label}</p>
+                    <p className="text-xs text-slate-400">{a.desc}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Account info */}
+        <div className="lg:col-span-2">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <h2 className="text-sm font-semibold text-slate-700 mb-4">Account Information</h2>
+            <div className="space-y-3">
+              {[
+                { label: 'Name', value: user?.name ?? '—' },
+                { label: 'Email', value: user?.email ?? '—' },
+                { label: 'Role', value: role },
+                { label: 'Organization', value: user?.organization?.name ?? 'Not joined yet' },
+              ].map((row) => (
+                <div key={row.label} className="flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0">
+                  <span className="text-xs text-slate-400 uppercase tracking-wide font-medium">{row.label}</span>
+                  <span className="text-sm text-slate-800 font-medium">{row.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Getting started banner */}
+      {!user?.organization && (
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h3 className="text-white font-semibold text-base">Get started — join an organization</h3>
+            <p className="text-blue-200 text-sm mt-1">Connect with food industry companies, labs, and regulators</p>
+          </div>
+          <Link
+            to="/orgs"
+            className="flex-shrink-0 bg-white text-blue-600 px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-50 transition-colors"
+          >
+            Browse Organizations →
+          </Link>
+        </div>
+      )}
     </div>
   );
 };

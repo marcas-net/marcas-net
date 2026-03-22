@@ -1,16 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/authService';
+import { Card } from '../components/ui/Card';
+import { Badge } from '../components/ui/Badge';
+import { Avatar } from '../components/ui/Avatar';
+import { Button } from '../components/ui/Button';
+import { roleVariant } from '../styles/design-system';
 import toast from 'react-hot-toast';
-
-const ROLE_COLORS: Record<string, string> = {
-  ADMIN: 'bg-red-100 text-red-800',
-  ORG_ADMIN: 'bg-orange-100 text-orange-800',
-  USER: 'bg-blue-100 text-blue-800',
-  REGULATOR: 'bg-purple-100 text-purple-800',
-  LAB: 'bg-green-100 text-green-800',
-};
 
 interface ProfileData {
   id: string;
@@ -34,82 +30,97 @@ export default function Profile() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-gray-400">Loading...</div>;
+  if (loading) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 
   const display = profile ?? user;
+  const role = display?.role ?? 'USER';
+  const joinDate = profile?.createdAt
+    ? new Date(profile.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+    : '—';
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
-          <Link to="/dashboard" className="text-sm text-gray-500 hover:text-gray-800">
-            ← Dashboard
-          </Link>
-        </div>
+    <div className="max-w-2xl mx-auto space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900">My Profile</h1>
+        <p className="text-slate-500 text-sm mt-1">Manage your account information</p>
+      </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-6">
-          {/* Avatar */}
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-2xl font-bold">
-              {(display?.name ?? display?.email ?? '?').charAt(0).toUpperCase()}
+      {/* Profile card */}
+      <Card padding="lg">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+          <Avatar name={display?.name ?? display?.email} size="xl" />
+          <div className="flex-1">
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <h2 className="text-xl font-bold text-slate-900">{display?.name ?? 'No name set'}</h2>
+              <Badge variant={roleVariant[role] ?? 'blue'}>{role}</Badge>
             </div>
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900">{display?.name ?? 'No name set'}</h2>
-              <p className="text-gray-500 text-sm">{display?.email}</p>
-            </div>
-          </div>
-
-          {/* Role */}
-          <div>
-            <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Role</p>
-            <span className={`text-sm font-medium px-3 py-1.5 rounded-full ${ROLE_COLORS[display?.role ?? ''] ?? 'bg-gray-100 text-gray-600'}`}>
-              {display?.role ?? 'Unknown'}
-            </span>
-          </div>
-
-          {/* Organization */}
-          <div>
-            <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Organization</p>
-            {profile?.organization ? (
-              <Link
-                to={`/orgs/${profile.organization.id}`}
-                className="inline-flex items-center gap-2 text-indigo-600 hover:underline font-medium"
-              >
-                {profile.organization.name}
-                <span className="text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">
-                  {profile.organization.type}
-                </span>
-              </Link>
-            ) : (
-              <div className="flex items-center gap-3">
-                <span className="text-gray-400 text-sm">Not affiliated</span>
-                <Link to="/orgs" className="text-sm text-indigo-600 hover:underline">
-                  Browse organizations →
-                </Link>
-              </div>
+            <p className="text-slate-500 text-sm">{display?.email}</p>
+            {profile?.organization && (
+              <p className="text-sm text-blue-600 mt-1 font-medium">{profile.organization.name}</p>
             )}
           </div>
+        </div>
+      </Card>
 
-          {/* Member since */}
-          {profile?.createdAt && (
-            <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Member since</p>
-              <p className="text-sm text-gray-600">{new Date(profile.createdAt).toLocaleDateString()}</p>
+      {/* Info grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Card>
+          <p className="text-xs text-slate-400 uppercase tracking-wide font-medium mb-4">Account Details</p>
+          <div className="space-y-3">
+            {[
+              { label: 'Full Name', value: display?.name ?? '—' },
+              { label: 'Email', value: display?.email ?? '—' },
+              { label: 'Role', value: role },
+              { label: 'Member since', value: joinDate },
+            ].map((row) => (
+              <div key={row.label} className="flex justify-between text-sm py-1.5 border-b border-gray-50 last:border-0">
+                <span className="text-slate-400">{row.label}</span>
+                <span className="text-slate-800 font-medium text-right max-w-[60%] truncate">{row.value}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <Card>
+          <p className="text-xs text-slate-400 uppercase tracking-wide font-medium mb-4">Organization</p>
+          {profile?.organization ? (
+            <div className="space-y-3">
+              {[
+                { label: 'Name', value: profile.organization.name },
+                { label: 'Type', value: profile.organization.type.charAt(0) + profile.organization.type.slice(1).toLowerCase() },
+              ].map((row) => (
+                <div key={row.label} className="flex justify-between text-sm py-1.5 border-b border-gray-50 last:border-0">
+                  <span className="text-slate-400">{row.label}</span>
+                  <span className="text-slate-800 font-medium">{row.value}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-6">
+              <p className="text-sm text-slate-400 mb-4">Not part of any organization</p>
+              <Button variant="outline" size="sm" onClick={() => window.location.href = '/orgs'}>
+                Browse Organizations
+              </Button>
             </div>
           )}
-
-          {/* Logout */}
-          <div className="pt-4 border-t border-gray-100">
-            <button
-              onClick={logout}
-              className="text-sm text-red-500 hover:text-red-700 font-medium transition"
-            >
-              Sign out
-            </button>
-          </div>
-        </div>
+        </Card>
       </div>
+
+      {/* Danger zone */}
+      <Card>
+        <p className="text-xs text-slate-400 uppercase tracking-wide font-medium mb-4">Session</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-slate-800">Sign out</p>
+            <p className="text-xs text-slate-400">End your current session</p>
+          </div>
+          <Button variant="danger" size="sm" onClick={logout}>Sign out</Button>
+        </div>
+      </Card>
     </div>
   );
 }
