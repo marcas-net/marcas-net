@@ -2,18 +2,18 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# Copy backend package files and install dependencies
-COPY backend/package*.json ./
+# Copy package files and install dependencies
+COPY package*.json ./
 RUN npm install
 
 # Copy prisma files and generate client
-COPY backend/prisma ./prisma
-COPY backend/prisma.config.ts ./
+COPY prisma ./prisma
+COPY prisma.config.ts ./
 RUN npx prisma generate
 
-# Copy backend source and compile TypeScript
-COPY backend/tsconfig.json ./
-COPY backend/src ./src
+# Copy source and compile
+COPY tsconfig.json ./
+COPY src ./src
 RUN npx tsc
 
 # Expose port
