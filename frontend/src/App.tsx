@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import Organizations from './pages/Organizations';
 import CreateOrganization from './pages/CreateOrganization';
 import OrganizationDetail from './pages/OrganizationDetail';
+import OrganizationDocuments from './pages/OrganizationDocuments';
 import Profile from './pages/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -20,6 +21,7 @@ function App() {
         <Route path="/orgs" element={<ProtectedRoute><Organizations /></ProtectedRoute>} />
         <Route path="/orgs/create" element={<ProtectedRoute><CreateOrganization /></ProtectedRoute>} />
         <Route path="/orgs/:id" element={<ProtectedRoute><OrganizationDetail /></ProtectedRoute>} />
+        <Route path="/orgs/:id/documents" element={<ProtectedRoute><OrganizationDocuments /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
