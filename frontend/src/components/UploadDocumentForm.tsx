@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { uploadDocument } from '../services/documentService';
 import toast from 'react-hot-toast';
 
@@ -13,7 +13,7 @@ export default function UploadDocumentForm({ orgId, onSuccess }: Props) {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!file) {
       toast.error('Please select a file');
