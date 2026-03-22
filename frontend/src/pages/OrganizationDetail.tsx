@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getOrganization, joinOrganization, Organization } from '../services/orgService';
-import { getOrgDocuments, deleteDocument, Document } from '../services/documentService';
+import { getOrganization, joinOrganization } from '../services/orgService';
+import type { Organization } from '../services/orgService';
+import { getOrgDocuments, deleteDocument } from '../services/documentService';
+import type { Document } from '../services/documentService';
 import { useAuth } from '../context/AuthContext';
 import UploadDocumentForm from '../components/UploadDocumentForm';
 import toast from 'react-hot-toast';
