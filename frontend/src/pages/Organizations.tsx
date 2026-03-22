@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getOrganizations, Organization } from '../services/orgService';
+import { getOrganizations, type Organization } from '../services/orgService';
 import toast from 'react-hot-toast';
 
 const TYPE_COLORS: Record<string, string> = {
