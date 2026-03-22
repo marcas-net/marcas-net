@@ -27,7 +27,7 @@ export function Footer() {
               <span className="font-bold text-white text-lg">MarcasNet</span>
             </Link>
             <p className="text-slate-400 text-sm leading-relaxed mb-5">
-              A structured digital network connecting organizations, professionals, laboratories, universities and regulatory bodies.
+              A digital platform connecting food producers, nutrition laboratories, universities, food safety regulators, and nutrition professionals.
             </p>
             <div className="flex gap-3">
               {[

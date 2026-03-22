@@ -38,17 +38,17 @@ export function CTA() {
           </div>
 
           <h2 className="text-4xl sm:text-5xl font-extrabold text-white leading-tight tracking-tight mb-6">
-            Start Building Your{' '}
+            Connect Your Food Organization{' '}
             <span
               className="bg-clip-text text-transparent"
               style={{ backgroundImage: 'linear-gradient(135deg, #60a5fa, #4ade80)' }}
             >
-              Institutional Network
+              to the Network
             </span>
           </h2>
 
           <p className="text-white/60 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
-            Join MarcasNet today and connect your organization with professionals and institutions in a structured collaborative environment.
+            Join MarcasNet and give your food company, nutrition lab, or institution a structured digital environment to manage teams, documents, and collaboration.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -81,7 +81,7 @@ export function CTA() {
           </div>
 
           <p className="mt-8 text-white/25 text-xs">
-            Free to start &nbsp;·&nbsp; No credit card required &nbsp;·&nbsp; Secure platform
+            Free to start &nbsp;·&nbsp; No credit card required &nbsp;·&nbsp; Built for the food industry
           </p>
         </motion.div>
       </div>

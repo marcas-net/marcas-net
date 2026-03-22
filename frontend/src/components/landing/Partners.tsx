@@ -22,7 +22,7 @@ export function Partners() {
             Supported by Our Network
           </h2>
           <p className="text-gray-500 text-base mb-10 max-w-md mx-auto">
-            Partner organizations and institutions will be featured here as the network grows.
+            Food and nutrition partner organizations will be featured here as the network grows.
           </p>
           <div className="inline-flex items-center gap-3 px-6 py-4 bg-white rounded-2xl border border-dashed border-gray-200 shadow-sm">
             <svg className="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">

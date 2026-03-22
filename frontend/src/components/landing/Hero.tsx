@@ -62,7 +62,7 @@ export function Hero() {
               className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-blue-100 bg-blue-50 text-blue-700 text-xs font-semibold mb-7"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-              Institutional Collaboration Platform
+              Food &amp; Nutrition Collaboration Platform
             </motion.div>
 
             <motion.h1
@@ -71,14 +71,14 @@ export function Hero() {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="text-5xl sm:text-6xl font-extrabold text-gray-900 leading-[1.08] tracking-tight mb-6"
             >
-              A Network for{' '}
+              Connecting Food &amp;{' '}
               <span
                 className="bg-clip-text text-transparent"
                 style={{ backgroundImage: 'linear-gradient(135deg, #2563eb, #22c55e)' }}
               >
-                Organizations
+                Nutrition
               </span>{' '}
-              &amp; Institutions
+              Organizations
             </motion.h1>
 
             <motion.p
@@ -87,9 +87,9 @@ export function Hero() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-lg text-gray-500 leading-relaxed mb-4"
             >
-              MarcasNet connects organizations, professionals, laboratories,
-              universities and regulatory bodies into a structured digital network where
-              they can collaborate, manage documents, and coordinate activities.
+              MarcasNet is a digital platform for the food and nutrition ecosystem.
+              It connects food producers, nutrition laboratories, universities, food safety
+              regulators, and nutrition professionals in a shared collaborative environment.
             </motion.p>
 
             <motion.p
@@ -98,10 +98,10 @@ export function Hero() {
               transition={{ duration: 0.6, delay: 0.25 }}
               className="text-sm text-gray-400 leading-relaxed mb-10"
             >
-              Many institutions work with multiple partners but lack a unified system to
-              manage collaboration and documentation. MarcasNet provides a shared
-              environment where organizations can manage their members, documents, and
-              institutional relationships in one place.
+              Food companies, labs, and regulators routinely work together — on product
+              certifications, compliance reports, and nutrition research — but lack a
+              single system to coordinate it all. MarcasNet provides that shared environment:
+              manage your team, upload documents, and collaborate with partners in one place.
             </motion.p>
 
             <motion.div
@@ -138,7 +138,7 @@ export function Hero() {
               transition={{ duration: 0.6, delay: 0.45 }}
               className="mt-5 text-xs text-gray-400"
             >
-              Free to start &nbsp;·&nbsp; Secure platform &nbsp;·&nbsp; Built for institutional collaboration
+              Free to start &nbsp;·&nbsp; Secure platform &nbsp;·&nbsp; Built for the food industry
             </motion.p>
           </div>
 
@@ -200,7 +200,7 @@ export function Hero() {
                   ))}
                 </svg>
                 <p className="text-center text-xs text-gray-400 mt-2 font-medium">
-                  Organizations connected in one network
+                  Food &amp; nutrition organizations connected in one network
                 </p>
               </div>
             </div>

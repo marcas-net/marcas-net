@@ -9,9 +9,9 @@ const features = [
       </svg>
     ),
     gradient: 'from-blue-500 to-blue-600',
-    title: 'Organization Management',
+    title: 'Food Organization Management',
     description:
-      'Create and manage organizations such as companies, laboratories, universities, and regulatory bodies. Control access levels and manage members from one central workspace.',
+      'Create and manage food producers, nutrition laboratories, universities, and food safety authorities. Control access levels and manage team members from one workspace.',
   },
   {
     icon: (
@@ -20,9 +20,9 @@ const features = [
       </svg>
     ),
     gradient: 'from-emerald-500 to-green-600',
-    title: 'Member Roles and Permissions',
+    title: 'Nutrition &amp; Food Documentation',
     description:
-      'Invite professionals and team members to your organization and assign roles to ensure the right people have the right access to information and resources.',
+      'Upload and organize laboratory test reports, food certifications, safety audits, and nutrition research files in a structured, searchable document system.',
   },
   {
     icon: (
@@ -31,9 +31,9 @@ const features = [
       </svg>
     ),
     gradient: 'from-violet-500 to-purple-600',
-    title: 'Document Management',
+    title: 'Laboratory Collaboration',
     description:
-      'Upload and organize reports, certifications, research files, and institutional records in a secure document system with role-based access control.',
+      'Nutrition laboratories can share test results and analysis reports directly with food producers and regulatory bodies within the same network.',
   },
   {
     icon: (
@@ -42,9 +42,20 @@ const features = [
       </svg>
     ),
     gradient: 'from-orange-400 to-amber-500',
-    title: 'Institutional Collaboration',
+    title: 'Food Certification & Compliance',
     description:
-      'Work with other organizations within the network to share information, coordinate activities, and build structured partnerships between institutions.',
+      'Coordinate food certification processes, manage compliance documentation, and maintain structured records across food companies, labs, and regulators.',
+  },
+  {
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+      </svg>
+    ),
+    gradient: 'from-teal-500 to-cyan-600',
+    title: 'Research & Institutional Collaboration',
+    description:
+      'Connect universities and research institutions with food producers and labs to coordinate nutrition studies, share data, and publish findings within a managed network.',
   },
 ];
 
@@ -91,11 +102,11 @@ export function Features() {
             What You Can Do With MarcasNet
           </h2>
           <p className="text-gray-500 text-lg">
-            Tools designed for organizations that need structure, access control, and secure collaboration.
+            Built for the food and nutrition industry — manage organizations, certifications, lab reports, and cross-institutional partnerships in one place.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((f, i) => (
             <FeatureCard key={f.title} feature={f} index={i} />
           ))}

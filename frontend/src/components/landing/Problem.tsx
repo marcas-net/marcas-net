@@ -12,8 +12,8 @@ const problems = [
     color: 'text-red-500',
     bg: 'bg-red-50',
     border: 'border-red-100',
-    title: 'Scattered Documents',
-    description: 'Certifications, reports, and compliance records live in separate email threads, drives, and local folders — making them hard to find and track.',
+    title: 'Scattered Certifications',
+    description: 'Lab reports, food safety certificates, and compliance records are spread across email attachments, local drives, and separate systems — hard to find when they matter most.',
   },
   {
     icon: (
@@ -24,8 +24,8 @@ const problems = [
     color: 'text-orange-500',
     bg: 'bg-orange-50',
     border: 'border-orange-100',
-    title: 'Disconnected Organizations',
-    description: 'Institutions work with multiple partners — companies, regulators, labs — but there is no shared space to manage those relationships or track shared activities.',
+    title: 'Fragmented Collaboration',
+    description: 'Food producers, testing laboratories, and regulatory bodies work together but have no shared workspace to track documentation, activities, or institutional relationships.',
   },
   {
     icon: (
@@ -36,8 +36,8 @@ const problems = [
     color: 'text-amber-500',
     bg: 'bg-amber-50',
     border: 'border-amber-100',
-    title: 'Uncontrolled Access',
-    description: 'Without proper role management, the wrong people get access to sensitive documents, or the right people are locked out of information they need.',
+    title: 'No Access Control',
+    description: 'Sensitive nutrition research, proprietary formulations, and regulatory submissions are shared without proper access controls — creating compliance and confidentiality risks.',
   },
   {
     icon: (
@@ -48,8 +48,8 @@ const problems = [
     color: 'text-rose-500',
     bg: 'bg-rose-50',
     border: 'border-rose-100',
-    title: 'Inefficient Coordination',
-    description: 'Coordinating across institutions using email chains and spreadsheets is slow, error-prone, and provides no visibility into the current status of activities.',
+    title: 'Slow Compliance Cycles',
+    description: 'Managing certification renewals, lab test submissions, and food safety audits by email is slow, error-prone, and leaves organizations with no clear visibility into current status.',
   },
 ];
 
@@ -93,10 +93,10 @@ export function Problem() {
             The Challenge
           </div>
           <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
-            The Challenge Organizations Face
+            The Challenge the Food Industry Faces
           </h2>
           <p className="text-gray-500 text-lg leading-relaxed">
-            Organizations today often collaborate across multiple institutions — companies, laboratories, regulators, and universities. Managing these relationships is difficult when information is scattered across emails, separate systems, and disconnected tools.
+            Food companies, nutrition labs, and regulators often work together on certifications, safety reports, and compliance documentation — but coordination is fragmented across emails, spreadsheets, and disconnected systems.
           </p>
         </motion.div>
 
