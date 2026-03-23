@@ -9,8 +9,8 @@ ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
 # Serve stage
-FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf.template
-EXPOSE 80
-CMD ["sh", "-c", "envsubst '$PORT' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
+FROM node:22-alpine
+WORKDIR /app
+RUN npm install -g serve@14
+COPY --from=build /app/dist ./dist
+CMD ["sh", "-c", "serve -s dist -l ${PORT:-3000}"]
