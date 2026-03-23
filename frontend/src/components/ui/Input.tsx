@@ -12,13 +12,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
             {label}
           </label>
         )}
         <div className="relative">
           {icon && (
-            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-400">
+            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-400 dark:text-gray-500">
               {icon}
             </div>
           )}
@@ -26,10 +26,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             className={`
               w-full border rounded-xl py-2.5 text-sm
-              bg-white text-gray-900 placeholder-gray-400
+              bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500
               focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
               transition-all duration-200
-              ${error ? 'border-red-400 focus:ring-red-400' : 'border-gray-200'}
+              ${error ? 'border-red-400 focus:ring-red-400' : 'border-gray-200 dark:border-gray-700'}
               ${icon ? 'pl-10' : 'px-4'}
               ${suffix ? 'pr-10' : 'pr-4'}
               ${className}
@@ -59,17 +59,17 @@ export function Select({ label, error, options, className = '', ...props }: Sele
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
           {label}
         </label>
       )}
       <select
         className={`
           w-full border rounded-xl px-4 py-2.5 text-sm
-          bg-white text-gray-900
+          bg-white dark:bg-gray-900 text-gray-900 dark:text-white
           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
           transition-all duration-200
-          ${error ? 'border-red-400' : 'border-gray-200'}
+          ${error ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'}
           ${className}
         `.trim()}
         {...props}
@@ -92,17 +92,17 @@ export function Textarea({ label, error, className = '', ...props }: TextareaPro
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
           {label}
         </label>
       )}
       <textarea
         className={`
           w-full border rounded-xl px-4 py-2.5 text-sm resize-none
-          bg-white text-gray-900 placeholder-gray-400
+          bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500
           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
           transition-all duration-200
-          ${error ? 'border-red-400 focus:ring-red-400' : 'border-gray-200'}
+          ${error ? 'border-red-400 focus:ring-red-400' : 'border-gray-200 dark:border-gray-700'}
           ${className}
         `.trim()}
         {...props}

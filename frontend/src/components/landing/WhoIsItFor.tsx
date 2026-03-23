@@ -10,9 +10,9 @@ const orgTypes = [
     ),
     label: 'Food Producers',
     sublabel: 'Food brands & manufacturers',
-    color: 'text-blue-600',
-    bg: 'bg-blue-50',
-    border: 'border-blue-100',
+    color: 'text-blue-600 dark:text-blue-400',
+    bg: 'bg-blue-50 dark:bg-blue-950/30',
+    border: 'border-blue-100 dark:border-blue-900/50',
   },
   {
     icon: (
@@ -22,21 +22,21 @@ const orgTypes = [
     ),
     label: 'Nutrition Labs',
     sublabel: 'Food testing & analysis facilities',
-    color: 'text-emerald-600',
-    bg: 'bg-emerald-50',
-    border: 'border-emerald-100',
+    color: 'text-emerald-600 dark:text-emerald-400',
+    bg: 'bg-emerald-50 dark:bg-emerald-950/30',
+    border: 'border-emerald-100 dark:border-emerald-900/50',
   },
   {
     icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
       </svg>
     ),
     label: 'Universities',
     sublabel: 'Nutrition & food science research',
-    color: 'text-violet-600',
-    bg: 'bg-violet-50',
-    border: 'border-violet-100',
+    color: 'text-violet-600 dark:text-violet-400',
+    bg: 'bg-violet-50 dark:bg-violet-950/30',
+    border: 'border-violet-100 dark:border-violet-900/50',
   },
   {
     icon: (
@@ -46,9 +46,9 @@ const orgTypes = [
     ),
     label: 'Food Safety Regulators',
     sublabel: 'Compliance & oversight authorities',
-    color: 'text-red-600',
-    bg: 'bg-red-50',
-    border: 'border-red-100',
+    color: 'text-red-600 dark:text-red-400',
+    bg: 'bg-red-50 dark:bg-red-950/30',
+    border: 'border-red-100 dark:border-red-900/50',
   },
   {
     icon: (
@@ -58,9 +58,9 @@ const orgTypes = [
     ),
     label: 'Nutrition Professionals',
     sublabel: 'Nutritionists, dietitians & consultants',
-    color: 'text-orange-600',
-    bg: 'bg-orange-50',
-    border: 'border-orange-100',
+    color: 'text-orange-600 dark:text-orange-400',
+    bg: 'bg-orange-50 dark:bg-orange-950/30',
+    border: 'border-orange-100 dark:border-orange-900/50',
   },
 ];
 
@@ -69,7 +69,7 @@ export function WhoIsItFor() {
   const inView = useInView(ref, { once: true, margin: '-80px' });
 
   return (
-    <section id="who-for" className="py-24 bg-white">
+    <section id="who-for" className="py-24 bg-white dark:bg-gray-950" aria-label="Who Is It For">
       <div className="max-w-6xl mx-auto px-6">
         <motion.div
           ref={ref}
@@ -78,13 +78,13 @@ export function WhoIsItFor() {
           transition={{ duration: 0.6 }}
           className="max-w-2xl mx-auto text-center mb-14"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-violet-50 border border-violet-100 text-violet-700 text-xs font-semibold mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-violet-50 dark:bg-violet-950/30 border border-violet-100 dark:border-violet-900/50 text-violet-700 dark:text-violet-400 text-xs font-semibold mb-4">
             Who Is It For
           </div>
-          <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
+          <h2 className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-4">
             Built for the Food &amp; Nutrition Industry
           </h2>
-          <p className="text-gray-500 text-lg leading-relaxed">
+          <p className="text-gray-600 dark:text-gray-300 text-lg leading-relaxed">
             MarcasNet is designed for organizations across the food and nutrition ecosystem. Whether you produce food, test it, research it, or regulate it — the platform gives your organization a structured digital workspace.
           </p>
         </motion.div>
@@ -101,13 +101,13 @@ export function WhoIsItFor() {
                 animate={cardInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.5, delay: i * 0.08 }}
                 whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                className={`flex flex-col items-center text-center p-6 rounded-2xl border ${org.border} ${org.bg} hover:shadow-md transition-shadow`}
+                className={`flex flex-col items-center text-center p-6 rounded-2xl border ${org.border} ${org.bg} hover:shadow-md dark:hover:shadow-black/30 transition-all`}
               >
-                <div className={`w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center mb-4 ${org.color}`}>
+                <div className={`w-12 h-12 rounded-xl bg-white dark:bg-gray-900 shadow-sm dark:shadow-black/20 flex items-center justify-center mb-4 ${org.color}`}>
                   {org.icon}
                 </div>
-                <h3 className="font-bold text-gray-900 text-sm mb-1">{org.label}</h3>
-                <p className="text-xs text-gray-500 leading-relaxed">{org.sublabel}</p>
+                <h3 className="font-bold text-gray-900 dark:text-gray-100 text-sm mb-1">{org.label}</h3>
+                <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">{org.sublabel}</p>
               </motion.div>
             );
           })}

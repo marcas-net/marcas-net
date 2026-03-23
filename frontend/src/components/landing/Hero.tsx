@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { trackEvent } from '../../utils/analytics';
 
 const floatingOrbs = [
   { size: 320, top: '-80px', right: '-60px', color: '#2563eb', delay: 0 },
@@ -22,9 +23,9 @@ const edges = [
 
 export function Hero() {
   return (
-    <section className="relative pt-24 pb-20 overflow-hidden min-h-screen flex items-center">
+    <section className="relative pt-24 pb-20 overflow-hidden min-h-screen flex items-center" aria-label="Hero">
       {/* Background */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/20" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/20 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950" />
       <div className="absolute inset-0 -z-10"
         style={{
           backgroundImage: `radial-gradient(circle at 1px 1px, rgba(37,99,235,0.06) 1px, transparent 0)`,
@@ -36,7 +37,7 @@ export function Hero() {
       {floatingOrbs.map((orb, i) => (
         <motion.div
           key={i}
-          className="absolute rounded-full opacity-[0.07] blur-3xl -z-10"
+          className="absolute rounded-full opacity-[0.07] dark:opacity-[0.12] blur-3xl -z-10"
           style={{
             width: orb.size,
             height: orb.size,
@@ -59,7 +60,7 @@ export function Hero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-blue-100 bg-blue-50 text-blue-700 text-xs font-semibold mb-7"
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-blue-100 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 text-xs font-semibold mb-7"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
               Food &amp; Nutrition Collaboration Platform
@@ -69,13 +70,10 @@ export function Hero() {
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-5xl sm:text-6xl font-extrabold text-gray-900 leading-[1.08] tracking-tight mb-6"
+              className="text-5xl sm:text-6xl font-extrabold text-gray-900 dark:text-white leading-[1.08] tracking-tight mb-6"
             >
               Connecting Food &amp;{' '}
-              <span
-                className="bg-clip-text text-transparent"
-                style={{ backgroundImage: 'linear-gradient(135deg, #2563eb, #22c55e)' }}
-              >
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-green-500">
                 Nutrition
               </span>{' '}
               Organizations
@@ -85,7 +83,7 @@ export function Hero() {
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-lg text-gray-500 leading-relaxed mb-4"
+              className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed mb-4"
             >
               MarcasNet is a digital platform for the food and nutrition ecosystem.
               It connects food producers, nutrition laboratories, universities, food safety
@@ -96,7 +94,7 @@ export function Hero() {
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.25 }}
-              className="text-sm text-gray-400 leading-relaxed mb-10"
+              className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-10"
             >
               Food companies, labs, and regulators routinely work together — on product
               certifications, compliance reports, and nutrition research — but lack a
@@ -110,11 +108,12 @@ export function Hero() {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="flex flex-col sm:flex-row items-start sm:items-center gap-4"
             >
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                 <Link
                   to="/register"
-                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-white font-semibold text-sm shadow-lg hover:shadow-xl transition-shadow"
-                  style={{ background: 'linear-gradient(135deg, #2563eb, #22c55e)' }}
+                  onClick={() => trackEvent('signup_clicked')}
+                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-white font-semibold text-sm shadow-lg hover:shadow-xl transition-all duration-200 bg-gradient-to-r from-blue-600 to-green-500 hover:from-blue-700 hover:to-green-600"
+                  aria-label="Get started with MarcasNet"
                 >
                   Get Started
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,7 +124,8 @@ export function Hero() {
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Link
                   to="/login"
-                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-gray-700 font-semibold text-sm bg-white border border-gray-200 shadow-sm hover:border-gray-300 hover:shadow-md transition-all"
+                  onClick={() => trackEvent('login_clicked')}
+                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-gray-700 dark:text-gray-200 font-semibold text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-sm hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md transition-all duration-200"
                 >
                   Sign In
                 </Link>
@@ -136,7 +136,7 @@ export function Hero() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.45 }}
-              className="mt-5 text-xs text-gray-400"
+              className="mt-5 text-xs text-gray-500 dark:text-gray-500"
             >
               Free to start &nbsp;·&nbsp; Secure platform &nbsp;·&nbsp; Built for the food industry
             </motion.p>
@@ -152,10 +152,10 @@ export function Hero() {
             <div className="relative w-full max-w-lg">
               {/* Glow */}
               <div
-                className="absolute inset-0 rounded-3xl blur-3xl opacity-20"
+                className="absolute inset-0 rounded-3xl blur-3xl opacity-20 dark:opacity-30"
                 style={{ background: 'linear-gradient(135deg, #2563eb, #22c55e)' }}
               />
-              <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl border border-gray-100 shadow-2xl p-8">
+              <div className="relative bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-3xl border border-gray-100 dark:border-gray-800 shadow-2xl dark:shadow-black/40 p-8">
                 <svg viewBox="0 0 540 360" className="w-full h-auto" style={{ minHeight: 260 }}>
                   {/* Edges */}
                   {edges.map(([a, b], i) => {
@@ -166,7 +166,8 @@ export function Hero() {
                         key={i}
                         x1={na.cx} y1={na.cy}
                         x2={nb.cx} y2={nb.cy}
-                        stroke="#e2e8f0"
+                        stroke="currentColor"
+                        className="text-gray-200 dark:text-gray-700"
                         strokeWidth="1.5"
                         initial={{ pathLength: 0, opacity: 0 }}
                         animate={{ pathLength: 1, opacity: 1 }}
@@ -191,7 +192,8 @@ export function Hero() {
                         textAnchor="middle"
                         fontSize="11"
                         fontWeight="600"
-                        fill="#374151"
+                        fill="currentColor"
+                        className="text-gray-700 dark:text-gray-300"
                         fontFamily="Inter, sans-serif"
                       >
                         {node.label}
@@ -199,7 +201,7 @@ export function Hero() {
                     </motion.g>
                   ))}
                 </svg>
-                <p className="text-center text-xs text-gray-400 mt-2 font-medium">
+                <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-2 font-medium">
                   Food &amp; nutrition organizations connected in one network
                 </p>
               </div>

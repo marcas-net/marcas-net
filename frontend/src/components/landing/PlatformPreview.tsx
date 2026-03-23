@@ -115,17 +115,17 @@ const previews = [
 
 export function PlatformPreview() {
   return (
-    <section id="platform" className="py-24 bg-white">
+    <section id="platform" className="py-24 bg-white dark:bg-gray-950">
       <div className="max-w-6xl mx-auto px-6">
         {/* Header */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-violet-50 border border-violet-100 text-violet-700 text-xs font-semibold mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-violet-50 dark:bg-violet-950/50 border border-violet-100 dark:border-violet-800 text-violet-700 dark:text-violet-300 text-xs font-semibold mb-4">
             Platform Preview
           </div>
-          <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
+          <h2 className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-4">
             A workspace designed for clarity
           </h2>
-          <p className="text-gray-500 text-lg max-w-xl mx-auto">
+          <p className="text-gray-500 dark:text-gray-400 text-lg max-w-xl mx-auto">
             Clean interfaces that surface exactly what you need — no clutter, no complexity.
           </p>
         </div>
@@ -135,10 +135,10 @@ export function PlatformPreview() {
           {previews.map((p) => (
             <div
               key={p.title}
-              className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+              className="group bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl dark:hover:shadow-black/30 transition-all duration-300 hover:-translate-y-1 overflow-hidden"
             >
               {/* Screen mockup */}
-              <div className="p-4 bg-gradient-to-b from-gray-50 to-white border-b border-gray-100">
+              <div className="p-4 bg-gradient-to-b from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 border-b border-gray-100 dark:border-gray-800">
                 {/* Browser chrome */}
                 <div className="flex items-center gap-1.5 mb-3">
                   <div className="w-2 h-2 rounded-full bg-red-300" />
@@ -152,8 +152,8 @@ export function PlatformPreview() {
                 <div className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full mb-3 ${p.badgeColor}`}>
                   {p.badge}
                 </div>
-                <h3 className="font-bold text-gray-900 mb-1">{p.title}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{p.description}</p>
+                <h3 className="font-bold text-gray-900 dark:text-white mb-1">{p.title}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{p.description}</p>
               </div>
             </div>
           ))}

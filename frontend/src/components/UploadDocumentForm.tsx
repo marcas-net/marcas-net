@@ -51,7 +51,7 @@ export default function UploadDocumentForm({ orgId, onSuccess }: Props) {
 
   return (
     <Card>
-      <h2 className="text-base font-semibold text-gray-900 mb-5">Upload Document</h2>
+      <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-5">Upload Document</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
           label="Title *"
@@ -70,12 +70,12 @@ export default function UploadDocumentForm({ orgId, onSuccess }: Props) {
         />
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">File *</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">File *</label>
           <input
             type="file"
             accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+            className="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 dark:file:bg-blue-950/50 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-900/50 cursor-pointer"
           />
           <p className="text-xs text-gray-400 mt-1.5">PDF, Word, Excel, or images — max 10 MB</p>
         </div>

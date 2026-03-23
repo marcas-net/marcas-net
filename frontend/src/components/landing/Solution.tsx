@@ -45,7 +45,7 @@ export function Solution() {
   const inView = useInView(ref, { once: true, margin: '-80px' });
 
   return (
-    <section className="py-24 bg-white">
+    <section className="py-24 bg-white dark:bg-gray-950" aria-label="The Solution">
       <div className="max-w-6xl mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left: text */}
@@ -55,22 +55,19 @@ export function Solution() {
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6 }}
           >
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-semibold mb-5">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50 text-emerald-700 dark:text-emerald-400 text-xs font-semibold mb-5">
               The Solution
             </div>
-            <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight mb-5">
+            <h2 className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-5">
               A Unified Network for{' '}
-              <span
-                className="bg-clip-text text-transparent"
-                style={{ backgroundImage: 'linear-gradient(135deg, #2563eb, #22c55e)' }}
-              >
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-green-500">
                 Institutional Collaboration
               </span>
             </h2>
-            <p className="text-gray-500 text-lg leading-relaxed mb-4">
+            <p className="text-gray-600 dark:text-gray-300 text-lg leading-relaxed mb-4">
               MarcasNet brings organizations together into a single digital platform where institutions can collaborate more effectively.
             </p>
-            <p className="text-gray-400 text-base leading-relaxed">
+            <p className="text-gray-500 dark:text-gray-400 text-base leading-relaxed">
               Instead of relying on multiple disconnected systems, organizations can manage their teams, documents, and partnerships from one structured environment. The platform helps institutions stay organized while enabling secure collaboration across their network.
             </p>
           </motion.div>
@@ -87,17 +84,16 @@ export function Solution() {
                   initial={{ opacity: 0, x: 32 }}
                   animate={cardInView ? { opacity: 1, x: 0 } : {}}
                   transition={{ duration: 0.5, delay: i * 0.1 }}
-                  className="flex gap-4 p-5 bg-gray-50 rounded-2xl border border-gray-100 hover:border-blue-100 hover:bg-blue-50/30 transition-all group"
+                  className="flex gap-4 p-5 bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 hover:border-blue-100 dark:hover:border-blue-900 hover:bg-blue-50/30 dark:hover:bg-blue-950/20 transition-all group"
                 >
                   <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white shadow-sm group-hover:scale-105 transition-transform"
-                    style={{ background: 'linear-gradient(135deg, #2563eb, #22c55e)' }}
+                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white shadow-sm group-hover:scale-105 transition-transform bg-gradient-to-br from-blue-600 to-green-500"
                   >
                     {b.icon}
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-900 text-sm mb-1">{b.title}</h3>
-                    <p className="text-gray-500 text-sm leading-relaxed">{b.desc}</p>
+                    <h3 className="font-bold text-gray-900 dark:text-gray-100 text-sm mb-1">{b.title}</h3>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{b.desc}</p>
                   </div>
                 </motion.div>
               );

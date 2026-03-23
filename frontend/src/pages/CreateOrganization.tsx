@@ -47,8 +47,8 @@ export default function CreateOrganization() {
           </svg>
           Back to Organizations
         </Link>
-        <h1 className="text-2xl font-bold text-slate-900">Create Organization</h1>
-        <p className="text-slate-500 text-sm mt-1">Set up a new organization on the MARCAS platform</p>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Create Organization</h1>
+        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Set up a new organization on the MARCAS platform</p>
       </div>
 
       <Card padding="lg">
@@ -78,13 +78,13 @@ export default function CreateOrganization() {
             }
           />
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Description</label>
             <textarea
               placeholder="Briefly describe your organization…"
               value={form.description}
               onChange={set('description')}
               rows={3}
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+              className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
             />
           </div>
           <div className="flex gap-3 pt-2">

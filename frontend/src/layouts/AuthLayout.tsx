@@ -36,9 +36,9 @@ const features = [
 
 export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="min-h-screen bg-slate-50 dark:bg-gray-950 flex">
       {/* ── Left branding panel (desktop only) ── */}
-      <div className="hidden lg:flex lg:w-[52%] flex-col justify-between p-14 bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-[52%] flex-col justify-between p-14 bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-950 relative overflow-hidden">
         {/* Logo */}
         <Link to="/login">
           <img src="/logo-wide.jpeg" alt="MARCAS" className="h-11 object-contain object-left" />
@@ -47,13 +47,13 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
         {/* Hero copy */}
         <div className="space-y-10">
           <div>
-            <h1 className="text-5xl font-bold text-slate-900 leading-[1.15] tracking-tight">
+            <h1 className="text-5xl font-bold text-slate-900 dark:text-white leading-[1.15] tracking-tight">
               Build, Manage<br />and Grow Your<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-emerald-500">
                 Brand Network
               </span>
             </h1>
-            <p className="text-slate-500 mt-5 text-lg leading-relaxed">
+            <p className="text-slate-500 dark:text-slate-400 mt-5 text-lg leading-relaxed">
               Connect. Automate. Expand.<br />All in one intelligent platform.
             </p>
           </div>
@@ -99,11 +99,11 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
         </div>
 
         <div className="w-full max-w-md">
-          <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 md:p-10">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-800 p-8 md:p-10">
             <div className="mb-7">
-              <h2 className="text-2xl font-bold text-slate-900">{title}</h2>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{title}</h2>
               {subtitle && (
-                <p className="text-slate-500 mt-1.5 text-sm">
+                <p className="text-slate-500 dark:text-slate-400 mt-1.5 text-sm">
                   Get started with{' '}
                   <span className="font-semibold text-slate-700">Marcas</span>
                   <span className="font-semibold text-emerald-600">net</span>

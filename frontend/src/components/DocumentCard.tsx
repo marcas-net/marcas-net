@@ -45,7 +45,7 @@ export function DocumentCard({ document: doc, onDelete, canDelete }: Props) {
   const downloadUrl = getDownloadUrl(doc.id);
 
   return (
-    <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow flex gap-4">
+    <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl p-4 shadow-sm hover:shadow-md dark:hover:shadow-black/20 transition-shadow flex gap-4">
       {/* File icon */}
       <div className={`w-11 h-11 rounded-lg border flex items-center justify-center text-2xl flex-shrink-0 ${colorClass}`}>
         {icon}
@@ -54,7 +54,7 @@ export function DocumentCard({ document: doc, onDelete, canDelete }: Props) {
       {/* Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-semibold text-gray-900 text-sm truncate">{doc.title}</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-white text-sm truncate">{doc.title}</h3>
           {doc.fileType && (
             <Badge variant="gray" className="text-xs uppercase flex-shrink-0">
               {doc.fileType}
@@ -62,7 +62,7 @@ export function DocumentCard({ document: doc, onDelete, canDelete }: Props) {
           )}
         </div>
         {doc.description && (
-          <p className="text-gray-500 text-xs mt-0.5 line-clamp-1">{doc.description}</p>
+          <p className="text-gray-500 dark:text-gray-400 text-xs mt-0.5 line-clamp-1">{doc.description}</p>
         )}
         <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-gray-400">
           <span>{formatBytes(doc.fileSize)}</span>

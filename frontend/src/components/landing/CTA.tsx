@@ -1,13 +1,14 @@
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
+import { trackEvent } from '../../utils/analytics';
 
 export function CTA() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
 
   return (
-    <section className="py-24 relative overflow-hidden">
+    <section className="py-24 relative overflow-hidden" aria-label="Call to Action">
       <div
         className="absolute inset-0 -z-10"
         style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #052e16 100%)' }}
@@ -61,8 +62,9 @@ export function CTA() {
             >
               <Link
                 to="/register"
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl text-white font-bold text-sm shadow-xl transition-all"
-                style={{ background: 'linear-gradient(135deg, #2563eb, #22c55e)' }}
+                onClick={() => trackEvent('create_account_clicked')}
+                aria-label="Create a free MarcasNet account"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl text-white font-bold text-sm shadow-xl transition-all bg-gradient-to-r from-blue-600 to-green-500 hover:from-blue-700 hover:to-green-600"
               >
                 Create Free Account
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

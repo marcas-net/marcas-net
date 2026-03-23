@@ -27,7 +27,7 @@ const steps = [
   {
     number: '03',
     title: 'Upload Nutrition Reports or Certifications',
-    description: 'Upload lab test results, food safety certificates, compliance reports, and nutrition research documents to your organization\'s document library.',
+    description: "Upload lab test results, food safety certificates, compliance reports, and nutrition research documents to your organization's document library.",
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
@@ -37,7 +37,7 @@ const steps = [
   },
   {
     number: '04',
-    title: 'Collaborate with Labs, Regulators &amp; Partners',
+    title: 'Collaborate with Labs, Regulators & Partners',
     description: 'Connect with partner organizations in the network — share documentation, coordinate certification activities, and manage cross-institutional collaboration.',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -60,7 +60,6 @@ function Step({ step, index }: { step: typeof steps[0]; index: number }) {
       transition={{ duration: 0.55, delay: index * 0.15 }}
       className="relative flex flex-col items-center text-center"
     >
-      {/* Circle */}
       <motion.div
         initial={{ scale: 0 }}
         animate={inView ? { scale: 1 } : {}}
@@ -69,13 +68,13 @@ function Step({ step, index }: { step: typeof steps[0]; index: number }) {
         style={{ background: `linear-gradient(135deg, ${step.color}, ${step.color}cc)` }}
       >
         {step.icon}
-        <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-white text-gray-900 text-[10px] font-black flex items-center justify-center shadow border border-gray-100">
+        <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-[10px] font-black flex items-center justify-center shadow border border-gray-100 dark:border-gray-700">
           {index + 1}
         </span>
       </motion.div>
 
-      <h3 className="font-bold text-gray-900 mb-2">{step.title}</h3>
-      <p className="text-gray-500 text-sm leading-relaxed max-w-[200px] mx-auto">{step.description}</p>
+      <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-2">{step.title}</h3>
+      <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed max-w-[200px] mx-auto">{step.description}</p>
     </motion.div>
   );
 }
@@ -85,7 +84,7 @@ export function HowItWorks() {
   const inView = useInView(ref, { once: true, margin: '-80px' });
 
   return (
-    <section id="how-it-works" className="py-24" style={{ background: 'linear-gradient(135deg, #f8fafc, #eff6ff 50%, #f0fdf4)' }}>
+    <section id="how-it-works" className="py-24 bg-gray-50 dark:bg-gray-900/50" aria-label="How It Works">
       <div className="max-w-6xl mx-auto px-6">
         <motion.div
           ref={ref}
@@ -94,20 +93,20 @@ export function HowItWorks() {
           transition={{ duration: 0.6 }}
           className="max-w-xl mx-auto text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-semibold mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50 text-emerald-700 dark:text-emerald-400 text-xs font-semibold mb-4">
             Simple Onboarding
           </div>
-          <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
+          <h2 className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-4">
             How MarcasNet Works
           </h2>
-          <p className="text-gray-500 text-lg">
+          <p className="text-gray-600 dark:text-gray-300 text-lg">
             Get your food or nutrition organization set up and collaborating in four steps.
           </p>
         </motion.div>
 
         <div className="relative">
           {/* Connector line (desktop only) */}
-          <div className="hidden lg:block absolute top-8 left-[12.5%] right-[12.5%] h-px bg-gradient-to-r from-blue-200 via-emerald-200 to-emerald-300" />
+          <div className="hidden lg:block absolute top-8 left-[12.5%] right-[12.5%] h-px bg-gradient-to-r from-blue-200 dark:from-blue-800 via-emerald-200 dark:via-emerald-800 to-emerald-300 dark:to-emerald-700" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
             {steps.map((step, i) => (

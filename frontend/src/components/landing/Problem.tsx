@@ -10,8 +10,8 @@ const problems = [
       </svg>
     ),
     color: 'text-red-500',
-    bg: 'bg-red-50',
-    border: 'border-red-100',
+    bg: 'bg-red-50 dark:bg-red-950/30',
+    border: 'border-red-100 dark:border-red-900/50',
     title: 'Scattered Certifications',
     description: 'Lab reports, food safety certificates, and compliance records are spread across email attachments, local drives, and separate systems — hard to find when they matter most.',
   },
@@ -22,8 +22,8 @@ const problems = [
       </svg>
     ),
     color: 'text-orange-500',
-    bg: 'bg-orange-50',
-    border: 'border-orange-100',
+    bg: 'bg-orange-50 dark:bg-orange-950/30',
+    border: 'border-orange-100 dark:border-orange-900/50',
     title: 'Fragmented Collaboration',
     description: 'Food producers, testing laboratories, and regulatory bodies work together but have no shared workspace to track documentation, activities, or institutional relationships.',
   },
@@ -34,8 +34,8 @@ const problems = [
       </svg>
     ),
     color: 'text-amber-500',
-    bg: 'bg-amber-50',
-    border: 'border-amber-100',
+    bg: 'bg-amber-50 dark:bg-amber-950/30',
+    border: 'border-amber-100 dark:border-amber-900/50',
     title: 'No Access Control',
     description: 'Sensitive nutrition research, proprietary formulations, and regulatory submissions are shared without proper access controls — creating compliance and confidentiality risks.',
   },
@@ -46,8 +46,8 @@ const problems = [
       </svg>
     ),
     color: 'text-rose-500',
-    bg: 'bg-rose-50',
-    border: 'border-rose-100',
+    bg: 'bg-rose-50 dark:bg-rose-950/30',
+    border: 'border-rose-100 dark:border-rose-900/50',
     title: 'Slow Compliance Cycles',
     description: 'Managing certification renewals, lab test submissions, and food safety audits by email is slow, error-prone, and leaves organizations with no clear visibility into current status.',
   },
@@ -63,14 +63,14 @@ function ProblemCard({ problem, index }: { problem: typeof problems[0]; index: n
       initial={{ opacity: 0, y: 32 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.5, delay: index * 0.1 }}
-      whileHover={{ y: -4 }}
-      className={`bg-white rounded-2xl border ${problem.border} p-6 shadow-sm hover:shadow-md transition-shadow`}
+      whileHover={{ y: -4, transition: { duration: 0.2 } }}
+      className={`bg-white dark:bg-gray-900 rounded-2xl border ${problem.border} p-6 shadow-sm dark:shadow-black/20 hover:shadow-md dark:hover:shadow-black/40 transition-all`}
     >
       <div className={`w-11 h-11 rounded-xl ${problem.bg} ${problem.color} flex items-center justify-center mb-4`}>
         {problem.icon}
       </div>
-      <h3 className="font-bold text-gray-900 mb-2">{problem.title}</h3>
-      <p className="text-sm text-gray-500 leading-relaxed">{problem.description}</p>
+      <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-2">{problem.title}</h3>
+      <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{problem.description}</p>
     </motion.div>
   );
 }
@@ -80,7 +80,7 @@ export function Problem() {
   const headerInView = useInView(headerRef, { once: true, margin: '-80px' });
 
   return (
-    <section className="py-24 bg-gray-50">
+    <section className="py-24 bg-gray-50 dark:bg-gray-900/50" aria-label="The Challenge">
       <div className="max-w-6xl mx-auto px-6">
         <motion.div
           ref={headerRef}
@@ -89,13 +89,13 @@ export function Problem() {
           transition={{ duration: 0.6 }}
           className="max-w-2xl mx-auto text-center mb-14"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-50 border border-red-100 text-red-600 text-xs font-semibold mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/50 text-red-600 dark:text-red-400 text-xs font-semibold mb-4">
             The Challenge
           </div>
-          <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
+          <h2 className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-4">
             The Challenge the Food Industry Faces
           </h2>
-          <p className="text-gray-500 text-lg leading-relaxed">
+          <p className="text-gray-600 dark:text-gray-300 text-lg leading-relaxed">
             Food companies, nutrition labs, and regulators often work together on certifications, safety reports, and compliance documentation — but coordination is fragmented across emails, spreadsheets, and disconnected systems.
           </p>
         </motion.div>

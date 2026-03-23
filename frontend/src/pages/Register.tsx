@@ -106,7 +106,7 @@ const Register = () => {
         {' '}and{' '}
         <span className="text-blue-600 cursor-pointer hover:underline">Privacy Policy</span>
       </p>
-      <p className="text-sm text-gray-500 mt-4 text-center">
+      <p className="text-sm text-gray-500 dark:text-gray-400 mt-4 text-center">
         Already have an account?{' '}
         <Link to="/login" className="text-blue-600 hover:text-blue-700 font-semibold">Sign In</Link>
       </p>

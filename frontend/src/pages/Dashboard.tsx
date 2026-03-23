@@ -14,10 +14,10 @@ const Dashboard = () => {
       {/* Welcome */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
             Welcome back, {user?.name?.split(' ')[0] ?? 'there'} 👋
           </h1>
-          <p className="text-slate-500 mt-1 text-sm">Here's your MARCAS platform overview</p>
+          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">Here's your MARCAS platform overview</p>
         </div>
         <div className="flex items-center gap-3">
           <Badge variant={roleVariant[role] ?? 'blue'}>{role}</Badge>
@@ -75,18 +75,18 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Quick actions */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <h2 className="text-sm font-semibold text-slate-700 mb-4">Quick Actions</h2>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-6">
+            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">Quick Actions</h2>
             <div className="space-y-2">
               {[
-                { label: 'Browse Organizations', desc: 'Find and join organizations', href: '/orgs', color: 'bg-blue-50 text-blue-600' },
-                { label: 'Create Organization', desc: 'Start a new organization', href: '/orgs/create', color: 'bg-emerald-50 text-emerald-600' },
-                { label: 'My Profile', desc: 'View and update your profile', href: '/profile', color: 'bg-violet-50 text-violet-600' },
+                { label: 'Browse Organizations', desc: 'Find and join organizations', href: '/orgs', color: 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400' },
+                { label: 'Create Organization', desc: 'Start a new organization', href: '/orgs/create', color: 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400' },
+                { label: 'My Profile', desc: 'View and update your profile', href: '/profile', color: 'bg-violet-50 dark:bg-violet-950/50 text-violet-600 dark:text-violet-400' },
               ].map((a) => (
                 <Link
                   key={a.href}
                   to={a.href}
-                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-all duration-150 group"
+                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-150 group"
                 >
                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${a.color}`}>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -94,7 +94,7 @@ const Dashboard = () => {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-[13px] font-semibold text-slate-800 group-hover:text-slate-900">{a.label}</p>
+                    <p className="text-[13px] font-semibold text-slate-800 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white">{a.label}</p>
                     <p className="text-xs text-slate-400">{a.desc}</p>
                   </div>
                 </Link>
@@ -105,8 +105,8 @@ const Dashboard = () => {
 
         {/* Account info */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <h2 className="text-sm font-semibold text-slate-700 mb-4">Account Information</h2>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-6">
+            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">Account Information</h2>
             <div className="space-y-3">
               {[
                 { label: 'Name', value: user?.name ?? '—' },
@@ -114,9 +114,9 @@ const Dashboard = () => {
                 { label: 'Role', value: role },
                 { label: 'Organization', value: user?.organization?.name ?? 'Not joined yet' },
               ].map((row) => (
-                <div key={row.label} className="flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0">
+                <div key={row.label} className="flex items-center justify-between py-2.5 border-b border-gray-50 dark:border-gray-800 last:border-0">
                   <span className="text-xs text-slate-400 uppercase tracking-wide font-medium">{row.label}</span>
-                  <span className="text-sm text-slate-800 font-medium">{row.value}</span>
+                  <span className="text-sm text-slate-800 dark:text-slate-200 font-medium">{row.value}</span>
                 </div>
               ))}
             </div>

@@ -10,8 +10,7 @@ const features = [
     ),
     gradient: 'from-blue-500 to-blue-600',
     title: 'Food Organization Management',
-    description:
-      'Create and manage food producers, nutrition laboratories, universities, and food safety authorities. Control access levels and manage team members from one workspace.',
+    description: 'Create and manage food producers, nutrition laboratories, universities, and food safety authorities. Control access levels and manage team members from one workspace.',
   },
   {
     icon: (
@@ -20,9 +19,8 @@ const features = [
       </svg>
     ),
     gradient: 'from-emerald-500 to-green-600',
-    title: 'Nutrition &amp; Food Documentation',
-    description:
-      'Upload and organize laboratory test reports, food certifications, safety audits, and nutrition research files in a structured, searchable document system.',
+    title: 'Nutrition & Food Documentation',
+    description: 'Upload and organize laboratory test reports, food certifications, safety audits, and nutrition research files in a structured, searchable document system.',
   },
   {
     icon: (
@@ -32,8 +30,7 @@ const features = [
     ),
     gradient: 'from-violet-500 to-purple-600',
     title: 'Laboratory Collaboration',
-    description:
-      'Nutrition laboratories can share test results and analysis reports directly with food producers and regulatory bodies within the same network.',
+    description: 'Nutrition laboratories can share test results and analysis reports directly with food producers and regulatory bodies within the same network.',
   },
   {
     icon: (
@@ -43,8 +40,7 @@ const features = [
     ),
     gradient: 'from-orange-400 to-amber-500',
     title: 'Food Certification & Compliance',
-    description:
-      'Coordinate food certification processes, manage compliance documentation, and maintain structured records across food companies, labs, and regulators.',
+    description: 'Coordinate food certification processes, manage compliance documentation, and maintain structured records across food companies, labs, and regulators.',
   },
   {
     icon: (
@@ -54,8 +50,7 @@ const features = [
     ),
     gradient: 'from-teal-500 to-cyan-600',
     title: 'Research & Institutional Collaboration',
-    description:
-      'Connect universities and research institutions with food producers and labs to coordinate nutrition studies, share data, and publish findings within a managed network.',
+    description: 'Connect universities and research institutions with food producers and labs to coordinate nutrition studies, share data, and publish findings within a managed network.',
   },
 ];
 
@@ -70,13 +65,13 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
       animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
       transition={{ duration: 0.5, delay: index * 0.1 }}
       whileHover={{ y: -6, transition: { duration: 0.2 } }}
-      className="group bg-white rounded-2xl border border-gray-100 p-6 shadow-sm hover:shadow-xl transition-shadow"
+      className="group bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm dark:shadow-black/20 hover:shadow-xl dark:hover:shadow-black/40 transition-all"
     >
       <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white mb-5 shadow-sm bg-gradient-to-br ${feature.gradient}`}>
         {feature.icon}
       </div>
-      <h3 className="font-bold text-gray-900 mb-2">{feature.title}</h3>
-      <p className="text-gray-500 text-sm leading-relaxed">{feature.description}</p>
+      <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-2">{feature.title}</h3>
+      <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{feature.description}</p>
     </motion.div>
   );
 }
@@ -86,7 +81,7 @@ export function Features() {
   const inView = useInView(ref, { once: true, margin: '-80px' });
 
   return (
-    <section id="features" className="py-24 bg-white">
+    <section id="features" className="py-24 bg-white dark:bg-gray-950" aria-label="Platform Features">
       <div className="max-w-6xl mx-auto px-6">
         <motion.div
           ref={ref}
@@ -95,13 +90,13 @@ export function Features() {
           transition={{ duration: 0.6 }}
           className="max-w-2xl mx-auto text-center mb-14"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-xs font-semibold mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 text-blue-700 dark:text-blue-400 text-xs font-semibold mb-4">
             Platform Features
           </div>
-          <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
+          <h2 className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-4">
             What You Can Do With MarcasNet
           </h2>
-          <p className="text-gray-500 text-lg">
+          <p className="text-gray-600 dark:text-gray-300 text-lg">
             Built for the food and nutrition industry — manage organizations, certifications, lab reports, and cross-institutional partnerships in one place.
           </p>
         </motion.div>

@@ -145,7 +145,7 @@ export function DashboardLayout() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="min-h-screen bg-slate-50 dark:bg-gray-950 flex">
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex flex-col w-56 bg-slate-900 min-h-screen fixed left-0 top-0 z-40">
         <SidebarContent />
@@ -180,7 +180,7 @@ export function DashboardLayout() {
       {/* Main */}
       <div className="flex-1 lg:ml-56 flex flex-col min-h-screen">
         {/* Topbar */}
-        <header className="sticky top-0 z-30 h-14 bg-white/80 backdrop-blur border-b border-gray-100 flex items-center px-5 gap-4">
+        <header className="sticky top-0 z-30 h-14 bg-white/80 dark:bg-gray-900/80 backdrop-blur border-b border-gray-100 dark:border-gray-800 flex items-center px-5 gap-4">
           <button
             className="lg:hidden text-gray-400 hover:text-gray-700 transition-colors"
             onClick={() => setSidebarOpen(true)}
@@ -195,7 +195,7 @@ export function DashboardLayout() {
           <div className="flex items-center gap-3">
             <Avatar name={user?.name ?? user?.email} size="sm" />
             <div className="hidden sm:block text-sm leading-tight">
-              <p className="font-semibold text-gray-900 text-[13px]">{user?.name ?? 'User'}</p>
+              <p className="font-semibold text-gray-900 dark:text-white text-[13px]">{user?.name ?? 'User'}</p>
               <p className="text-gray-400 text-xs">{user?.email}</p>
             </div>
           </div>

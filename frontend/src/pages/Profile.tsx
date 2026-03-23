@@ -45,8 +45,8 @@ export default function Profile() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">My Profile</h1>
-        <p className="text-slate-500 text-sm mt-1">Manage your account information</p>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">My Profile</h1>
+        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Manage your account information</p>
       </div>
 
       {/* Profile card */}
@@ -55,10 +55,10 @@ export default function Profile() {
           <Avatar name={display?.name ?? display?.email} size="xl" />
           <div className="flex-1">
             <div className="flex flex-wrap items-center gap-2 mb-1">
-              <h2 className="text-xl font-bold text-slate-900">{display?.name ?? 'No name set'}</h2>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">{display?.name ?? 'No name set'}</h2>
               <Badge variant={roleVariant[role] ?? 'blue'}>{role}</Badge>
             </div>
-            <p className="text-slate-500 text-sm">{display?.email}</p>
+            <p className="text-slate-500 dark:text-slate-400 text-sm">{display?.email}</p>
             {profile?.organization && (
               <p className="text-sm text-blue-600 mt-1 font-medium">{profile.organization.name}</p>
             )}
@@ -77,9 +77,9 @@ export default function Profile() {
               { label: 'Role', value: role },
               { label: 'Member since', value: joinDate },
             ].map((row) => (
-              <div key={row.label} className="flex justify-between text-sm py-1.5 border-b border-gray-50 last:border-0">
+              <div key={row.label} className="flex justify-between text-sm py-1.5 border-b border-gray-50 dark:border-gray-800 last:border-0">
                 <span className="text-slate-400">{row.label}</span>
-                <span className="text-slate-800 font-medium text-right max-w-[60%] truncate">{row.value}</span>
+                <span className="text-slate-800 dark:text-slate-200 font-medium text-right max-w-[60%] truncate">{row.value}</span>
               </div>
             ))}
           </div>
@@ -93,9 +93,9 @@ export default function Profile() {
                 { label: 'Name', value: profile.organization.name },
                 { label: 'Type', value: profile.organization.type.charAt(0) + profile.organization.type.slice(1).toLowerCase() },
               ].map((row) => (
-                <div key={row.label} className="flex justify-between text-sm py-1.5 border-b border-gray-50 last:border-0">
+                <div key={row.label} className="flex justify-between text-sm py-1.5 border-b border-gray-50 dark:border-gray-800 last:border-0">
                   <span className="text-slate-400">{row.label}</span>
-                  <span className="text-slate-800 font-medium">{row.value}</span>
+                  <span className="text-slate-800 dark:text-slate-200 font-medium">{row.value}</span>
                 </div>
               ))}
             </div>
@@ -115,7 +115,7 @@ export default function Profile() {
         <p className="text-xs text-slate-400 uppercase tracking-wide font-medium mb-4">Session</p>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-slate-800">Sign out</p>
+            <p className="text-sm font-medium text-slate-800 dark:text-slate-200">Sign out</p>
             <p className="text-xs text-slate-400">End your current session</p>
           </div>
           <Button variant="danger" size="sm" onClick={logout}>Sign out</Button>
