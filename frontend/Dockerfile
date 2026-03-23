@@ -11,6 +11,7 @@ RUN npm run build
 # Serve stage
 FROM node:22-alpine
 WORKDIR /app
-RUN npm install -g serve@14
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/package.json ./
 COPY --from=build /app/dist ./dist
-CMD ["sh", "-c", "serve -s dist -l ${PORT:-3000}"]
+CMD ["npm", "start"]
