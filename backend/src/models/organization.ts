@@ -49,3 +49,11 @@ export const joinOrganization = async (userId: string, orgId: string) => {
     data: { organizationId: orgId },
   });
 };
+
+export const findOrgMembers = async (orgId: string) => {
+  return await prisma.user.findMany({
+    where: { organizationId: orgId },
+    select: { id: true, name: true, email: true, role: true, createdAt: true },
+    orderBy: { createdAt: 'asc' },
+  });
+};

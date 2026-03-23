@@ -188,6 +188,14 @@ export default function OrganizationDetail() {
             ) : (
               <p className="text-sm text-slate-400">No members yet</p>
             )}
+            {isMember && (
+              <Link
+                to={`/orgs/${id}/members`}
+                className="mt-3 inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors"
+              >
+                View all members &amp; invite →
+              </Link>
+            )}
           </Card>
         </div>
       )}

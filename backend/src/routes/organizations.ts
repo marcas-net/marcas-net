@@ -2,6 +2,8 @@ import express from 'express';
 import {
   getOrganizations,
   getOrganization,
+  getOrgMembers,
+  inviteMember,
   createOrg,
   updateOrg,
   joinOrg,
@@ -16,9 +18,13 @@ const router = express.Router();
 router.get('/', getOrganizations);
 router.get('/:id', getOrganization);
 
-// Protected — create, update, join
+// Members — protected, must be a member
+router.get('/:id/members', authenticateToken, getOrgMembers);
+
+// Protected — create, update, join, invite
 router.post('/', authenticateToken, validate(createOrgSchema), createOrg);
 router.put('/:id', authenticateToken, validate(updateOrgSchema), updateOrg);
 router.post('/:id/join', authenticateToken, joinOrg);
+router.post('/:id/invite', authenticateToken, inviteMember);
 
 export default router;

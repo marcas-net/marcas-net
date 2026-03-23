@@ -10,6 +10,7 @@ import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import orgRoutes from './routes/organizations';
 import docRoutes from './routes/documents';
+import activityRoutes from './routes/activity';
 import prisma from './config/database';
 
 dotenv.config();
@@ -19,7 +20,9 @@ const PORT = process.env.PORT || 5000;
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, '../uploads');
+const documentsDir = path.join(__dirname, '../uploads/documents');
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+if (!fs.existsSync(documentsDir)) fs.mkdirSync(documentsDir, { recursive: true });
 
 // Middleware
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
@@ -36,6 +39,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orgs', orgRoutes);
 app.use('/api/docs', docRoutes);
+app.use('/api/activity', activityRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

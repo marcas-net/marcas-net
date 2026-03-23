@@ -8,6 +8,7 @@ import Organizations from './pages/Organizations';
 import CreateOrganization from './pages/CreateOrganization';
 import OrganizationDetail from './pages/OrganizationDetail';
 import OrganizationDocuments from './pages/OrganizationDocuments';
+import OrgMembers from './pages/OrgMembers';
 import Profile from './pages/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
 import { DashboardLayout } from './layouts/DashboardLayout';
@@ -43,6 +44,7 @@ function App() {
           <Route path="/orgs/create" element={<CreateOrganization />} />
           <Route path="/orgs/:id" element={<OrganizationDetail />} />
           <Route path="/orgs/:id/documents" element={<OrganizationDocuments />} />
+          <Route path="/orgs/:id/members" element={<OrgMembers />} />
           <Route path="/profile" element={<Profile />} />
         </Route>
 

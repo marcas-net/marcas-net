@@ -11,6 +11,14 @@ export interface Organization {
   createdAt: string;
 }
 
+export interface OrgMember {
+  id: string;
+  name: string | null;
+  email: string;
+  role: string;
+  createdAt: string;
+}
+
 export const getOrganizations = async (): Promise<Organization[]> => {
   const res = await api.get('/orgs');
   return res.data.organizations;
@@ -19,6 +27,11 @@ export const getOrganizations = async (): Promise<Organization[]> => {
 export const getOrganization = async (id: string): Promise<Organization> => {
   const res = await api.get(`/orgs/${id}`);
   return res.data.organization;
+};
+
+export const getOrgMembers = async (id: string): Promise<OrgMember[]> => {
+  const res = await api.get(`/orgs/${id}/members`);
+  return res.data.members;
 };
 
 export const createOrganization = async (data: {
@@ -33,4 +46,13 @@ export const createOrganization = async (data: {
 
 export const joinOrganization = async (id: string): Promise<void> => {
   await api.post(`/orgs/${id}/join`);
+};
+
+export const inviteMember = async (
+  orgId: string,
+  email: string,
+  role?: string
+): Promise<{ message: string; type: 'added' | 'invited' }> => {
+  const res = await api.post(`/orgs/${orgId}/invite`, { email, role });
+  return res.data;
 };

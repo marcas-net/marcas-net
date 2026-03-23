@@ -25,6 +25,11 @@ enum OrgType {
   PROFESSIONAL
 }
 
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+}
+
 model User {
   id             String        @id @default(cuid())
   email          String        @unique
@@ -34,6 +39,7 @@ model User {
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
   documents      Document[]
+  activityLogs   ActivityLog[]
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
@@ -41,15 +47,16 @@ model User {
 }
 
 model Organization {
-  id          String     @id @default(cuid())
+  id          String       @id @default(cuid())
   name        String
   type        OrgType
   country     String?
   description String?
   members     User[]
   documents   Document[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  invitations Invitation[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   @@map("organizations")
 }
@@ -59,6 +66,8 @@ model Document {
   title          String
   description    String?
   fileUrl        String
+  fileSize       Int?
+  fileType       String?
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
   uploadedById   String
@@ -67,4 +76,30 @@ model Document {
   updatedAt      DateTime     @updatedAt
 
   @@map("documents")
+}
+
+model Invitation {
+  id             String           @id @default(cuid())
+  email          String
+  organizationId String
+  organization   Organization     @relation(fields: [organizationId], references: [id])
+  role           Role             @default(USER)
+  status         InvitationStatus @default(PENDING)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@unique([email, organizationId])
+  @@map("invitations")
+}
+
+model ActivityLog {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  action     String
+  entityType String
+  entityId   String
+  createdAt  DateTime @default(now())
+
+  @@map("activity_logs")
 }

@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { Badge } from '../components/ui/Badge';
 import { StatCard } from '../components/ui/Card';
 import { roleVariant } from '../styles/design-system';
+import { ActivityFeed } from '../components/ActivityFeed';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -138,6 +139,9 @@ const Dashboard = () => {
           </Link>
         </div>
       )}
+
+      {/* Activity Feed */}
+      <ActivityFeed />
     </div>
   );
 };
