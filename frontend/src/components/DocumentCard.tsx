@@ -54,7 +54,12 @@ export function DocumentCard({ document: doc, onDelete, canDelete }: Props) {
       {/* Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-semibold text-gray-900 dark:text-white text-sm truncate">{doc.title}</h3>
+          <div className="flex items-center gap-2 min-w-0">
+            <h3 className="font-semibold text-gray-900 dark:text-white text-sm truncate">{doc.title}</h3>
+            {doc.version > 1 && (
+              <Badge variant="blue" className="text-[10px] flex-shrink-0">v{doc.version}</Badge>
+            )}
+          </div>
           {doc.fileType && (
             <Badge variant="gray" className="text-xs uppercase flex-shrink-0">
               {doc.fileType}

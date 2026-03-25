@@ -10,6 +10,7 @@ import OrganizationDetail from './pages/OrganizationDetail';
 import OrganizationDocuments from './pages/OrganizationDocuments';
 import OrgMembers from './pages/OrgMembers';
 import Profile from './pages/Profile';
+import AcceptInvitation from './pages/AcceptInvitation';
 import ProtectedRoute from './components/ProtectedRoute';
 import { DashboardLayout } from './layouts/DashboardLayout';
 
@@ -30,6 +31,7 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/accept-invitation/:token" element={<AcceptInvitation />} />
 
         {/* Dashboard layout wraps all protected routes */}
         <Route

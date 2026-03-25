@@ -7,9 +7,11 @@ import {
   findDocuments,
   findDocumentsByOrg,
   findDocumentById,
+  findDocumentVersions,
   deleteDocumentById,
 } from '../models/document';
 import { logActivity } from '../models/activityLog';
+import { generateSignedUrl, verifySignedUrl } from '../utils/signedUrl';
 
 export const getOrgDocuments = async (req: Request, res: Response) => {
   try {
@@ -54,6 +56,11 @@ export const downloadDocument = async (req: AuthRequest, res: Response) => {
     const doc = await findDocumentById(req.params['id'] as string);
     if (!doc) return res.status(404).json({ error: 'Document not found' });
 
+    // Security: check org membership
+    if (req.user.role !== 'ADMIN' && req.user.organizationId !== doc.organizationId) {
+      return res.status(403).json({ error: 'You must be a member of this organization to download' });
+    }
+
     const filePath = path.join(__dirname, '../..', doc.fileUrl);
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: 'File not found on disk' });
@@ -68,9 +75,60 @@ export const downloadDocument = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const getSignedDownloadUrl = async (req: AuthRequest, res: Response) => {
+  try {
+    const doc = await findDocumentById(req.params['id'] as string);
+    if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+    // Security: check org membership
+    if (req.user.role !== 'ADMIN' && req.user.organizationId !== doc.organizationId) {
+      return res.status(403).json({ error: 'You must be a member of this organization' });
+    }
+
+    const signedPath = generateSignedUrl(doc.id);
+    const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+    const url = `${backendUrl}/api/docs/signed-download/${signedPath}`;
+
+    res.json({ url, expiresIn: '30 minutes' });
+  } catch (error) {
+    console.error('Get signed URL error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const downloadWithSignedUrl = async (req: Request, res: Response) => {
+  try {
+    const docId = req.params['id'] as string;
+    const { expires, signature } = req.query;
+
+    if (!expires || !signature) {
+      return res.status(400).json({ error: 'Missing signature parameters' });
+    }
+
+    if (!verifySignedUrl(docId, expires as string, signature as string)) {
+      return res.status(403).json({ error: 'Invalid or expired download link' });
+    }
+
+    const doc = await findDocumentById(docId);
+    if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+    const filePath = path.join(__dirname, '../..', doc.fileUrl);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'File not found on disk' });
+    }
+
+    const filename = path.basename(filePath);
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.sendFile(filePath);
+  } catch (error) {
+    console.error('Signed download error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 export const uploadDocument = async (req: AuthRequest, res: Response) => {
   try {
-    const { title, description, organizationId } = req.body;
+    const { title, description, organizationId, parentDocumentId } = req.body;
     const file = req.file;
 
     if (!file) return res.status(400).json({ error: 'File is required' });
@@ -80,6 +138,15 @@ export const uploadDocument = async (req: AuthRequest, res: Response) => {
     const fileUrl = `/uploads/documents/${file.filename}`;
     const fileType = path.extname(file.originalname).replace('.', '').toLowerCase();
 
+    let version = 1;
+    if (parentDocumentId) {
+      const parent = await findDocumentById(parentDocumentId);
+      if (!parent) return res.status(404).json({ error: 'Parent document not found' });
+      // Find the highest version number
+      const versions = await findDocumentVersions(parentDocumentId);
+      version = Math.max(...versions.map((v: any) => v.version)) + 1;
+    }
+
     const doc = await createDocument({
       title,
       description,
@@ -88,11 +155,13 @@ export const uploadDocument = async (req: AuthRequest, res: Response) => {
       fileType,
       organizationId,
       uploadedById: req.user.id,
+      version,
+      parentDocumentId: parentDocumentId || undefined,
     });
 
     await logActivity({
       userId: req.user.id,
-      action: 'document_uploaded',
+      action: parentDocumentId ? 'document_new_version' : 'document_uploaded',
       entityType: 'document',
       entityId: doc.id,
     });
@@ -100,6 +169,23 @@ export const uploadDocument = async (req: AuthRequest, res: Response) => {
     res.status(201).json({ message: 'Document uploaded', document: doc });
   } catch (error) {
     console.error('Upload document error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const getDocumentVersions = async (req: Request, res: Response) => {
+  try {
+    const docId = req.params['id'] as string;
+    const doc = await findDocumentById(docId);
+    if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+    // Get versions from the root parent
+    const rootId = doc.parentDocumentId || doc.id;
+    const versions = await findDocumentVersions(rootId);
+
+    res.json({ versions });
+  } catch (error) {
+    console.error('Get document versions error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

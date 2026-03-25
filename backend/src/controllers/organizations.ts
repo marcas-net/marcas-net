@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import crypto from 'crypto';
 import { OrgType, Role } from '@prisma/client';
 import {
   createOrganization,
@@ -11,7 +12,10 @@ import {
 import { findUserByEmail } from '../models/user';
 import { createInvitation } from '../models/invitation';
 import { logActivity } from '../models/activityLog';
+import { createNotification } from '../models/notification';
+import { sendInvitationEmail } from '../utils/email';
 import { AuthRequest } from '../middleware/auth';
+import prisma from '../config/database';
 
 export const getOrganizations = async (_req: Request, res: Response) => {
   try {
@@ -68,17 +72,55 @@ export const inviteMember = async (req: AuthRequest, res: Response) => {
 
     const inviteRole = (role as Role) || Role.USER;
 
-    // Check if user already exists
+    // Check if user already exists and is already in this org
     const existingUser = await findUserByEmail(email);
-    if (existingUser) {
-      // If they exist, add them directly
-      await joinOrganization(existingUser.id, orgId);
-      return res.json({ message: 'User added to organization directly', type: 'added' });
+    if (existingUser && existingUser.organizationId === orgId) {
+      return res.status(400).json({ error: 'User is already a member of this organization' });
     }
 
-    // Otherwise create an invitation record
-    const invitation = await createInvitation({ email, organizationId: orgId, role: inviteRole });
-    res.status(201).json({ message: 'Invitation sent', invitation, type: 'invited' });
+    // Generate invitation token
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+    const invitation = await createInvitation({
+      email,
+      organizationId: orgId,
+      role: inviteRole,
+      token,
+      expiresAt,
+    });
+
+    // Send invitation email
+    const emailSent = await sendInvitationEmail(
+      email,
+      org.name,
+      token,
+      req.user.name || req.user.email
+    );
+
+    // Notify existing user if they have an account
+    if (existingUser) {
+      await createNotification({
+        userId: existingUser.id,
+        type: 'INVITATION',
+        title: 'New Invitation',
+        message: `You've been invited to join ${org.name}`,
+        link: `/accept-invitation/${token}`,
+      });
+    }
+
+    await logActivity({
+      userId: req.user.id,
+      action: 'member_invited',
+      entityType: 'organization',
+      entityId: orgId,
+    });
+
+    res.status(201).json({
+      message: emailSent ? 'Invitation sent via email' : 'Invitation created (email delivery failed)',
+      invitation: { id: invitation.id, email, role: inviteRole },
+      type: 'invited',
+    });
   } catch (error) {
     console.error('Invite member error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -129,6 +171,41 @@ export const joinOrg = async (req: AuthRequest, res: Response) => {
     res.json({ message: `Joined organization: ${org.name}` });
   } catch (error) {
     console.error('Join organization error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const getDashboardStats = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user.id;
+    const orgId = req.user.organizationId;
+
+    const [totalOrgs, userDocuments, orgMembers, recentActivity] = await Promise.all([
+      prisma.organization.count(),
+      prisma.document.count({ where: { uploadedById: userId } }),
+      orgId ? prisma.user.count({ where: { organizationId: orgId } }) : Promise.resolve(0),
+      prisma.activityLog.findMany({
+        where: { userId },
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+      }),
+    ]);
+
+    const orgDocuments = orgId
+      ? await prisma.document.count({ where: { organizationId: orgId } })
+      : 0;
+
+    res.json({
+      stats: {
+        totalOrgs,
+        userDocuments,
+        orgDocuments,
+        orgMembers,
+        recentActivityCount: recentActivity.length,
+      },
+    });
+  } catch (error) {
+    console.error('Get dashboard stats error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

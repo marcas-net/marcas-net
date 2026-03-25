@@ -13,6 +13,8 @@ export interface Document {
   fileUrl: string;
   fileSize?: number;
   fileType?: string;
+  version: number;
+  parentDocumentId?: string;
   organizationId: string;
   uploadedById: string;
   uploadedBy: DocumentUploader;
@@ -59,4 +61,14 @@ export const getDownloadUrl = (documentId: string): string => {
   // strip trailing /api if present to build origin URL
   const origin = base.endsWith('/api') ? base.slice(0, -4) : base;
   return `${origin}/api/docs/${documentId}/download`;
+};
+
+export const getDocumentVersions = async (id: string): Promise<Document[]> => {
+  const res = await api.get(`/docs/${id}/versions`);
+  return res.data.versions;
+};
+
+export const getSignedDownloadUrl = async (id: string): Promise<string> => {
+  const res = await api.get(`/docs/${id}/signed-url`);
+  return res.data.url;
 };

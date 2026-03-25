@@ -28,20 +28,29 @@ enum OrgType {
 enum InvitationStatus {
   PENDING
   ACCEPTED
+  EXPIRED
+}
+
+enum NotificationType {
+  INVITATION
+  DOCUMENT
+  ORGANIZATION
+  SYSTEM
 }
 
 model User {
-  id             String        @id @default(cuid())
-  email          String        @unique
+  id             String         @id @default(cuid())
+  email          String         @unique
   password       String
   name           String?
-  role           Role          @default(USER)
+  role           Role           @default(USER)
   organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organization   Organization?  @relation(fields: [organizationId], references: [id])
   documents      Document[]
   activityLogs   ActivityLog[]
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  notifications  Notification[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 
   @@map("users")
 }
@@ -62,18 +71,22 @@ model Organization {
 }
 
 model Document {
-  id             String       @id @default(cuid())
-  title          String
-  description    String?
-  fileUrl        String
-  fileSize       Int?
-  fileType       String?
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
-  uploadedById   String
-  uploadedBy     User         @relation(fields: [uploadedById], references: [id])
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  id               String       @id @default(cuid())
+  title            String
+  description      String?
+  fileUrl          String
+  fileSize         Int?
+  fileType         String?
+  version          Int          @default(1)
+  parentDocumentId String?
+  parentDocument   Document?    @relation("DocumentVersions", fields: [parentDocumentId], references: [id])
+  versions         Document[]   @relation("DocumentVersions")
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  uploadedById     String
+  uploadedBy       User         @relation(fields: [uploadedById], references: [id])
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
 
   @@map("documents")
 }
@@ -85,6 +98,8 @@ model Invitation {
   organization   Organization     @relation(fields: [organizationId], references: [id])
   role           Role             @default(USER)
   status         InvitationStatus @default(PENDING)
+  token          String           @unique @default(cuid())
+  expiresAt      DateTime
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
 
@@ -102,4 +117,18 @@ model ActivityLog {
   createdAt  DateTime @default(now())
 
   @@map("activity_logs")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id])
+  type      NotificationType @default(SYSTEM)
+  title     String
+  message   String
+  link      String?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@map("notifications")
 }

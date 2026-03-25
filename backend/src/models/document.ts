@@ -12,6 +12,8 @@ export const createDocument = async (data: {
   fileType?: string;
   organizationId: string;
   uploadedById: string;
+  version?: number;
+  parentDocumentId?: string;
 }) => {
   return await prisma.document.create({
     data,
@@ -60,6 +62,19 @@ export const findDocumentById = async (id: string) => {
       uploadedBy: uploadedBySelect,
       organization: { select: { id: true, name: true } },
     },
+  });
+};
+
+export const findDocumentVersions = async (parentDocumentId: string) => {
+  return await prisma.document.findMany({
+    where: {
+      OR: [
+        { id: parentDocumentId },
+        { parentDocumentId },
+      ],
+    },
+    include: { uploadedBy: uploadedBySelect },
+    orderBy: { version: 'desc' },
   });
 };
 

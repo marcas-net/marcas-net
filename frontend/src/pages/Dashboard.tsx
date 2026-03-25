@@ -1,13 +1,20 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Badge } from '../components/ui/Badge';
 import { StatCard } from '../components/ui/Card';
 import { roleVariant } from '../styles/design-system';
 import { ActivityFeed } from '../components/ActivityFeed';
+import { getDashboardStats } from '../services/invitationService';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const role = user?.role ?? 'USER';
+  const [stats, setStats] = useState<{ totalOrgs: number; userDocuments: number; orgDocuments: number; orgMembers: number } | null>(null);
+
+  useEffect(() => {
+    getDashboardStats().then(setStats).catch(() => {});
+  }, []);
 
   return (
     <div className="space-y-8">
@@ -31,7 +38,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard
           label="Organizations"
-          value={user?.organization ? 1 : 0}
+          value={stats?.totalOrgs ?? '—'}
           color="blue"
           icon={
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -40,8 +47,8 @@ const Dashboard = () => {
           }
         />
         <StatCard
-          label="Documents"
-          value="—"
+          label="My Documents"
+          value={stats?.userDocuments ?? '—'}
           color="green"
           icon={
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -50,8 +57,8 @@ const Dashboard = () => {
           }
         />
         <StatCard
-          label="Members"
-          value="—"
+          label="Org Members"
+          value={stats?.orgMembers ?? '—'}
           color="purple"
           icon={
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -60,12 +67,12 @@ const Dashboard = () => {
           }
         />
         <StatCard
-          label="Account Status"
-          value="Active"
+          label="Org Documents"
+          value={stats?.orgDocuments ?? '—'}
           color="orange"
           icon={
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
           }
         />
@@ -81,6 +88,9 @@ const Dashboard = () => {
               {[
                 { label: 'Browse Organizations', desc: 'Find and join organizations', href: '/orgs', color: 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400' },
                 { label: 'Create Organization', desc: 'Start a new organization', href: '/orgs/create', color: 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400' },
+                ...(user?.organization
+                  ? [{ label: 'Org Documents', desc: `View ${user.organization.name} files`, href: `/orgs/${user.organizationId}/documents`, color: 'bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400' }]
+                  : []),
                 { label: 'My Profile', desc: 'View and update your profile', href: '/profile', color: 'bg-violet-50 dark:bg-violet-950/50 text-violet-600 dark:text-violet-400' },
               ].map((a) => (
                 <Link

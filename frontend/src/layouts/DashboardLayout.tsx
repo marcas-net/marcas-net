@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Avatar } from '../components/ui/Avatar';
+import { NotificationBell } from '../components/NotificationBell';
 
 interface NavItem {
   label: string;
@@ -193,6 +194,7 @@ export function DashboardLayout() {
           <div className="flex-1" />
 
           <div className="flex items-center gap-3">
+            <NotificationBell />
             <Avatar name={user?.name ?? user?.email} size="sm" />
             <div className="hidden sm:block text-sm leading-tight">
               <p className="font-semibold text-gray-900 dark:text-white text-[13px]">{user?.name ?? 'User'}</p>
