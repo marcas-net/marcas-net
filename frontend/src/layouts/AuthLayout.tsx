@@ -41,7 +41,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
       <div className="hidden lg:flex lg:w-[52%] flex-col justify-between p-14 bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-950 relative overflow-hidden">
         {/* Logo */}
         <Link to="/login">
-          <img src="/logo-wide.jpeg" alt="MARCAS" className="h-11 object-contain object-left" />
+          <img src="/macas.jpeg" alt="MARCAS" className="h-14 object-contain object-left rounded-xl" />
         </Link>
 
         {/* Hero copy */}
@@ -95,7 +95,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
       <div className="flex-1 flex flex-col justify-center items-center px-6 py-12 lg:px-16">
         {/* Mobile logo */}
         <div className="lg:hidden mb-8">
-          <img src="/logo-wide.jpeg" alt="MARCAS" className="h-10 object-contain" />
+          <img src="/macas.jpeg" alt="MARCAS" className="h-12 object-contain rounded-xl" />
         </div>
 
         <div className="w-full max-w-md">
