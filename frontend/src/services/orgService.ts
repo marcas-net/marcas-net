@@ -56,3 +56,19 @@ export const inviteMember = async (
   const res = await api.post(`/orgs/${orgId}/invite`, { email, role });
   return res.data;
 };
+
+export const updateOrganization = async (
+  id: string,
+  data: { name?: string; type?: string; country?: string; description?: string }
+): Promise<Organization> => {
+  const res = await api.put(`/orgs/${id}`, data);
+  return res.data.organization;
+};
+
+export const deleteOrganization = async (id: string): Promise<void> => {
+  await api.delete(`/orgs/${id}`);
+};
+
+export const removeMember = async (orgId: string, memberId: string): Promise<void> => {
+  await api.delete(`/orgs/${orgId}/members/${memberId}`);
+};

@@ -12,6 +12,7 @@ import {
 } from '../models/document';
 import { logActivity } from '../models/activityLog';
 import { generateSignedUrl, verifySignedUrl } from '../utils/signedUrl';
+import { emitToAll } from '../utils/socket';
 
 export const getOrgDocuments = async (req: Request, res: Response) => {
   try {
@@ -165,6 +166,8 @@ export const uploadDocument = async (req: AuthRequest, res: Response) => {
       entityType: 'document',
       entityId: doc.id,
     });
+
+    emitToAll('document:uploaded', { document: doc });
 
     res.status(201).json({ message: 'Document uploaded', document: doc });
   } catch (error) {

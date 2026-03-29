@@ -127,6 +127,11 @@ export default function OrganizationDetail() {
               Join Organization
             </Button>
           )}
+          {canManage && (
+            <Link to={`/orgs/${id}/settings`}>
+              <Button size="md" variant="outline">Settings</Button>
+            </Link>
+          )}
         </div>
         {org.description && (
           <p className="text-sm text-slate-600 dark:text-slate-400 mt-4 leading-relaxed">{org.description}</p>

@@ -5,6 +5,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 30000,
 });
 
 // Attach JWT token to every request if present
@@ -16,13 +17,22 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle 401 globally
+// Handle errors globally
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      localStorage.removeItem('user');
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+    }
+    // Enhance error message
+    if (error.response?.data?.error) {
+      error.message = error.response.data.error;
+    } else if (!error.response) {
+      error.message = 'Network error. Please check your connection.';
     }
     return Promise.reject(error);
   }

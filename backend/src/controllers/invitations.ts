@@ -4,6 +4,7 @@ import { AuthRequest } from '../middleware/auth';
 import { joinOrganization } from '../models/organization';
 import { createNotification } from '../models/notification';
 import { logActivity } from '../models/activityLog';
+import { emitToAll, emitToUser } from '../utils/socket';
 
 export const getInvitationByToken = async (req: Request, res: Response) => {
   try {
@@ -91,13 +92,16 @@ export const acceptInvitation = async (req: AuthRequest, res: Response) => {
     });
 
     // Create notification
-    await createNotification({
+    const notification = await createNotification({
       userId: req.user.id,
       type: 'ORGANIZATION',
       title: 'Welcome!',
       message: `You've joined ${invitation.organization.name}`,
       link: `/orgs/${invitation.organizationId}`,
     });
+
+    emitToUser(req.user.id, 'notification', notification);
+    emitToAll('organization:memberJoined', { organizationId: invitation.organizationId, userId: req.user.id });
 
     // Log activity
     await logActivity({

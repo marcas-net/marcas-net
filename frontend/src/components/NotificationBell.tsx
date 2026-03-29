@@ -6,12 +6,14 @@ import {
   markAllNotificationsRead,
 } from '../services/notificationService';
 import type { Notification } from '../services/notificationService';
+import { useSocket } from '../context/SocketContext';
 
 export function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const { socket } = useSocket();
 
   const fetchNotifications = async () => {
     try {
@@ -28,6 +30,14 @@ export function NotificationBell() {
     const interval = setInterval(fetchNotifications, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  // Real-time: listen for notifications via socket
+  useEffect(() => {
+    if (!socket) return;
+    const handler = () => { fetchNotifications(); };
+    socket.on('notification', handler);
+    return () => { socket.off('notification', handler); };
+  }, [socket]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {

@@ -8,11 +8,13 @@ import {
   updateOrg,
   joinOrg,
   getDashboardStats,
+  deleteOrg,
+  removeMember,
 } from '../controllers/organizations';
 import { authenticateToken } from '../middleware/auth';
 import { validate } from '../middleware/validate';
 import { createOrgSchema, updateOrgSchema } from '../schemas/organization';
-import { requireOrgRole } from '../middleware/permissions';
+import { requireOrgRole, requireRole } from '../middleware/permissions';
 
 const router = express.Router();
 
@@ -159,5 +161,8 @@ router.post('/:id/join', authenticateToken, joinOrg);
  *       403: { description: Insufficient permissions }
  */
 router.post('/:id/invite', authenticateToken, requireOrgRole('ORG_ADMIN'), inviteMember);
+
+router.delete('/:id', authenticateToken, requireOrgRole('ORG_ADMIN'), deleteOrg);
+router.delete('/:id/members/:memberId', authenticateToken, requireOrgRole('ORG_ADMIN'), removeMember);
 
 export default router;

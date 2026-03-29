@@ -1,4 +1,5 @@
 import express from 'express';
+import { createServer } from 'http';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -8,6 +9,11 @@ import fs from 'fs';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 
+dotenv.config();
+
+import { validateEnv } from './config/env';
+import { initSocketServer } from './utils/socket';
+import logger from './utils/logger';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import orgRoutes from './routes/organizations';
@@ -15,12 +21,18 @@ import docRoutes from './routes/documents';
 import activityRoutes from './routes/activity';
 import notificationRoutes from './routes/notifications';
 import invitationRoutes from './routes/invitations';
+import adminRoutes from './routes/admin';
+import searchRoutes from './routes/search';
 import prisma from './config/database';
 
-dotenv.config();
+validateEnv();
 
 const app = express();
+const httpServer = createServer(app);
 const PORT = process.env.PORT || 5000;
+
+// Initialize Socket.IO
+initSocketServer(httpServer);
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, '../uploads');
@@ -44,8 +56,8 @@ const swaggerSpec = swaggerJsdoc({
     openapi: '3.0.0',
     info: {
       title: 'MarcasNet API',
-      version: '1.0.0',
-      description: 'API documentation for the MarcasNet trademark management platform',
+      version: '2.0.0',
+      description: 'API documentation for the MarcasNet food & nutrition collaboration platform',
     },
     servers: [
       { url: process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`, description: 'API Server' },
@@ -72,28 +84,50 @@ app.use('/api/docs', docRoutes);
 app.use('/api/activity', activityRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/invitations', invitationRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/search', searchRoutes);
 
 // Health check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'MARCAS Backend is running' });
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'OK', message: 'MarcasNet API is running', timestamp: new Date().toISOString() });
 });
 
-app.get('/', (req, res) => {
-  res.json({ status: 'OK', name: 'MARCAS API', version: '1.0.0' });
+app.get('/', (_req, res) => {
+  res.json({ status: 'OK', name: 'MarcasNet API', version: '2.0.0' });
 });
 
-// Error handling middleware
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
+// Centralized error handler
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  logger.error('Unhandled error', { message: err.message, stack: err.stack });
+
+  if (err.name === 'MulterError') {
+    return res.status(400).json({ error: err.message });
+  }
+  if (err.name === 'UnauthorizedError' || err.status === 401) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  res.status(err.status || 500).json({
+    error: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message,
+  });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+httpServer.listen(PORT, () => {
+  logger.info(`MarcasNet server running on port ${PORT}`);
 });
 
 // Graceful shutdown
 process.on('SIGINT', async () => {
+  logger.info('Shutting down...');
   await prisma.$disconnect();
   process.exit(0);
+});
+
+process.on('unhandledRejection', (reason) => {
+  logger.error('Unhandled rejection', { reason });
+});
+
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught exception', { error });
+  process.exit(1);
 });

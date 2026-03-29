@@ -14,6 +14,7 @@ import { createInvitation } from '../models/invitation';
 import { logActivity } from '../models/activityLog';
 import { createNotification } from '../models/notification';
 import { sendInvitationEmail } from '../utils/email';
+import { emitToUser } from '../utils/socket';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../config/database';
 
@@ -100,13 +101,14 @@ export const inviteMember = async (req: AuthRequest, res: Response) => {
 
     // Notify existing user if they have an account
     if (existingUser) {
-      await createNotification({
+      const notification = await createNotification({
         userId: existingUser.id,
         type: 'INVITATION',
         title: 'New Invitation',
         message: `You've been invited to join ${org.name}`,
         link: `/accept-invitation/${token}`,
       });
+      emitToUser(existingUser.id, 'notification', notification);
     }
 
     await logActivity({
@@ -206,6 +208,66 @@ export const getDashboardStats = async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error('Get dashboard stats error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const deleteOrg = async (req: AuthRequest, res: Response) => {
+  try {
+    const orgId = req.params['id'] as string;
+    const org = await findOrganizationById(orgId);
+    if (!org) return res.status(404).json({ error: 'Organization not found' });
+
+    // Remove all members from the org first
+    await prisma.user.updateMany({
+      where: { organizationId: orgId },
+      data: { organizationId: null },
+    });
+
+    // Delete related records
+    await prisma.invitation.deleteMany({ where: { organizationId: orgId } });
+    await prisma.document.deleteMany({ where: { organizationId: orgId } });
+    await prisma.organization.delete({ where: { id: orgId } });
+
+    await logActivity({
+      userId: req.user.id,
+      action: 'organization_deleted',
+      entityType: 'organization',
+      entityId: orgId,
+    });
+
+    res.json({ message: 'Organization deleted' });
+  } catch (error) {
+    console.error('Delete organization error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const removeMember = async (req: AuthRequest, res: Response) => {
+  try {
+    const orgId = req.params['id'] as string;
+    const memberId = req.params['memberId'] as string;
+
+    const member = await prisma.user.findUnique({ where: { id: memberId } });
+    if (!member || member.organizationId !== orgId) {
+      return res.status(404).json({ error: 'Member not found in this organization' });
+    }
+
+    await prisma.user.update({
+      where: { id: memberId },
+      data: { organizationId: null, role: 'USER' },
+    });
+
+    await logActivity({
+      userId: req.user.id,
+      action: 'member_removed',
+      entityType: 'organization',
+      entityId: orgId,
+    });
+
+    res.json({ message: 'Member removed from organization' });
+  } catch (error) {
+    console.error('Remove member error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

@@ -24,3 +24,18 @@ export const findUserById = async (id: string) => {
     include: { organization: { select: { id: true, name: true, type: true } } },
   });
 };
+
+export const updateUser = async (id: string, data: { name?: string; email?: string }) => {
+  return await prisma.user.update({
+    where: { id },
+    data,
+    include: { organization: { select: { id: true, name: true, type: true } } },
+  });
+};
+
+export const updateUserPassword = async (id: string, hashedPassword: string) => {
+  return await prisma.user.update({
+    where: { id },
+    data: { password: hashedPassword },
+  });
+};

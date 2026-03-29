@@ -114,6 +114,9 @@ model ActivityLog {
   action     String
   entityType String
   entityId   String
+  ipAddress  String?
+  userAgent  String?
+  metadata   String?
   createdAt  DateTime @default(now())
 
   @@map("activity_logs")

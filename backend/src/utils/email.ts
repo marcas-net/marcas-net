@@ -1,50 +1,41 @@
 import nodemailer from 'nodemailer';
+import logger from './logger';
+import { invitationTemplate, welcomeTemplate, notificationTemplate } from './emailTemplates';
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
   port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: false,
+  secure: process.env.SMTP_SECURE === 'true',
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
 });
 
-export const sendInvitationEmail = async (
-  to: string,
-  orgName: string,
-  token: string,
-  inviterName: string
-) => {
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-  const acceptUrl = `${frontendUrl}/accept-invitation/${token}`;
+const from = process.env.SMTP_FROM || '"MarcasNet" <noreply@marcasnet.com>';
+const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
 
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2 style="color: #1e293b;">You've been invited to join ${orgName}</h2>
-      <p>${inviterName} has invited you to join <strong>${orgName}</strong> on MarcasNet.</p>
-      <p>Click the button below to accept the invitation:</p>
-      <a href="${acceptUrl}" 
-         style="display: inline-block; background: #2563eb; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">
-        Accept Invitation
-      </a>
-      <p style="margin-top: 24px; color: #64748b; font-size: 14px;">
-        This invitation expires in 7 days. If the button doesn't work, copy this link:<br/>
-        <a href="${acceptUrl}">${acceptUrl}</a>
-      </p>
-    </div>
-  `;
-
+async function sendMail(to: string, subject: string, html: string): Promise<boolean> {
   try {
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM || '"MarcasNet" <noreply@marcasnet.com>',
-      to,
-      subject: `Invitation to join ${orgName} on MarcasNet`,
-      html,
-    });
+    await transporter.sendMail({ from, to, subject, html });
+    logger.info(`Email sent to ${to}: ${subject}`);
     return true;
   } catch (error) {
-    console.error('Failed to send invitation email:', error);
+    logger.error('Failed to send email', { to, subject, error });
     return false;
   }
+}
+
+export const sendInvitationEmail = (to: string, orgName: string, token: string, inviterName: string) => {
+  const acceptUrl = `${frontendUrl}/accept-invitation/${token}`;
+  return sendMail(to, `Invitation to join ${orgName} on MarcasNet`, invitationTemplate(orgName, inviterName, acceptUrl));
+};
+
+export const sendWelcomeEmail = (to: string, name: string) => {
+  return sendMail(to, 'Welcome to MarcasNet!', welcomeTemplate(name, `${frontendUrl}/dashboard`));
+};
+
+export const sendNotificationEmail = (to: string, title: string, message: string, link?: string) => {
+  const actionUrl = link ? `${frontendUrl}${link}` : undefined;
+  return sendMail(to, title, notificationTemplate(title, message, actionUrl));
 };
