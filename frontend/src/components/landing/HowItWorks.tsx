@@ -4,8 +4,8 @@ import { motion, useInView } from 'framer-motion';
 const steps = [
   {
     number: '01',
-    title: 'Create an Account',
-    description: 'Sign up and set up your profile. Indicate whether you are a food producer, lab technician, nutrition professional, regulator, or researcher.',
+    title: 'Create Your Account',
+    description: 'Sign up as a food producer, lab professional, researcher, regulator, or industry professional. It takes 30 seconds.',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -15,8 +15,8 @@ const steps = [
   },
   {
     number: '02',
-    title: 'Create or Join an Organization',
-    description: 'Create a food company, nutrition lab, university, or food safety authority — or join an existing organization already on the platform.',
+    title: 'Set Up Your Organization',
+    description: 'Create your food company, lab, university, or regulatory body. Or join an existing organization already on the platform.',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -26,8 +26,8 @@ const steps = [
   },
   {
     number: '03',
-    title: 'Upload Nutrition Reports or Certifications',
-    description: "Upload lab test results, food safety certificates, compliance reports, and nutrition research documents to your organization's document library.",
+    title: 'Upload Certifications & Reports',
+    description: 'Add lab reports, safety certificates, compliance records, and research documents to build your organization\u2019s credential library.',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
@@ -37,8 +37,8 @@ const steps = [
   },
   {
     number: '04',
-    title: 'Collaborate with Labs, Regulators & Partners',
-    description: 'Connect with partner organizations in the network — share documentation, coordinate certification activities, and manage cross-institutional collaboration.',
+    title: 'Connect & Collaborate',
+    description: 'Discover partner organizations, share documents securely, coordinate certifications, and grow your professional network.',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
@@ -97,10 +97,10 @@ export function HowItWorks() {
             Simple Onboarding
           </div>
           <h2 className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-4">
-            How MarcasNet Works
+            Get Started in Minutes
           </h2>
           <p className="text-gray-600 dark:text-gray-300 text-lg">
-            Get your food or nutrition organization set up and collaborating in four steps.
+            Four simple steps to join the food industry's professional network.
           </p>
         </motion.div>
 

@@ -12,8 +12,8 @@ const problems = [
     color: 'text-red-500',
     bg: 'bg-red-50 dark:bg-red-950/30',
     border: 'border-red-100 dark:border-red-900/50',
-    title: 'Scattered Certifications',
-    description: 'Lab reports, food safety certificates, and compliance records are spread across email attachments, local drives, and separate systems — hard to find when they matter most.',
+    title: 'Disconnected Industry',
+    description: 'Producers, labs, and regulators need to work together daily — but there\u2019s no shared network to find, connect, and collaborate with the right organizations.',
   },
   {
     icon: (
@@ -24,8 +24,8 @@ const problems = [
     color: 'text-orange-500',
     bg: 'bg-orange-50 dark:bg-orange-950/30',
     border: 'border-orange-100 dark:border-orange-900/50',
-    title: 'Fragmented Collaboration',
-    description: 'Food producers, testing laboratories, and regulatory bodies work together but have no shared workspace to track documentation, activities, or institutional relationships.',
+    title: 'Fragmented Workflows',
+    description: 'Certification tracking, lab submissions, and compliance documentation happen across email, spreadsheets, and siloed systems with no visibility or control.',
   },
   {
     icon: (
@@ -36,8 +36,8 @@ const problems = [
     color: 'text-amber-500',
     bg: 'bg-amber-50 dark:bg-amber-950/30',
     border: 'border-amber-100 dark:border-amber-900/50',
-    title: 'No Access Control',
-    description: 'Sensitive nutrition research, proprietary formulations, and regulatory submissions are shared without proper access controls — creating compliance and confidentiality risks.',
+    title: 'No Trust Infrastructure',
+    description: 'Sensitive lab results, proprietary formulations, and regulatory submissions are exchanged without proper access controls — putting compliance and trust at risk.',
   },
   {
     icon: (
@@ -48,8 +48,8 @@ const problems = [
     color: 'text-rose-500',
     bg: 'bg-rose-50 dark:bg-rose-950/30',
     border: 'border-rose-100 dark:border-rose-900/50',
-    title: 'Slow Compliance Cycles',
-    description: 'Managing certification renewals, lab test submissions, and food safety audits by email is slow, error-prone, and leaves organizations with no clear visibility into current status.',
+    title: 'No Industry Platform',
+    description: 'The food industry has no dedicated professional network. Organizations rely on generic tools not built for compliance, certification, or cross-institutional coordination.',
   },
 ];
 
@@ -93,10 +93,10 @@ export function Problem() {
             The Challenge
           </div>
           <h2 className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-4">
-            The Challenge the Food Industry Faces
+            A Disconnected Food Ecosystem
           </h2>
           <p className="text-gray-600 dark:text-gray-300 text-lg leading-relaxed">
-            Food companies, nutrition labs, and regulators often work together on certifications, safety reports, and compliance documentation — but coordination is fragmented across emails, spreadsheets, and disconnected systems.
+            The food industry runs on trust and coordination — but today\u2019s fragmented tools make it hard to connect, verify, and collaborate across organizations.
           </p>
         </motion.div>
 

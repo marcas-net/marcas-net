@@ -69,7 +69,7 @@ export function Navbar() {
               onClick={() => trackEvent('signup_clicked')}
               className="text-sm font-semibold text-white px-5 py-2 rounded-xl shadow-sm hover:shadow-md transition-shadow bg-gradient-to-r from-blue-600 to-green-500 hover:from-blue-700 hover:to-green-600"
             >
-              Get Started
+              Create Free Account
             </Link>
           </motion.div>
         </div>
@@ -128,7 +128,7 @@ export function Navbar() {
                   onClick={() => { trackEvent('signup_clicked'); setMenuOpen(false); }}
                   className="text-sm font-semibold text-center py-2.5 rounded-xl text-white bg-gradient-to-r from-blue-600 to-green-500"
                 >
-                  Get Started
+                  Create Free Account
                 </Link>
               </div>
             </div>

@@ -20,17 +20,17 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950 overflow-x-hidden transition-colors">
       <Helmet>
-        <title>MarcasNet – Connecting the Food &amp; Nutrition Ecosystem</title>
-        <meta name="description" content="MarcasNet is a collaboration platform for food producers, nutrition laboratories, universities, and regulators to manage certifications, research, and compliance documentation." />
-        <meta name="keywords" content="food safety, nutrition, laboratory, compliance, certification, collaboration, food producers, regulators" />
+        <title>MarcasNet – The Professional Network for the Food Industry</title>
+        <meta name="description" content="MarcasNet is the professional network for the food industry. Connect with producers, labs, regulators, and researchers while managing certifications, documents, and compliance workflows." />
+        <meta name="keywords" content="food industry network, food safety, nutrition, laboratory, compliance, certification, professional network, food producers, regulators" />
         <link rel="canonical" href="https://marcas-net.com" />
-        <meta property="og:title" content="MarcasNet – Connecting the Food & Nutrition Ecosystem" />
-        <meta property="og:description" content="A collaboration platform for food producers, nutrition laboratories, universities, and regulators." />
+        <meta property="og:title" content="MarcasNet – The Professional Network for the Food Industry" />
+        <meta property="og:description" content="Connect with producers, labs, regulators, and researchers. Manage certifications, documents, and compliance workflows in one platform." />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="/logo-icon.jpeg" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="MarcasNet – Food & Nutrition Ecosystem" />
-        <meta name="twitter:description" content="Manage certifications, research, and compliance documentation in one platform." />
+        <meta name="twitter:title" content="MarcasNet – Food Industry Professional Network" />
+        <meta name="twitter:description" content="Connect, collaborate, and stay compliant. The professional network built for the food ecosystem." />
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "SoftwareApplication",

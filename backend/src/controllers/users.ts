@@ -1,5 +1,5 @@
-import { Response } from 'express';
-import { findUserById, updateUser, updateUserPassword } from '../models/user';
+import { Response, Request } from 'express';
+import { findUserById, updateUser, updateUserPassword, findPublicUserById, findAllUsers } from '../models/user';
 import { hashPassword, comparePassword } from '../utils/auth';
 import { AuthRequest } from '../middleware/auth';
 
@@ -15,6 +15,7 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
         id: user.id,
         email: user.email,
         name: user.name,
+        bio: user.bio,
         role: user.role,
         createdAt: user.createdAt,
       },
@@ -25,16 +26,38 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const getUserById = async (req: Request<{ id: string }>, res: Response) => {
+  try {
+    const user = await findPublicUserById(req.params.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({ user });
+  } catch (error) {
+    console.error('Get user by id error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const listUsers = async (_req: Request, res: Response) => {
+  try {
+    const users = await findAllUsers();
+    res.json({ users });
+  } catch (error) {
+    console.error('List users error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 export const updateProfile = async (req: AuthRequest, res: Response) => {
   try {
-    const { name, email } = req.body;
-    if (!name && !email) {
-      return res.status(400).json({ error: 'At least name or email is required' });
+    const { name, email, bio } = req.body;
+    if (!name && !email && bio === undefined) {
+      return res.status(400).json({ error: 'At least name, email, or bio is required' });
     }
 
     const user = await updateUser(req.user.id, {
       ...(name !== undefined ? { name } : {}),
       ...(email !== undefined ? { email } : {}),
+      ...(bio !== undefined ? { bio } : {}),
     });
 
     res.json({

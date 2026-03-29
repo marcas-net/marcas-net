@@ -23,6 +23,7 @@ import notificationRoutes from './routes/notifications';
 import invitationRoutes from './routes/invitations';
 import adminRoutes from './routes/admin';
 import searchRoutes from './routes/search';
+import marketplaceRoutes from './routes/marketplace';
 import prisma from './config/database';
 
 validateEnv();
@@ -86,6 +87,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/invitations', invitationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/search', searchRoutes);
+app.use('/api/marketplace', marketplaceRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {

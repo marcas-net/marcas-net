@@ -11,6 +11,7 @@ import OrganizationDocuments from './pages/OrganizationDocuments';
 import OrgMembers from './pages/OrgMembers';
 import OrgSettings from './pages/OrgSettings';
 import Profile from './pages/Profile';
+import UserProfile from './pages/UserProfile';
 import Settings from './pages/Settings';
 import AcceptInvitation from './pages/AcceptInvitation';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -53,6 +54,7 @@ function App() {
             <Route path="/orgs/:id/members" element={<OrgMembers />} />
             <Route path="/orgs/:id/settings" element={<OrgSettings />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/profile/:id" element={<UserProfile />} />
             <Route path="/dashboard/settings" element={<Settings />} />
           </Route>
 
