@@ -49,6 +49,7 @@ export const findPublicUserById = async (id: string) => {
       email: true,
       bio: true,
       role: true,
+      avatarUrl: true,
       organizationId: true,
       organization: { select: { id: true, name: true, type: true } },
       documents: {
@@ -74,6 +75,7 @@ export const findAllUsers = async () => {
       email: true,
       bio: true,
       role: true,
+      avatarUrl: true,
       organization: { select: { id: true, name: true, type: true } },
       createdAt: true,
     },

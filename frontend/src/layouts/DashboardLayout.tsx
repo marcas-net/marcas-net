@@ -143,7 +143,7 @@ export function DashboardLayout() {
       {/* User */}
       <div className="px-3 py-4 space-y-1">
         <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl">
-          <Avatar name={user?.name ?? user?.email} size="sm" />
+          <Avatar name={user?.name ?? user?.email} size="sm" src={user?.avatarUrl ?? undefined} />
           <div className="flex-1 min-w-0">
             <p className="text-[13px] text-white font-medium truncate">{user?.name ?? 'User'}</p>
             <p className="text-xs text-slate-400 truncate">{user?.role}</p>
@@ -211,7 +211,7 @@ export function DashboardLayout() {
           <div className="flex items-center gap-3">
             <ThemeToggle />
             <NotificationBell />
-            <Avatar name={user?.name ?? user?.email} size="sm" />
+            <Avatar name={user?.name ?? user?.email} size="sm" src={user?.avatarUrl ?? undefined} />
             <div className="hidden sm:block text-sm leading-tight">
               <p className="font-semibold text-gray-900 dark:text-white text-[13px]">{user?.name ?? 'User'}</p>
               <p className="text-gray-400 text-xs">{user?.email}</p>

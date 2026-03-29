@@ -49,7 +49,7 @@ export default function UserProfile() {
       {/* Profile Header */}
       <Card padding="lg">
         <div className="flex flex-col sm:flex-row items-start gap-5">
-          <Avatar name={user.name ?? user.email} size="xl" />
+          <Avatar name={user.name ?? user.email} size="xl" src={user.avatarUrl ?? undefined} />
           <div className="flex-1">
             <div className="flex flex-wrap items-center gap-2 mb-1">
               <h1 className="text-xl font-bold text-slate-900 dark:text-white">{user.name ?? 'Unnamed'}</h1>

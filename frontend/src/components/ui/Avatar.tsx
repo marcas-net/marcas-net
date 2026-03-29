@@ -30,17 +30,16 @@ export function Avatar({ name, size = 'md', src, className = '' }: AvatarProps) 
       />
     );
   }
+
+  // Generate a deterministic human-like avatar using DiceBear's "adventurer" style
+  const seed = encodeURIComponent((name ?? 'user').trim().toLowerCase());
+  const dicebearUrl = `https://api.dicebear.com/9.x/adventurer/svg?seed=${seed}`;
+
   return (
-    <div
-      className={`
-        ${sizeMap[size]} rounded-full
-        bg-gradient-to-br from-blue-500 to-blue-700
-        flex items-center justify-center
-        text-white font-semibold flex-shrink-0
-        ${className}
-      `.trim()}
-    >
-      {getInitials(name)}
-    </div>
+    <img
+      src={dicebearUrl}
+      alt={name ?? ''}
+      className={`${sizeMap[size]} rounded-full object-cover flex-shrink-0 bg-slate-100 dark:bg-slate-800 ${className}`}
+    />
   );
 }

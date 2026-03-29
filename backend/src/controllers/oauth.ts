@@ -77,7 +77,7 @@ export const googleCallback = async (req: Request, res: Response) => {
 
     const jwt = generateToken({ id: user.id, email: user.email, role: user.role });
     const userData = encodeURIComponent(
-      JSON.stringify({ id: user.id, email: user.email, name: user.name, role: user.role })
+      JSON.stringify({ id: user.id, email: user.email, name: user.name, role: user.role, avatarUrl: user.avatarUrl })
     );
 
     res.redirect(`${FRONTEND_URL}/auth/callback?token=${jwt}&user=${userData}`);
@@ -169,7 +169,7 @@ export const githubCallback = async (req: Request, res: Response) => {
 
     const jwt = generateToken({ id: user.id, email: user.email, role: user.role });
     const userData = encodeURIComponent(
-      JSON.stringify({ id: user.id, email: user.email, name: user.name, role: user.role })
+      JSON.stringify({ id: user.id, email: user.email, name: user.name, role: user.role, avatarUrl: user.avatarUrl })
     );
 
     res.redirect(`${FRONTEND_URL}/auth/callback?token=${jwt}&user=${userData}`);

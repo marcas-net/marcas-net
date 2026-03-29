@@ -52,7 +52,7 @@ export default function Profile() {
       {/* Profile card */}
       <Card padding="lg">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
-          <Avatar name={display?.name ?? display?.email} size="xl" />
+          <Avatar name={display?.name ?? display?.email} size="xl" src={display?.avatarUrl ?? undefined} />
           <div className="flex-1">
             <div className="flex flex-wrap items-center gap-2 mb-1">
               <h2 className="text-xl font-bold text-slate-900 dark:text-white">{display?.name ?? 'No name set'}</h2>
