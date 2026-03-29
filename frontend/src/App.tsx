@@ -13,6 +13,8 @@ import OrgSettings from './pages/OrgSettings';
 import Profile from './pages/Profile';
 import UserProfile from './pages/UserProfile';
 import Settings from './pages/Settings';
+import Feed from './pages/Feed';
+import Jobs from './pages/Jobs';
 import AcceptInvitation from './pages/AcceptInvitation';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -55,6 +57,8 @@ function App() {
             <Route path="/orgs/:id/settings" element={<OrgSettings />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/:id" element={<UserProfile />} />
+            <Route path="/feed" element={<Feed />} />
+            <Route path="/jobs" element={<Jobs />} />
             <Route path="/dashboard/settings" element={<Settings />} />
           </Route>
 

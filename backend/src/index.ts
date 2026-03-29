@@ -24,6 +24,8 @@ import invitationRoutes from './routes/invitations';
 import adminRoutes from './routes/admin';
 import searchRoutes from './routes/search';
 import marketplaceRoutes from './routes/marketplace';
+import feedRoutes from './routes/feed';
+import jobRoutes from './routes/jobs';
 import prisma from './config/database';
 
 validateEnv();
@@ -88,6 +90,8 @@ app.use('/api/invitations', invitationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/marketplace', marketplaceRoutes);
+app.use('/api/feed', feedRoutes);
+app.use('/api/jobs', jobRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {

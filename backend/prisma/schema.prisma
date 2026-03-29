@@ -40,6 +40,21 @@ enum NotificationType {
   SYSTEM
 }
 
+enum PostCategory {
+  SUPPLY_OFFER
+  PARTNERSHIP_REQUEST
+  INDUSTRY_ANNOUNCEMENT
+  GENERAL
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+  COLLABORATION
+}
+
 model User {
   id             String         @id @default(cuid())
   email          String         @unique
@@ -52,6 +67,7 @@ model User {
   documents      Document[]
   activityLogs   ActivityLog[]
   notifications  Notification[]
+  posts          Post[]
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
@@ -69,6 +85,8 @@ model Organization {
   invitations Invitation[]
   products    Product[]
   services    Service[]
+  posts       Post[]
+  jobs        Job[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -176,4 +194,34 @@ model Service {
   updatedAt      DateTime     @updatedAt
 
   @@map("services")
+}
+
+model Post {
+  id             String       @id @default(cuid())
+  title          String
+  content        String
+  category       PostCategory @default(GENERAL)
+  authorId       String
+  author         User         @relation(fields: [authorId], references: [id])
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("posts")
+}
+
+model Job {
+  id             String       @id @default(cuid())
+  title          String
+  description    String
+  location       String?
+  type           JobType      @default(FULL_TIME)
+  isOpen         Boolean      @default(true)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("jobs")
 }
