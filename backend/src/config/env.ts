@@ -13,6 +13,10 @@ const optional = [
   'SMTP_FROM',
   'SIGNED_URL_SECRET',
   'LOG_LEVEL',
+  'GOOGLE_CLIENT_ID',
+  'GOOGLE_CLIENT_SECRET',
+  'GITHUB_CLIENT_ID',
+  'GITHUB_CLIENT_SECRET',
 ];
 
 export function validateEnv() {

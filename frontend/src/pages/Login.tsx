@@ -1,7 +1,8 @@
-import { useState, type FormEvent } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState, useEffect, type FormEvent } from 'react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { AuthLayout } from '../layouts/AuthLayout';
+import { SocialButtons, Divider } from '../components/SocialButtons';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import toast from 'react-hot-toast';
@@ -9,10 +10,24 @@ import toast from 'react-hot-toast';
 const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const error = searchParams.get('error');
+    if (error) {
+      const messages: Record<string, string> = {
+        missing_code: 'Authorization was cancelled',
+        token_exchange_failed: 'Authentication failed. Please try again.',
+        no_email: 'Could not retrieve your email address.',
+        oauth_failed: 'Something went wrong. Please try again.',
+      };
+      toast.error(messages[error] || 'Authentication failed');
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -31,6 +46,8 @@ const Login = () => {
 
   return (
     <AuthLayout title="Welcome back" subtitle="">
+      <SocialButtons mode="login" />
+      <Divider />
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
           label="Work Email"

@@ -39,6 +39,10 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    if (!user.password) {
+      return res.status(401).json({ error: 'This account uses social login. Please sign in with Google or GitHub.' });
+    }
+
     const isPasswordValid = await comparePassword(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ error: 'Invalid credentials' });

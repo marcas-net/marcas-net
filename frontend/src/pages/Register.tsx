@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { AuthLayout } from '../layouts/AuthLayout';
+import { SocialButtons, Divider } from '../components/SocialButtons';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Input';
@@ -42,6 +43,8 @@ const Register = () => {
 
   return (
     <AuthLayout title="Create Your Account" subtitle="register">
+      <SocialButtons mode="register" />
+      <Divider />
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
           label="Full Name"

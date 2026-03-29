@@ -16,6 +16,7 @@ import Settings from './pages/Settings';
 import Feed from './pages/Feed';
 import Jobs from './pages/Jobs';
 import AcceptInvitation from './pages/AcceptInvitation';
+import AuthCallback from './pages/AuthCallback';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { DashboardLayout } from './layouts/DashboardLayout';
@@ -39,6 +40,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/accept-invitation/:token" element={<AcceptInvitation />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
 
           {/* Dashboard layout wraps all protected routes */}
           <Route

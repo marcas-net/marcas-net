@@ -86,6 +86,10 @@ export const changePassword = async (req: AuthRequest, res: Response) => {
     const user = await findUserById(req.user.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
+    if (!user.password) {
+      return res.status(400).json({ error: 'This account uses social login and has no password to change' });
+    }
+
     const valid = await comparePassword(currentPassword, user.password);
     if (!valid) return res.status(400).json({ error: 'Current password is incorrect' });
 
