@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { Avatar } from '../components/ui/Avatar';
 import { NotificationBell } from '../components/NotificationBell';
 import { ThemeToggle } from '../components/ThemeToggle';
+import Logo from '../components/Logo';
 import { SearchBar } from '../components/SearchBar';
 
 interface NavItem {
@@ -103,7 +104,7 @@ export function DashboardLayout() {
       {/* Brand */}
       <div className="px-5 py-5">
         <Link to="/dashboard" onClick={() => setSidebarOpen(false)} className="flex items-center gap-2.5">
-          <img src="/logo.jpeg" alt="MarcasNet" className="h-7 object-contain brightness-0 invert" />
+          <Logo size="sm" variant="light" />
         </Link>
       </div>
 
@@ -174,7 +175,7 @@ export function DashboardLayout() {
           <div className="w-56 bg-slate-900 flex flex-col h-full shadow-2xl">
             <div className="flex items-center justify-between px-5 py-5">
               <div className="flex items-center gap-2.5">
-                <img src="/logo.jpeg" alt="MarcasNet" className="h-7 object-contain brightness-0 invert" />
+                <Logo size="sm" variant="light" />
               </div>
               <button onClick={() => setSidebarOpen(false)} className="text-slate-400 hover:text-white p-1">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

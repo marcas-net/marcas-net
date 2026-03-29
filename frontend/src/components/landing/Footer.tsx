@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import Logo from '../Logo';
 
 const footerLinks = {
   Product: [
@@ -24,7 +25,7 @@ export function Footer() {
           {/* Brand */}
           <div className="md:col-span-1">
             <Link to="/" className="flex items-center gap-2.5 mb-4">
-              <img src="/logo.jpeg" alt="MarcasNet" className="h-8 object-contain brightness-0 invert" />
+              <Logo size="md" variant="light" />
             </Link>
             <p className="text-slate-400 text-sm leading-relaxed mb-5">
               A digital platform connecting food producers, nutrition laboratories, universities, food safety regulators, and nutrition professionals.

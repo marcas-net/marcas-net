@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import Logo from '../Logo';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeToggle } from '../ThemeToggle';
 import { trackEvent } from '../../utils/analytics';
@@ -32,11 +33,7 @@ export function Navbar() {
       <nav className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between" aria-label="Main navigation">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5 group">
-          <img
-            src="/logo.jpeg"
-            alt="MarcasNet"
-            className="h-9 object-contain"
-          />
+          <Logo size="lg" />
         </Link>
 
         {/* Desktop nav */}

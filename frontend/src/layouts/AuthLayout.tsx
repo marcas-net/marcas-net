@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import Logo from '../components/Logo';
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -41,7 +42,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
       <div className="hidden lg:flex lg:w-[52%] flex-col justify-between p-14 bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-950 relative overflow-hidden">
         {/* Logo */}
         <Link to="/">
-          <img src="/logo.jpeg" alt="MarcasNet" className="h-12 object-contain" />
+          <Logo size="xl" />
         </Link>
 
         {/* Hero copy */}
@@ -98,7 +99,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
           {/* Mobile logo */}
           <div className="lg:hidden">
             <Link to="/">
-              <img src="/logo.jpeg" alt="MarcasNet" className="h-10 object-contain" />
+              <Logo size="lg" />
             </Link>
           </div>
           <div className="hidden lg:block" />
