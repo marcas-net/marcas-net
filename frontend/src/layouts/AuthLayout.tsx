@@ -109,7 +109,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
             </span>
             <Link
               to={subtitle === 'register' ? '/login' : '/register'}
-              className="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              className="px-5 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-emerald-500 text-white font-semibold hover:from-blue-700 hover:to-emerald-600 transition-all shadow-sm"
             >
               {subtitle === 'register' ? 'Sign In' : 'Create Account'}
             </Link>

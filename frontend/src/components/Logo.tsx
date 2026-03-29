@@ -17,7 +17,7 @@ export default function Logo({ size = 'md', variant = 'dark' }: LogoProps) {
   return (
     <span className={`inline-flex items-center gap-0.5 font-bold tracking-tight ${s.text}`}>
       <span className={marcasColor}>Marcas</span>
-      <span className={`bg-emerald-600 text-white font-bold ${s.badge}`}>Net</span>
+      <span className={`bg-gradient-to-r from-blue-600 to-emerald-500 text-white font-bold ${s.badge}`}>Net</span>
     </span>
   );
 }
