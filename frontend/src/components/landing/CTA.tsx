@@ -8,11 +8,11 @@ export function CTA() {
   const inView = useInView(ref, { once: true, margin: '-80px' });
 
   return (
-    <section className="py-24 relative overflow-hidden" aria-label="Call to Action">
-      <div
-        className="absolute inset-0 -z-10"
-        style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #052e16 100%)' }}
-      />
+    <section
+      className="py-24 relative overflow-hidden"
+      aria-label="Call to Action"
+      style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #052e16 100%)' }}
+    >
       <motion.div
         className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-10 blur-3xl -z-10"
         style={{ background: '#2563eb' }}
