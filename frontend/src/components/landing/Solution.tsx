@@ -8,7 +8,7 @@ const benefits = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
       </svg>
     ),
-    title: 'Industry Network',
+    title: 'Discover the Right Organizations',
     desc: 'Find and connect with food producers, labs, universities, and regulators. Build your professional network within a trusted, industry-specific ecosystem.',
   },
   {
@@ -17,8 +17,8 @@ const benefits = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
       </svg>
     ),
-    title: 'Organization Profiles',
-    desc: 'Create a rich profile for your company, lab, or institution. Showcase capabilities, certifications, and team members to attract partners.',
+    title: 'Share Certifications Securely',
+    desc: 'Upload lab reports, safety certificates, and compliance records in a secure system with role-based access. No more attachments lost in email.',
   },
   {
     icon: (
@@ -26,8 +26,8 @@ const benefits = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
     ),
-    title: 'Compliance & Certifications',
-    desc: 'Upload lab reports, safety certificates, and compliance records in a secure system with role-based access. No more attachments lost in email.',
+    title: 'Maintain Structured Records',
+    desc: 'Keep organized product records, batch histories, and regulatory documentation across your organization — everything audit-ready from day one.',
   },
   {
     icon: (
@@ -35,8 +35,8 @@ const benefits = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     ),
-    title: 'Operational Workflows',
-    desc: 'Track products, batches, and certification pipelines. Coordinate with labs and regulators through shared workflows — getting compliance done faster.',
+    title: 'Prepare for Compliance Workflows',
+    desc: 'Track certifications, coordinate with labs and regulators, and prepare for batch, compliance, and recall workflows — all from a single workspace.',
   },
 ];
 
@@ -59,16 +59,16 @@ export function Solution() {
               The Solution
             </div>
             <h2 className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-5">
-              One Network for the{' '}
+              A Structured Industry Workspace Inside a{' '}
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-green-500">
-                Entire Food Ecosystem
+                Professional Network
               </span>
             </h2>
             <p className="text-gray-600 dark:text-gray-300 text-lg leading-relaxed mb-4">
-              MarcasNet is the professional network built specifically for the food and nutrition industry. Connect with the organizations that matter to your business.
+              MarcasNet is more than a network — it's the structured workspace where food industry organizations discover partners, manage relationships, and coordinate compliance.
             </p>
             <p className="text-gray-500 dark:text-gray-400 text-base leading-relaxed">
-              Discover partners, manage compliance documents, track certifications, and coordinate operations — all from a single platform designed around trust, collaboration, and industry-specific workflows.
+              Share certifications and reports securely, maintain structured records across organizations, and prepare for batch, compliance, and recall workflows — all from a single platform designed for trust and operational control.
             </p>
           </motion.div>
 

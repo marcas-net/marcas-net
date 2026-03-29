@@ -25,4 +25,6 @@ export const roleVariant: Record<string, 'red' | 'orange' | 'blue' | 'purple' | 
   USER: 'blue',
   REGULATOR: 'purple',
   LAB: 'green',
+  UNIVERSITY: 'purple',
+  PROFESSIONAL: 'blue',
 };

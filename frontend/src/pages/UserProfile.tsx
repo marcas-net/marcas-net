@@ -10,9 +10,11 @@ import toast from 'react-hot-toast';
 const ROLE_LABELS: Record<string, string> = {
   ADMIN: 'Admin',
   ORG_ADMIN: 'Org Admin',
-  USER: 'Professional',
-  LAB: 'Lab Professional',
+  USER: 'Food Producer',
+  LAB: 'Nutrition Lab',
+  UNIVERSITY: 'University / Research',
   REGULATOR: 'Regulator',
+  PROFESSIONAL: 'Professional / Consultant',
 };
 
 export default function UserProfile() {

@@ -7,7 +7,8 @@ const footerLinks = {
   ],
   Company: [
     { label: 'About', href: '#' },
-    { label: 'Contact', href: '#' },
+    { label: 'Contact', href: 'mailto:contact@marcas-net.com' },
+    { label: 'Impressum', href: '#impressum' },
   ],
   Legal: [
     { label: 'Privacy Policy', href: '#' },

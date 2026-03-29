@@ -15,6 +15,8 @@ enum Role {
   USER
   REGULATOR
   LAB
+  UNIVERSITY
+  PROFESSIONAL
 }
 
 enum OrgType {

@@ -1,12 +1,14 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from './auth';
 
-// Role hierarchy: ADMIN > ORG_ADMIN > LAB > REGULATOR > USER
+// Role hierarchy: ADMIN > ORG_ADMIN > LAB > REGULATOR > UNIVERSITY > PROFESSIONAL > USER
 const roleHierarchy: Record<string, number> = {
   ADMIN: 50,
   ORG_ADMIN: 40,
   LAB: 30,
-  REGULATOR: 20,
+  REGULATOR: 25,
+  UNIVERSITY: 20,
+  PROFESSIONAL: 15,
   USER: 10,
 };
 

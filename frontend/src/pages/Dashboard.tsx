@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Badge } from '../components/ui/Badge';
@@ -15,6 +15,17 @@ const Dashboard = () => {
   useEffect(() => {
     getDashboardStats().then(setStats).catch(() => {});
   }, []);
+
+  const onboardingSteps = useMemo(() => [
+    { key: 'profile', label: 'Complete your profile', desc: 'Add your name and bio', href: '/profile', done: !!(user?.name) },
+    { key: 'org', label: 'Create or join an organization', desc: 'Set up your company, lab, or institution', href: '/orgs/create', done: !!(user?.organizationId) },
+    { key: 'doc', label: 'Upload your first document', desc: 'Add a lab report, certificate, or compliance record', href: user?.organizationId ? `/orgs/${user.organizationId}/documents` : '/orgs', done: (stats?.userDocuments ?? 0) > 0 },
+    { key: 'team', label: 'Invite a teammate', desc: 'Grow your organization by inviting colleagues', href: user?.organizationId ? `/orgs/${user.organizationId}/members` : '/orgs', done: (stats?.orgMembers ?? 0) > 1 },
+    { key: 'connect', label: 'Connect with a partner', desc: 'Discover labs, regulators, or producers', href: '/orgs', done: false },
+  ], [user, stats]);
+
+  const completedCount = onboardingSteps.filter(s => s.done).length;
+  const showOnboarding = completedCount < onboardingSteps.length;
 
   return (
     <div className="space-y-8">
@@ -33,6 +44,53 @@ const Dashboard = () => {
           )}
         </div>
       </div>
+
+      {/* Onboarding Checklist */}
+      {showOnboarding && (
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Getting Started</h2>
+              <p className="text-xs text-slate-400 mt-0.5">{completedCount} of {onboardingSteps.length} completed</p>
+            </div>
+            <div className="w-24 h-2 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-blue-500 to-green-500 transition-all duration-500"
+                style={{ width: `${(completedCount / onboardingSteps.length) * 100}%` }}
+              />
+            </div>
+          </div>
+          <div className="space-y-1">
+            {onboardingSteps.map((step) => (
+              <Link
+                key={step.key}
+                to={step.href}
+                className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-150 group ${
+                  step.done
+                    ? 'opacity-60'
+                    : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                }`}
+              >
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                  step.done
+                    ? 'border-green-500 bg-green-500'
+                    : 'border-gray-300 dark:border-gray-600 group-hover:border-blue-400'
+                }`}>
+                  {step.done && (
+                    <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+                <div>
+                  <p className={`text-[13px] font-semibold ${step.done ? 'line-through text-slate-400' : 'text-slate-800 dark:text-slate-200'}`}>{step.label}</p>
+                  <p className="text-xs text-slate-400">{step.desc}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">

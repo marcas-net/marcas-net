@@ -8,9 +8,11 @@ import { Select } from '../components/ui/Input';
 import toast from 'react-hot-toast';
 
 const ROLES = [
-  { value: 'USER', label: 'Professional / User' },
-  { value: 'LAB', label: 'Laboratory' },
-  { value: 'REGULATOR', label: 'Regulator' },
+  { value: 'USER', label: 'Food Producer / Company' },
+  { value: 'LAB', label: 'Nutrition Lab' },
+  { value: 'UNIVERSITY', label: 'University / Research Institution' },
+  { value: 'REGULATOR', label: 'Regulator / Food Safety Authority' },
+  { value: 'PROFESSIONAL', label: 'Nutrition Professional / Consultant' },
 ];
 
 const Register = () => {
