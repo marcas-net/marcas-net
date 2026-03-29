@@ -76,9 +76,9 @@ const swaggerSpec = swaggerJsdoc({
       },
     },
   },
-  apis: [path.join(__dirname, './routes/*.ts'), path.join(__dirname, './routes/*.js')],
+  apis: [path.join(__dirname, './routes/*.js'), path.join(__dirname, './routes/*.ts')],
 });
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api/swagger', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Routes
 app.use('/api/auth', authRoutes);
