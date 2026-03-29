@@ -35,7 +35,7 @@ const Dashboard = () => {
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
             Welcome back, {user?.name?.split(' ')[0] ?? 'there'} 👋
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">Here's your MARCAS platform overview</p>
+          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">Here's your MarcasNet platform overview</p>
         </div>
         <div className="flex items-center gap-3">
           <Badge variant={roleVariant[role] ?? 'blue'}>{role}</Badge>

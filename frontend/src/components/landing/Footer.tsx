@@ -24,8 +24,7 @@ export function Footer() {
           {/* Brand */}
           <div className="md:col-span-1">
             <Link to="/" className="flex items-center gap-2.5 mb-4">
-              <img src="/logo-icon.jpeg" alt="MarcasNet" className="h-8 w-8 rounded-lg object-cover" />
-              <span className="font-bold text-white text-lg">MarcasNet</span>
+              <img src="/logo.jpeg" alt="MarcasNet" className="h-8 object-contain brightness-0 invert" />
             </Link>
             <p className="text-slate-400 text-sm leading-relaxed mb-5">
               A digital platform connecting food producers, nutrition laboratories, universities, food safety regulators, and nutrition professionals.

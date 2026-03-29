@@ -33,11 +33,10 @@ export function Navbar() {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5 group">
           <img
-            src="/logo-icon.jpeg"
+            src="/logo.jpeg"
             alt="MarcasNet"
-            className="h-8 w-8 rounded-lg object-cover shadow-sm group-hover:shadow-md transition-shadow"
+            className="h-9 object-contain"
           />
-          <span className="font-bold text-gray-900 dark:text-white text-lg tracking-tight">MarcasNet</span>
         </Link>
 
         {/* Desktop nav */}

@@ -40,8 +40,8 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
       {/* ── Left branding panel (desktop only) ── */}
       <div className="hidden lg:flex lg:w-[52%] flex-col justify-between p-14 bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-950 relative overflow-hidden">
         {/* Logo */}
-        <Link to="/login">
-          <img src="/macas.jpeg" alt="MARCAS" className="h-14 object-contain object-left rounded-xl" />
+        <Link to="/">
+          <img src="/logo.jpeg" alt="MarcasNet" className="h-12 object-contain" />
         </Link>
 
         {/* Hero copy */}
@@ -92,21 +92,38 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
       </div>
 
       {/* ── Right form panel ── */}
-      <div className="flex-1 flex flex-col justify-center items-center px-6 py-12 lg:px-16">
-        {/* Mobile logo */}
-        <div className="lg:hidden mb-8">
-          <img src="/macas.jpeg" alt="MARCAS" className="h-12 object-contain rounded-xl" />
+      <div className="flex-1 flex flex-col px-6 py-8 lg:px-16">
+        {/* Top navigation bar */}
+        <div className="flex items-center justify-between mb-8">
+          {/* Mobile logo */}
+          <div className="lg:hidden">
+            <Link to="/">
+              <img src="/logo.jpeg" alt="MarcasNet" className="h-10 object-contain" />
+            </Link>
+          </div>
+          <div className="hidden lg:block" />
+          <div className="flex items-center gap-3 text-sm">
+            <span className="text-slate-500 dark:text-slate-400">
+              {subtitle === 'register' ? 'Already have an account?' : "Don't have an account?"}
+            </span>
+            <Link
+              to={subtitle === 'register' ? '/login' : '/register'}
+              className="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+            >
+              {subtitle === 'register' ? 'Sign In' : 'Create Account'}
+            </Link>
+          </div>
         </div>
 
-        <div className="w-full max-w-md">
+        <div className="flex-1 flex flex-col justify-center items-center">        <div className="w-full max-w-md">
           <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-800 p-8 md:p-10">
             <div className="mb-7">
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{title}</h2>
               {subtitle && (
                 <p className="text-slate-500 dark:text-slate-400 mt-1.5 text-sm">
                   Get started with{' '}
-                  <span className="font-semibold text-slate-700">Marcas</span>
-                  <span className="font-semibold text-emerald-600">net</span>
+                  <span className="font-semibold text-slate-700 dark:text-white">Marcas</span>
+                  <span className="font-semibold text-emerald-600">Net</span>
                 </p>
               )}
             </div>
@@ -133,6 +150,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
               </svg>
               Global Access
             </div>
+          </div>
           </div>
         </div>
       </div>

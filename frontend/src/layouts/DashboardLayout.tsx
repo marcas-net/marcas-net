@@ -103,11 +103,7 @@ export function DashboardLayout() {
       {/* Brand */}
       <div className="px-5 py-5">
         <Link to="/dashboard" onClick={() => setSidebarOpen(false)} className="flex items-center gap-2.5">
-          <img src="/logo-icon.jpeg" alt="MARCAS" className="h-8 w-8 rounded-lg object-cover" />
-          <div className="leading-none">
-            <span className="text-white font-bold text-sm">Marcas</span>
-            <span className="text-emerald-400 font-bold text-sm">net</span>
-          </div>
+          <img src="/logo.jpeg" alt="MarcasNet" className="h-7 object-contain brightness-0 invert" />
         </Link>
       </div>
 
@@ -178,11 +174,7 @@ export function DashboardLayout() {
           <div className="w-56 bg-slate-900 flex flex-col h-full shadow-2xl">
             <div className="flex items-center justify-between px-5 py-5">
               <div className="flex items-center gap-2.5">
-                <img src="/logo-icon.jpeg" alt="MARCAS" className="h-8 w-8 rounded-lg object-cover" />
-                <div className="leading-none">
-                  <span className="text-white font-bold text-sm">Marcas</span>
-                  <span className="text-emerald-400 font-bold text-sm">net</span>
-                </div>
+                <img src="/logo.jpeg" alt="MarcasNet" className="h-7 object-contain brightness-0 invert" />
               </div>
               <button onClick={() => setSidebarOpen(false)} className="text-slate-400 hover:text-white p-1">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

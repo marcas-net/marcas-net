@@ -48,7 +48,7 @@ export default function CreateOrganization() {
           Back to Organizations
         </Link>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Create Organization</h1>
-        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Set up a new organization on the MARCAS platform</p>
+        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Set up a new organization on the MarcasNet platform</p>
       </div>
 
       <Card padding="lg">
