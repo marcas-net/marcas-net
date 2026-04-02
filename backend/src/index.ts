@@ -27,6 +27,7 @@ import marketplaceRoutes from './routes/marketplace';
 import feedRoutes from './routes/feed';
 import jobRoutes from './routes/jobs';
 import oauthRoutes from './routes/oauth';
+import messagingRoutes from './routes/messaging';
 import prisma from './config/database';
 
 validateEnv();
@@ -94,6 +95,7 @@ app.use('/api/marketplace', marketplaceRoutes);
 app.use('/api/feed', feedRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/auth', oauthRoutes);
+app.use('/api/messages', messagingRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {

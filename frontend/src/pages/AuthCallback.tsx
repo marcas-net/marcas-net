@@ -30,7 +30,7 @@ export default function AuthCallback() {
         localStorage.setItem('user', JSON.stringify(user));
         toast.success('Welcome!');
         // Force a full page load so AuthContext picks up localStorage
-        window.location.href = '/dashboard';
+        window.location.href = '/feed';
       } catch {
         toast.error('Authentication failed');
         navigate('/login', { replace: true });

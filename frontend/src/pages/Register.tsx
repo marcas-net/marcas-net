@@ -41,7 +41,7 @@ const Register = () => {
     try {
       await register(email, password, name, role);
       toast.success('Account created!');
-      navigate('/dashboard');
+      navigate('/feed');
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: string } } };
       toast.error(error.response?.data?.error ?? 'Registration failed');

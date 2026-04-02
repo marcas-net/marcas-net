@@ -9,6 +9,8 @@ datasource db {
   provider = "postgresql"
 }
 
+// ─── Enums ───────────────────────────────────────────────
+
 enum Role {
   ADMIN
   ORG_ADMIN
@@ -27,6 +29,13 @@ enum OrgType {
   PROFESSIONAL
 }
 
+enum MemberRole {
+  OWNER
+  ADMIN
+  MANAGER
+  MEMBER
+}
+
 enum InvitationStatus {
   PENDING
   ACCEPTED
@@ -38,6 +47,11 @@ enum NotificationType {
   DOCUMENT
   ORGANIZATION
   SYSTEM
+  LIKE
+  COMMENT
+  FOLLOW
+  SOURCING
+  RECALL
 }
 
 enum PostCategory {
@@ -55,6 +69,30 @@ enum JobType {
   COLLABORATION
 }
 
+enum SourcingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CONFIRMED
+}
+
+enum BatchStatus {
+  ACTIVE
+  DEPLETED
+  RECALLED
+}
+
+enum FormFieldType {
+  TEXT
+  NUMBER
+  SELECT
+  DATE
+  TEXTAREA
+  CHECKBOX
+}
+
+// ─── Identity & access ──────────────────────────────────
+
 model User {
   id             String         @id @default(cuid())
   email          String         @unique
@@ -62,15 +100,27 @@ model User {
   name           String?
   bio            String?
   role           Role           @default(USER)
-  provider       String?        // "google", "github", or null for email/password
-  providerId     String?        // OAuth provider user ID
+  provider       String?
+  providerId     String?
   avatarUrl      String?
   organizationId String?
   organization   Organization?  @relation(fields: [organizationId], references: [id])
+  memberships    Membership[]
   documents      Document[]
   activityLogs   ActivityLog[]
   notifications  Notification[]
   posts          Post[]
+  comments       Comment[]
+  likes          Like[]
+  followsGiven   Follow[]       @relation("follower")
+  followsReceived Follow[]      @relation("followingUser")
+  sentMessages   Message[]      @relation("sender")
+  receivedMessages Message[]    @relation("receiver")
+  conversations1 Conversation[] @relation("participant1")
+  conversations2 Conversation[] @relation("participant2")
+  sourcingRequests SourcingRequest[]
+  formEntries    FormEntry[]
+  recalls        Recall[]
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
@@ -85,17 +135,37 @@ model Organization {
   country     String?
   description String?
   members     User[]
+  memberships Membership[]
   documents   Document[]
   invitations Invitation[]
   products    Product[]
-  services    Service[]
   posts       Post[]
   jobs        Job[]
+  followedBy  Follow[]
+  sourcingRequests SourcingRequest[]
+  formTemplates FormTemplate[]
+  formEntries FormEntry[]
+  recalls     Recall[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
   @@map("organizations")
 }
+
+model Membership {
+  id             String       @id @default(cuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  role           MemberRole   @default(MEMBER)
+  createdAt      DateTime     @default(now())
+
+  @@unique([userId, organizationId])
+  @@map("memberships")
+}
+
+// ─── Documents (kept for file attachments) ──────────────
 
 model Document {
   id               String       @id @default(cuid())
@@ -163,57 +233,236 @@ model Notification {
   @@map("notifications")
 }
 
-model Product {
+// ─── Social system ──────────────────────────────────────
+
+model Post {
+  id             String        @id @default(cuid())
+  content        String
+  category       PostCategory  @default(GENERAL)
+  authorId       String
+  author         User          @relation(fields: [authorId], references: [id])
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  comments       Comment[]
+  likes          Like[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@map("posts")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@map("comments")
+}
+
+model Like {
+  id     String @id @default(cuid())
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([userId, postId])
+  @@map("likes")
+}
+
+model Follow {
+  id              String        @id @default(cuid())
+  followerId      String
+  follower        User          @relation("follower", fields: [followerId], references: [id])
+  followingUserId String?
+  followingUser   User?         @relation("followingUser", fields: [followingUserId], references: [id])
+  followingOrgId  String?
+  followingOrg    Organization? @relation(fields: [followingOrgId], references: [id])
+  createdAt       DateTime      @default(now())
+
+  @@unique([followerId, followingUserId])
+  @@unique([followerId, followingOrgId])
+  @@map("follows")
+}
+
+// ─── Messaging ──────────────────────────────────────────
+
+model Conversation {
+  id             String    @id @default(cuid())
+  participant1Id String
+  participant1   User      @relation("participant1", fields: [participant1Id], references: [id])
+  participant2Id String
+  participant2   User      @relation("participant2", fields: [participant2Id], references: [id])
+  messages       Message[]
+  updatedAt      DateTime  @updatedAt
+  createdAt      DateTime  @default(now())
+
+  @@unique([participant1Id, participant2Id])
+  @@map("conversations")
+}
+
+model Message {
   id             String       @id @default(cuid())
+  content        String
+  senderId       String
+  sender         User         @relation("sender", fields: [senderId], references: [id])
+  receiverId     String
+  receiver       User         @relation("receiver", fields: [receiverId], references: [id])
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  isRead         Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+
+  @@map("messages")
+}
+
+// ─── Sourcing (decentralized, no marketplace) ───────────
+
+model Product {
+  id             String            @id @default(cuid())
   name           String
   description    String?
   category       String?
-  isCertified    Boolean      @default(false)
+  unit           String?
+  isCertified    Boolean           @default(false)
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
+  organization   Organization      @relation(fields: [organizationId], references: [id])
   batches        Batch[]
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  requests       SourcingRequest[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
 
   @@map("products")
 }
 
+model SourcingRequest {
+  id             String          @id @default(cuid())
+  productId      String
+  product        Product         @relation(fields: [productId], references: [id])
+  requesterId    String
+  requester      User            @relation(fields: [requesterId], references: [id])
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  quantity       Decimal
+  message        String?
+  status         SourcingStatus  @default(PENDING)
+  allocations    BatchAllocation[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@map("sourcing_requests")
+}
+
+// ─── Batch engine (internal only) ───────────────────────
+
 model Batch {
-  id        String   @id @default(cuid())
-  productId String
-  product   Product  @relation(fields: [productId], references: [id])
-  batchCode String?
-  createdAt DateTime @default(now())
+  id                String            @id @default(cuid())
+  productId         String
+  product           Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  batchCode         String
+  totalQuantity     Decimal
+  availableQuantity Decimal
+  productionDate    DateTime?
+  expiryDate        DateTime?
+  status            BatchStatus       @default(ACTIVE)
+  allocations       BatchAllocation[]
+  recalls           Recall[]
+  createdAt         DateTime          @default(now())
 
   @@map("batches")
 }
 
-model Service {
-  id             String       @id @default(cuid())
+model BatchAllocation {
+  id                String          @id @default(cuid())
+  batchId           String
+  batch             Batch           @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  requestId         String
+  request           SourcingRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  allocatedQuantity Decimal
+  createdAt         DateTime        @default(now())
+
+  @@map("batch_allocations")
+}
+
+// ─── Smart Forms ────────────────────────────────────────
+
+model FormTemplate {
+  id             String        @id @default(cuid())
   name           String
   description    String?
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-
-  @@map("services")
-}
-
-model Post {
-  id             String       @id @default(cuid())
-  title          String
-  content        String
-  category       PostCategory @default(GENERAL)
-  authorId       String
-  author         User         @relation(fields: [authorId], references: [id])
+  version        Int           @default(1)
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  fields         FormField[]
+  entries        FormEntry[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
-  @@map("posts")
+  @@map("form_templates")
 }
+
+model FormField {
+  id         String        @id @default(cuid())
+  templateId String
+  template   FormTemplate  @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  label      String
+  type       FormFieldType @default(TEXT)
+  required   Boolean       @default(false)
+  options    String?       // JSON for SELECT options
+  sortOrder  Int           @default(0)
+
+  @@map("form_fields")
+}
+
+model FormEntry {
+  id             String        @id @default(cuid())
+  templateId     String
+  template       FormTemplate  @relation(fields: [templateId], references: [id])
+  userId         String
+  user           User          @relation(fields: [userId], references: [id])
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  status         String        @default("draft")
+  visibility     String        @default("private")
+  values         FormValue[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@map("form_entries")
+}
+
+model FormValue {
+  id       String    @id @default(cuid())
+  entryId  String
+  entry    FormEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  fieldName String
+  value    String?
+
+  @@map("form_values")
+}
+
+// ─── Recalls ────────────────────────────────────────────
+
+model Recall {
+  id             String       @id @default(cuid())
+  batchId        String
+  batch          Batch        @relation(fields: [batchId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  issue          String
+  instructions   String
+  createdById    String
+  createdBy      User         @relation(fields: [createdById], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@map("recalls")
+}
+
+// ─── Opportunities ──────────────────────────────────────
 
 model Job {
   id             String       @id @default(cuid())

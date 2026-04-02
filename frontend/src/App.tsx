@@ -15,6 +15,7 @@ import UserProfile from './pages/UserProfile';
 import Settings from './pages/Settings';
 import Feed from './pages/Feed';
 import Jobs from './pages/Jobs';
+import Messages from './pages/Messages';
 import AcceptInvitation from './pages/AcceptInvitation';
 import AuthCallback from './pages/AuthCallback';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -50,6 +51,7 @@ function App() {
               </ProtectedRoute>
             }
           >
+            <Route path="/feed" element={<Feed />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/orgs" element={<Organizations />} />
             <Route path="/orgs/create" element={<CreateOrganization />} />
@@ -59,7 +61,7 @@ function App() {
             <Route path="/orgs/:id/settings" element={<OrgSettings />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/:id" element={<UserProfile />} />
-            <Route path="/feed" element={<Feed />} />
+            <Route path="/messages" element={<Messages />} />
             <Route path="/jobs" element={<Jobs />} />
             <Route path="/dashboard/settings" element={<Settings />} />
           </Route>
