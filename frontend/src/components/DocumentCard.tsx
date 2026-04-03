@@ -52,7 +52,7 @@ export function DocumentCard({ document: doc, onDelete, canDelete }: Props) {
 
   return (
     <>
-    <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl p-4 shadow-sm hover:shadow-md dark:hover:shadow-black/20 transition-shadow flex gap-4">
+    <div className="bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-700/80 rounded-xl p-4 shadow-sm hover:shadow-md dark:hover:shadow-black/20 transition-shadow flex gap-4">
       {/* File icon */}
       <div className={`w-11 h-11 rounded-lg border flex items-center justify-center text-2xl flex-shrink-0 ${colorClass}`}>
         {icon}

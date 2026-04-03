@@ -85,7 +85,7 @@ export default function UserProfile() {
         <div className="bg-gradient-to-r from-blue-600 to-emerald-500 h-24 rounded-t-2xl" />
         <div className="px-6 pb-6 -mt-8">
           <div className="flex flex-col sm:flex-row items-start gap-5">
-            <Avatar name={user.name ?? user.email} size="xl" src={user.avatarUrl ?? undefined} className="ring-4 ring-white dark:ring-gray-900" />
+            <Avatar name={user.name ?? user.email} size="xl" src={user.avatarUrl ?? undefined} className="ring-4 ring-white dark:ring-neutral-800" />
             <div className="flex-1 mt-2 sm:mt-8">
               <div className="flex flex-wrap items-center gap-2 mb-1">
                 <h1 className="text-xl font-bold text-slate-900 dark:text-white">{user.name ?? 'Unnamed'}</h1>
@@ -110,7 +110,7 @@ export default function UserProfile() {
                   disabled={followLoading}
                   className={`px-4 py-2 text-sm font-medium rounded-xl transition-colors ${
                     isFollowing
-                      ? 'border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                      ? 'border border-gray-200 dark:border-neutral-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-neutral-700'
                       : 'bg-blue-600 text-white hover:bg-blue-700'
                   }`}
                 >
@@ -118,7 +118,7 @@ export default function UserProfile() {
                 </button>
                 <button
                   onClick={() => navigate(`/messages?to=${id}`)}
-                  className="px-4 py-2 text-sm font-medium border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  className="px-4 py-2 text-sm font-medium border border-gray-200 dark:border-neutral-700 text-gray-600 dark:text-gray-400 rounded-xl hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors"
                 >
                   Message
                 </button>
@@ -141,7 +141,7 @@ export default function UserProfile() {
         <Card>
           <p className="text-xs text-slate-400 uppercase tracking-wide font-medium mb-3">Organization</p>
           {user.organization ? (
-            <Link to={`/orgs/${user.organization.id}`} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+            <Link to={`/orgs/${user.organization.id}`} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors">
               <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center flex-shrink-0">
                 <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -163,7 +163,7 @@ export default function UserProfile() {
           {user.activityLogs.length > 0 ? (
             <div className="space-y-2">
               {user.activityLogs.slice(0, 5).map((log) => (
-                <div key={log.id} className="flex items-center justify-between py-1.5 border-b border-gray-50 dark:border-gray-800 last:border-0">
+                  <div key={log.id} className="flex items-center justify-between py-1.5 border-b border-gray-50 dark:border-neutral-700 last:border-0">
                   <div>
                     <p className="text-sm text-slate-700 dark:text-slate-300 capitalize">{log.action.replace(/_/g, ' ').toLowerCase()}</p>
                     <p className="text-xs text-slate-400">{log.entityType}</p>
@@ -184,9 +184,9 @@ export default function UserProfile() {
           <p className="text-xs text-slate-400 uppercase tracking-wide font-medium mb-3">Documents</p>
           <div className="space-y-2">
             {user.documents.map((doc) => (
-              <div key={doc.id} className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800 last:border-0">
+              <div key={doc.id} className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-neutral-700 last:border-0">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-sm">
+                  <div className="w-8 h-8 rounded-lg bg-gray-50 dark:bg-neutral-700 flex items-center justify-center text-sm">
                     {doc.fileType === 'pdf' ? '📄' : doc.fileType === 'doc' || doc.fileType === 'docx' ? '📝' : '📎'}
                   </div>
                   <div>

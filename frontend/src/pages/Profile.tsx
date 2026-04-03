@@ -77,7 +77,7 @@ export default function Profile() {
               { label: 'Role', value: role },
               { label: 'Member since', value: joinDate },
             ].map((row) => (
-              <div key={row.label} className="flex justify-between text-sm py-1.5 border-b border-gray-50 dark:border-gray-800 last:border-0">
+              <div key={row.label} className="flex justify-between text-sm py-1.5 border-b border-gray-50 dark:border-neutral-700/80 last:border-0">
                 <span className="text-slate-400">{row.label}</span>
                 <span className="text-slate-800 dark:text-slate-200 font-medium text-right max-w-[60%] truncate">{row.value}</span>
               </div>
@@ -93,7 +93,7 @@ export default function Profile() {
                 { label: 'Name', value: profile.organization.name },
                 { label: 'Type', value: profile.organization.type.charAt(0) + profile.organization.type.slice(1).toLowerCase() },
               ].map((row) => (
-                <div key={row.label} className="flex justify-between text-sm py-1.5 border-b border-gray-50 dark:border-gray-800 last:border-0">
+                <div key={row.label} className="flex justify-between text-sm py-1.5 border-b border-gray-50 dark:border-neutral-700/80 last:border-0">
                   <span className="text-slate-400">{row.label}</span>
                   <span className="text-slate-800 dark:text-slate-200 font-medium">{row.value}</span>
                 </div>

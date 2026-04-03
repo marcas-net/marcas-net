@@ -66,16 +66,16 @@ export default function Organizations() {
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 animate-pulse">
-              <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded w-2/3 mb-3" />
-              <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-1/3 mb-2" />
-              <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-1/2" />
+            <div key={i} className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-100 dark:border-neutral-700/80 p-6 animate-pulse">
+              <div className="h-4 bg-gray-100 dark:bg-neutral-800 rounded w-2/3 mb-3" />
+              <div className="h-3 bg-gray-100 dark:bg-neutral-800 rounded w-1/3 mb-2" />
+              <div className="h-3 bg-gray-100 dark:bg-neutral-800 rounded w-1/2" />
             </div>
           ))}
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-20">
-          <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-gray-100 dark:bg-neutral-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
@@ -113,7 +113,7 @@ export default function Organizations() {
                 {org.description && (
                   <p className="text-xs text-slate-500 line-clamp-2">{org.description}</p>
                 )}
-                <div className="mt-4 pt-3 border-t border-gray-50 dark:border-gray-800 flex items-center justify-between">
+                <div className="mt-4 pt-3 border-t border-gray-50 dark:border-neutral-700/80 flex items-center justify-between">
                   <span className="text-xs text-slate-400">
                     {(org as any)._count?.members ?? 0} member{((org as any)._count?.members ?? 0) !== 1 ? 's' : ''}
                   </span>

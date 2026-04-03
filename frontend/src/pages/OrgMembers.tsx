@@ -73,8 +73,8 @@ export default function OrgMembers() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Member list */}
-        <div className="lg:col-span-2 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-50 dark:border-gray-800 flex items-center justify-between">
+        <div className="lg:col-span-2 bg-white dark:bg-neutral-900 rounded-2xl border border-gray-100 dark:border-neutral-700/80 shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-gray-50 dark:border-neutral-700/80 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
               {loading ? 'Loading…' : `${members.length} member${members.length !== 1 ? 's' : ''}`}
             </h2>
@@ -84,10 +84,10 @@ export default function OrgMembers() {
             <div className="p-5 space-y-3">
               {[...Array(4)].map((_, i) => (
                 <div key={i} className="flex gap-3 animate-pulse">
-                  <div className="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 flex-shrink-0" />
+                  <div className="w-9 h-9 rounded-full bg-gray-100 dark:bg-neutral-800 flex-shrink-0" />
                   <div className="flex-1 space-y-2 pt-1">
-                    <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-1/2" />
-                    <div className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded w-1/3" />
+                    <div className="h-3 bg-gray-100 dark:bg-neutral-800 rounded w-1/2" />
+                    <div className="h-2.5 bg-gray-100 dark:bg-neutral-800 rounded w-1/3" />
                   </div>
                 </div>
               ))}
@@ -97,7 +97,7 @@ export default function OrgMembers() {
               No members yet.
             </div>
           ) : (
-            <ul className="divide-y divide-gray-50 dark:divide-gray-800">
+            <ul className="divide-y divide-gray-50 dark:divide-neutral-700/80">
               {members.map((member) => {
                 const initials = (member.name ?? member.email)
                   .split(' ')
@@ -111,7 +111,7 @@ export default function OrgMembers() {
                   year: 'numeric',
                 });
                 return (
-                  <li key={member.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                  <li key={member.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors">
                     <div className="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 flex items-center justify-center text-xs font-bold flex-shrink-0">
                       {initials}
                     </div>
@@ -138,7 +138,7 @@ export default function OrgMembers() {
 
         {/* Invite panel */}
         {canInvite && (
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
+          <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-100 dark:border-neutral-700/80 shadow-sm p-5">
             <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Invite Member</h2>
             <form onSubmit={handleInvite} className="space-y-3">
               <Input

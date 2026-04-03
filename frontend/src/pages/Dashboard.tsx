@@ -47,13 +47,13 @@ const Dashboard = () => {
 
       {/* Onboarding Checklist */}
       {showOnboarding && (
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-6">
+        <div className="bg-white dark:bg-neutral-800 rounded-2xl border border-gray-100 dark:border-neutral-700/80 shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Getting Started</h2>
+              <h2 className="text-sm font-semibold text-slate-700 dark:text-gray-300">Getting Started</h2>
               <p className="text-xs text-slate-400 mt-0.5">{completedCount} of {onboardingSteps.length} completed</p>
             </div>
-            <div className="w-24 h-2 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
+            <div className="w-24 h-2 rounded-full bg-gray-100 dark:bg-neutral-700 overflow-hidden">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-blue-500 to-green-500 transition-all duration-500"
                 style={{ width: `${(completedCount / onboardingSteps.length) * 100}%` }}
@@ -68,13 +68,13 @@ const Dashboard = () => {
                 className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-150 group ${
                   step.done
                     ? 'opacity-60'
-                    : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                    : 'hover:bg-gray-50 dark:hover:bg-neutral-700'
                 }`}
               >
                 <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
                   step.done
                     ? 'border-green-500 bg-green-500'
-                    : 'border-gray-300 dark:border-gray-600 group-hover:border-blue-400'
+                    : 'border-gray-300 dark:border-neutral-600 group-hover:border-blue-400'
                 }`}>
                   {step.done && (
                     <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,8 +140,8 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Quick actions */}
         <div className="lg:col-span-1">
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-6">
-            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">Quick Actions</h2>
+          <div className="bg-white dark:bg-neutral-800 rounded-2xl border border-gray-100 dark:border-neutral-700/80 shadow-sm p-6">
+            <h2 className="text-sm font-semibold text-slate-700 dark:text-gray-300 mb-4">Quick Actions</h2>
             <div className="space-y-2">
               {[
                 { label: 'Browse Organizations', desc: 'Find and join organizations', href: '/orgs', color: 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400' },
@@ -154,7 +154,7 @@ const Dashboard = () => {
                 <Link
                   key={a.href}
                   to={a.href}
-                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-150 group"
+                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-neutral-700 transition-all duration-150 group"
                 >
                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${a.color}`}>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -173,8 +173,8 @@ const Dashboard = () => {
 
         {/* Account info */}
         <div className="lg:col-span-2">
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-6">
-            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">Account Information</h2>
+          <div className="bg-white dark:bg-neutral-800 rounded-2xl border border-gray-100 dark:border-neutral-700/80 shadow-sm p-6">
+            <h2 className="text-sm font-semibold text-slate-700 dark:text-gray-300 mb-4">Account Information</h2>
             <div className="space-y-3">
               {[
                 { label: 'Name', value: user?.name ?? '—' },
@@ -182,7 +182,7 @@ const Dashboard = () => {
                 { label: 'Role', value: role },
                 { label: 'Organization', value: user?.organization?.name ?? 'Not joined yet' },
               ].map((row) => (
-                <div key={row.label} className="flex items-center justify-between py-2.5 border-b border-gray-50 dark:border-gray-800 last:border-0">
+                <div key={row.label} className="flex items-center justify-between py-2.5 border-b border-gray-50 dark:border-neutral-700 last:border-0">
                   <span className="text-xs text-slate-400 uppercase tracking-wide font-medium">{row.label}</span>
                   <span className="text-sm text-slate-800 dark:text-slate-200 font-medium">{row.value}</span>
                 </div>

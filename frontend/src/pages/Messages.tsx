@@ -164,9 +164,9 @@ export default function Messages() {
       <Card padding="none" className="overflow-hidden">
         <div className="flex h-[calc(100vh-10rem)]">
           {/* ─── Conversation List ─── */}
-          <div className="w-80 border-r border-slate-200 dark:border-slate-800 flex flex-col">
+          <div className="w-80 border-r border-slate-200 dark:border-neutral-700 flex flex-col">
             {/* Header */}
-            <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+            <div className="p-4 border-b border-slate-200 dark:border-neutral-700 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Messages</h2>
               <button
                 onClick={() => setShowNewMessage(true)}
@@ -181,21 +181,21 @@ export default function Messages() {
 
             {/* New message panel */}
             {showNewMessage && (
-              <div className="p-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+              <div className="p-3 border-b border-slate-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-900/50">
                 <input
                   type="text"
                   value={userSearch}
                   onChange={(e) => setUserSearch(e.target.value)}
                   placeholder="Search people..."
                   autoFocus
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-xs text-slate-900 dark:text-white placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
                 />
                 <div className="mt-2 max-h-40 overflow-y-auto space-y-0.5">
                   {users.map((u) => (
                     <button
                       key={u.id}
                       onClick={() => handleNewMessage(u.id)}
-                      className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg text-left hover:bg-white dark:hover:bg-slate-800 transition-colors"
+                      className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg text-left hover:bg-white dark:hover:bg-neutral-700 transition-colors"
                     >
                       <Avatar name={u.name ?? u.email} size="sm" />
                       <div className="min-w-0">
@@ -223,10 +223,10 @@ export default function Messages() {
                 <div className="p-4 space-y-3">
                   {[1, 2, 3].map((i) => (
                     <div key={i} className="flex items-center gap-3 animate-pulse">
-                      <div className="w-10 h-10 bg-slate-200 dark:bg-slate-700 rounded-full" />
+                      <div className="w-10 h-10 bg-slate-200 dark:bg-neutral-600 rounded-full" />
                       <div className="flex-1 space-y-1.5">
-                        <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-24" />
-                        <div className="h-2.5 bg-slate-200 dark:bg-slate-700 rounded w-32" />
+                        <div className="h-3 bg-slate-200 dark:bg-neutral-600 rounded w-24" />
+                        <div className="h-2.5 bg-slate-200 dark:bg-neutral-600 rounded w-32" />
                       </div>
                     </div>
                   ))}
@@ -252,7 +252,7 @@ export default function Messages() {
                     className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
                       activeConversationId === convo.id
                         ? 'bg-blue-50 dark:bg-blue-950/30 border-r-2 border-blue-600'
-                        : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                        : 'hover:bg-slate-50 dark:hover:bg-neutral-800/50'
                     }`}
                   >
                     <Avatar name={convo.otherUser.name} size="md" src={convo.otherUser.avatarUrl ?? undefined} />
@@ -292,7 +292,7 @@ export default function Messages() {
             {activeConvo ? (
               <>
                 {/* Thread Header */}
-                <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center gap-3">
+                <div className="p-4 border-b border-slate-200 dark:border-neutral-700 flex items-center gap-3">
                   <Avatar name={activeConvo.otherUser.name} size="md" src={activeConvo.otherUser.avatarUrl ?? undefined} />
                   <div>
                     <p className="text-sm font-semibold text-slate-900 dark:text-white">{activeConvo.otherUser.name}</p>
@@ -322,7 +322,7 @@ export default function Messages() {
                               className={`px-3.5 py-2.5 rounded-2xl text-xs leading-relaxed ${
                                 isMine
                                   ? 'bg-blue-600 text-white rounded-br-md'
-                                  : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-bl-md'
+                                  : 'bg-slate-100 dark:bg-neutral-700 text-slate-900 dark:text-white rounded-bl-md'
                               }`}
                             >
                               {msg.content}
@@ -336,7 +336,7 @@ export default function Messages() {
                 </div>
 
                 {/* Input */}
-                <form onSubmit={handleSend} className="p-4 border-t border-slate-200 dark:border-slate-800">
+                <form onSubmit={handleSend} className="p-4 border-t border-slate-200 dark:border-neutral-700">
                   <div className="flex gap-2">
                     <input
                       type="text"
@@ -344,7 +344,7 @@ export default function Messages() {
                       onChange={(e) => setMessageText(e.target.value)}
                       placeholder="Type a message..."
                       disabled={sending}
-                      className="flex-1 px-4 py-2.5 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                      className="flex-1 px-4 py-2.5 rounded-full border border-slate-200 dark:border-neutral-600 bg-slate-50 dark:bg-neutral-700 text-sm text-slate-900 dark:text-white placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
                     />
                     <button
                       type="submit"

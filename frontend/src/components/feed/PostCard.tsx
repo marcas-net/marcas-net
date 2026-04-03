@@ -1,0 +1,276 @@
+import { useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { Avatar } from '../ui/Avatar';
+import { Badge } from '../ui/Badge';
+import { toggleLike, addComment, deleteComment, type Post, type Comment } from '../../services/feedService';
+import toast from 'react-hot-toast';
+
+const categoryVariant: Record<string, 'blue' | 'green' | 'yellow' | 'purple' | 'gray'> = {
+  SUPPLY_OFFER: 'green',
+  PARTNERSHIP_REQUEST: 'blue',
+  INDUSTRY_ANNOUNCEMENT: 'yellow',
+  GENERAL: 'gray',
+};
+
+const categoryLabel: Record<string, string> = {
+  SUPPLY_OFFER: 'Supply Offer',
+  PARTNERSHIP_REQUEST: 'Partnership',
+  INDUSTRY_ANNOUNCEMENT: 'Announcement',
+  GENERAL: 'General',
+};
+
+const ROLE_LABELS: Record<string, string> = {
+  ADMIN: 'Admin',
+  ORG_ADMIN: 'Org Admin',
+  USER: 'Food Producer',
+  LAB: 'Nutrition Lab',
+  UNIVERSITY: 'University',
+  REGULATOR: 'Regulator',
+  PROFESSIONAL: 'Consultant',
+};
+
+function timeAgo(date: string) {
+  const diff = Date.now() - new Date(date).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d`;
+  return `${Math.floor(days / 7)}w`;
+}
+
+interface PostCardProps {
+  post: Post;
+  userId?: string;
+  onDelete: (id: string) => void;
+  onLikeToggle: (postId: string, liked: boolean, count: number) => void;
+  onCommentAdded: (postId: string, comment: Comment) => void;
+  onCommentDeleted: (postId: string, commentId: string) => void;
+}
+
+export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded, onCommentDeleted }: PostCardProps) {
+  const [showComments, setShowComments] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [submittingComment, setSubmittingComment] = useState(false);
+  const [liking, setLiking] = useState(false);
+  const commentInputRef = useRef<HTMLInputElement>(null);
+
+  const handleLike = async () => {
+    if (liking) return;
+    setLiking(true);
+    try {
+      const { liked, likesCount } = await toggleLike(post.id);
+      onLikeToggle(post.id, liked, likesCount);
+    } catch {
+      toast.error('Failed to like post');
+    } finally {
+      setLiking(false);
+    }
+  };
+
+  const handleComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!commentText.trim()) return;
+    setSubmittingComment(true);
+    try {
+      const comment = await addComment(post.id, commentText.trim());
+      onCommentAdded(post.id, comment);
+      setCommentText('');
+    } catch {
+      toast.error('Failed to add comment');
+    } finally {
+      setSubmittingComment(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    try {
+      await deleteComment(post.id, commentId);
+      onCommentDeleted(post.id, commentId);
+    } catch {
+      toast.error('Failed to delete comment');
+    }
+  };
+
+  return (
+    <div className="bg-white dark:bg-neutral-800 rounded-xl border border-gray-100 dark:border-neutral-700/80 shadow-sm hover:shadow-md dark:hover:shadow-black/20 transition-shadow">
+      <div className="p-5">
+        {/* Author Row */}
+        <div className="flex items-start gap-3 mb-3">
+          <Link to={`/profile/${post.author.id}`} className="flex-shrink-0">
+            <Avatar name={post.author.name} size="md" src={post.author.avatarUrl ?? undefined} />
+          </Link>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <Link
+                to={`/profile/${post.author.id}`}
+                className="text-sm font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 truncate transition-colors"
+              >
+                {post.author.name}
+              </Link>
+              <span className="text-xs text-gray-300 dark:text-gray-600">&middot;</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500">{timeAgo(post.createdAt)}</span>
+            </div>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {ROLE_LABELS[post.author.role] ?? post.author.role}
+              </span>
+              {post.organization && (
+                <>
+                  <span className="text-xs text-gray-300 dark:text-gray-600">·</span>
+                  <Link
+                    to={`/orgs/${post.organizationId}`}
+                    className="text-xs text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 truncate transition-colors"
+                  >
+                    {post.organization.name}
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Badge variant={categoryVariant[post.category] || 'gray'}>
+              {categoryLabel[post.category] || post.category}
+            </Badge>
+            {post.authorId === userId && (
+              <button
+                onClick={() => onDelete(post.id)}
+                className="p-1.5 rounded-lg text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                title="Delete post"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Content */}
+        <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
+          {post.content}
+        </p>
+
+        {/* Stats Row */}
+        {(post.likesCount > 0 || post.commentsCount > 0) && (
+          <div className="flex items-center gap-4 mt-3 pt-2">
+            {post.likesCount > 0 && (
+              <span className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
+                <span className="flex items-center justify-center w-4 h-4 rounded-full bg-blue-500 text-white">
+                  <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
+                  </svg>
+                </span>
+                {post.likesCount}
+              </span>
+            )}
+            {post.commentsCount > 0 && (
+              <button
+                onClick={() => setShowComments(!showComments)}
+                className="text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              >
+                {post.commentsCount} comment{post.commentsCount !== 1 ? 's' : ''}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Action Buttons */}
+      <div className="border-t border-gray-100 dark:border-neutral-700/80 px-2 py-1 flex">
+        <button
+          onClick={handleLike}
+          disabled={liking}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-medium transition-all ${
+            post.likedByMe
+              ? 'text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30'
+              : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-neutral-700/50'
+          }`}
+        >
+          <svg className="w-[18px] h-[18px]" fill={post.likedByMe ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+          </svg>
+          Like
+        </button>
+        <button
+          onClick={() => {
+            setShowComments(!showComments);
+            if (!showComments) setTimeout(() => commentInputRef.current?.focus(), 100);
+          }}
+          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-all"
+        >
+          <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+          Comment
+        </button>
+        <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-all">
+          <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+          </svg>
+          Share
+        </button>
+      </div>
+
+      {/* Comments Section */}
+      {showComments && (
+        <div className="border-t border-gray-100 dark:border-neutral-700/80 px-5 py-3 space-y-3 bg-gray-50/50 dark:bg-neutral-900/30">
+          {/* Existing comments */}
+          {post.comments.map((c) => (
+            <div key={c.id} className="flex gap-2.5 group">
+              <Link to={`/profile/${c.user.id}`} className="flex-shrink-0 mt-0.5">
+                <Avatar name={c.user.name} size="xs" src={c.user.avatarUrl ?? undefined} />
+              </Link>
+              <div className="flex-1 min-w-0">
+                <div className="bg-white dark:bg-neutral-700/60 rounded-xl px-3 py-2 inline-block max-w-full">
+                  <Link to={`/profile/${c.user.id}`} className="text-xs font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                    {c.user.name}
+                  </Link>
+                  <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5">{c.content}</p>
+                </div>
+                <div className="flex items-center gap-3 mt-1 px-1">
+                  <span className="text-[10px] text-gray-400 dark:text-gray-500">{timeAgo(c.createdAt)}</span>
+                  {c.userId === userId && (
+                    <button
+                      onClick={() => handleDeleteComment(c.id)}
+                      className="text-[10px] text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      Delete
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {/* Comment input */}
+          <form onSubmit={handleComment} className="flex gap-2.5">
+            <Avatar name={undefined} size="xs" />
+            <div className="flex-1 flex gap-2">
+              <input
+                ref={commentInputRef}
+                type="text"
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder="Write a comment..."
+                disabled={submittingComment}
+                className="flex-1 px-3 py-2 rounded-full border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-700/50 text-xs text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-500 outline-none transition-colors"
+              />
+              {commentText.trim() && (
+                <button
+                  type="submit"
+                  disabled={submittingComment}
+                  className="px-3 py-1.5 rounded-full bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                >
+                  Post
+                </button>
+              )}
+            </div>
+          </form>
+        </div>
+      )}
+    </div>
+  );
+}

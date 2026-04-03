@@ -90,7 +90,7 @@ export default function OrgSettings() {
   if (loading) return <PageLoader />;
   if (!org) return <div className="text-center py-20 text-slate-400">Organization not found.</div>;
 
-  const inputClass = 'w-full px-4 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all';
+  const inputClass = 'w-full px-4 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all';
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -136,7 +136,7 @@ export default function OrgSettings() {
         <p className="text-xs text-slate-400 uppercase tracking-wide font-medium mb-4">Members ({members.length})</p>
         <div className="space-y-2">
           {members.map((m) => (
-            <div key={m.id} className="flex items-center justify-between py-2.5 border-b border-gray-50 dark:border-gray-800 last:border-0">
+            <div key={m.id} className="flex items-center justify-between py-2.5 border-b border-gray-50 dark:border-neutral-700/80 last:border-0">
               <div className="flex items-center gap-3">
                 <Avatar name={m.name ?? m.email} size="sm" />
                 <div>

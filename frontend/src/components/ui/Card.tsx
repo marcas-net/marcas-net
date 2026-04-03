@@ -20,9 +20,9 @@ export function Card({ children, className = '', padding = 'md', hover = false, 
     <div
       onClick={onClick}
       className={`
-        bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm dark:shadow-black/10
+        bg-white dark:bg-neutral-800 rounded-2xl border border-gray-100 dark:border-neutral-700/80 shadow-sm dark:shadow-black/10
         ${paddingClasses[padding]}
-        ${hover ? 'transition-all duration-200 hover:shadow-md dark:hover:shadow-black/20 hover:border-gray-200 dark:hover:border-gray-700 cursor-pointer hover:-translate-y-0.5' : ''}
+        ${hover ? 'transition-all duration-200 hover:shadow-md dark:hover:shadow-black/20 hover:border-gray-200 dark:hover:border-neutral-600 cursor-pointer hover:-translate-y-0.5' : ''}
         ${className}
       `.trim()}
     >

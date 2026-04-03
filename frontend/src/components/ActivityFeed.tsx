@@ -30,8 +30,8 @@ export function ActivityFeed() {
   }, []);
 
   return (
-    <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-sm overflow-hidden">
-      <div className="px-5 py-4 border-b border-gray-50 dark:border-gray-800">
+    <div className="bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-700/80 rounded-2xl shadow-sm overflow-hidden">
+      <div className="px-5 py-4 border-b border-gray-50 dark:border-neutral-700/80">
         <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Recent Activity</h2>
       </div>
 
@@ -39,10 +39,10 @@ export function ActivityFeed() {
         <div className="px-5 py-8 space-y-3">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="flex gap-3 animate-pulse">
-              <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex-shrink-0" />
+              <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-neutral-800 flex-shrink-0" />
               <div className="flex-1 space-y-1.5 pt-1">
-                <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-3/4" />
-                <div className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded w-1/3" />
+                <div className="h-3 bg-gray-100 dark:bg-neutral-800 rounded w-3/4" />
+                <div className="h-2.5 bg-gray-100 dark:bg-neutral-800 rounded w-1/3" />
               </div>
             </div>
           ))}
@@ -52,7 +52,7 @@ export function ActivityFeed() {
           No activity yet. Start uploading documents or joining organizations.
         </div>
       ) : (
-        <ul className="divide-y divide-gray-50 dark:divide-gray-800">
+        <ul className="divide-y divide-gray-50 dark:divide-neutral-700/80">
           {activity.map((item) => {
             const meta = ACTION_LABELS[item.action] ?? {
               label: item.action.replace(/_/g, ' '),
@@ -62,7 +62,7 @@ export function ActivityFeed() {
             const displayName = item.user.name ?? item.user.email.split('@')[0];
 
             return (
-              <li key={item.id} className="flex gap-3 items-start px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              <li key={item.id} className="flex gap-3 items-start px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-base flex-shrink-0 ${meta.color}`}>
                   {meta.icon}
                 </div>
