@@ -2,16 +2,21 @@ import { Request, Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../config/database';
 
-const postInclude = (userId?: string) => ({
-  author: { select: { id: true, name: true, role: true, avatarUrl: true } },
-  organization: { select: { id: true, name: true, type: true } },
-  comments: {
-    include: { user: { select: { id: true, name: true, avatarUrl: true } } },
-    orderBy: { createdAt: 'asc' as const },
-  },
-  _count: { select: { comments: true, likes: true } },
-  likes: userId ? { where: { userId } } : false,
-});
+const postInclude = (userId?: string) => {
+  const base: Record<string, any> = {
+    author: { select: { id: true, name: true, role: true, avatarUrl: true } },
+    organization: { select: { id: true, name: true, type: true } },
+    comments: {
+      include: { user: { select: { id: true, name: true, avatarUrl: true } } },
+      orderBy: { createdAt: 'asc' as const },
+    },
+    _count: { select: { comments: true, likes: true } },
+  };
+  if (userId) {
+    base.likes = { where: { userId } };
+  }
+  return base;
+};
 
 export const getPosts = async (req: AuthRequest, res: Response) => {
   try {

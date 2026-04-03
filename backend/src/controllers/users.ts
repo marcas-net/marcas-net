@@ -37,10 +37,11 @@ export const getUserById = async (req: Request<{ id: string }>, res: Response) =
   }
 };
 
-export const listUsers = async (_req: Request, res: Response) => {
+export const listUsers = async (req: Request, res: Response) => {
   try {
+    const limit = parseInt(req.query.limit as string) || undefined;
     const users = await findAllUsers();
-    res.json({ users });
+    res.json({ users: limit ? users.slice(0, limit) : users });
   } catch (error) {
     console.error('List users error:', error);
     res.status(500).json({ error: 'Internal server error' });
