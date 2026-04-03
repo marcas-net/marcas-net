@@ -104,9 +104,19 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'OK', message: 'MarcasNet API is running', timestamp: new Date().toISOString() });
 });
 
-app.get('/', (_req, res) => {
-  res.json({ status: 'OK', name: 'MarcasNet API', version: '2.0.0' });
-});
+// ─── Serve frontend in production ────────────────────────
+const publicDir = path.join(__dirname, '../public');
+if (fs.existsSync(publicDir)) {
+  app.use(express.static(publicDir));
+  // SPA fallback: any non-API route serves index.html
+  app.get(/^(?!\/api\/)(?!\/uploads\/)(?!\/socket\.io\/).*/, (_req, res) => {
+    res.sendFile(path.join(publicDir, 'index.html'));
+  });
+} else {
+  app.get('/', (_req, res) => {
+    res.json({ status: 'OK', name: 'MarcasNet API', version: '2.0.0' });
+  });
+}
 
 // Centralized error handler
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
