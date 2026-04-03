@@ -4,53 +4,51 @@ import prisma from '../config/database';
 import fs from 'fs';
 import path from 'path';
 
-const postInclude = (userId?: string) => {
+const postInclude = (userId?: string, includeMedia = false) => {
   const base: Record<string, any> = {
     author: { select: { id: true, name: true, role: true, avatarUrl: true } },
     organization: { select: { id: true, name: true, type: true } },
-    media: { select: { id: true, url: true, type: true, filename: true, size: true } },
     comments: {
       include: { user: { select: { id: true, name: true, avatarUrl: true } } },
       orderBy: { createdAt: 'asc' as const },
     },
     _count: { select: { comments: true, likes: true } },
   };
+  if (includeMedia) {
+    base.media = { select: { id: true, url: true, type: true, filename: true, size: true } };
+  }
   if (userId) {
     base.likes = { where: { userId } };
   }
   return base;
 };
 
+let mediaTableExists: boolean | null = null;
+
+async function checkMediaTable(): Promise<boolean> {
+  if (mediaTableExists !== null) return mediaTableExists;
+  try {
+    await prisma.$queryRawUnsafe(`SELECT 1 FROM "post_media" LIMIT 0`);
+    mediaTableExists = true;
+  } catch {
+    mediaTableExists = false;
+  }
+  return mediaTableExists;
+}
+
 export const getPosts = async (req: AuthRequest, res: Response) => {
   try {
     const category = req.query.category as string | undefined;
     const userId = req.user?.id as string | undefined;
     const where = category && category !== 'ALL' ? { category: category as any } : {};
+    const hasMedia = await checkMediaTable();
 
-    let posts;
-    try {
-      posts = await prisma.post.findMany({
-        where,
-        include: postInclude(userId),
-        orderBy: { createdAt: 'desc' },
-        take: 50,
-      });
-    } catch (queryErr: any) {
-      // Fallback: if post_media table doesn't exist yet, query without media
-      if (queryErr.message?.includes('post_media') || queryErr.code === 'P2021') {
-        console.warn('post_media table missing, querying without media');
-        const fallbackInclude = postInclude(userId);
-        delete fallbackInclude.media;
-        posts = await prisma.post.findMany({
-          where,
-          include: fallbackInclude,
-          orderBy: { createdAt: 'desc' },
-          take: 50,
-        });
-      } else {
-        throw queryErr;
-      }
-    }
+    const posts = await prisma.post.findMany({
+      where,
+      include: postInclude(userId, hasMedia),
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
 
     const mapped = posts.map((p: any) => ({
       ...p,
@@ -72,9 +70,10 @@ export const getPosts = async (req: AuthRequest, res: Response) => {
 export const getPostById = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.id as string | undefined;
+    const hasMedia = await checkMediaTable();
     const post = await prisma.post.findUnique({
       where: { id: req.params.id as string },
-      include: postInclude(userId),
+      include: postInclude(userId, hasMedia),
     });
     if (!post) return res.status(404).json({ error: 'Post not found' });
 
@@ -102,12 +101,13 @@ export const createPost = async (req: AuthRequest, res: Response) => {
     }
 
     const user = await prisma.user.findUnique({ where: { id: req.user.id as string } });
+    const hasMedia = await checkMediaTable();
 
     const files = (req.files as Express.Multer.File[]) || [];
     const imageExts = /\.(jpg|jpeg|png|gif|webp)$/i;
 
     let mediaData: any = undefined;
-    if (files.length > 0) {
+    if (hasMedia && files.length > 0) {
       mediaData = {
         create: files.map((f) => ({
           url: `/uploads/media/${f.filename}`,
@@ -118,40 +118,21 @@ export const createPost = async (req: AuthRequest, res: Response) => {
       };
     }
 
-    let post;
-    try {
-      post = await prisma.post.create({
-        data: {
-          content: content.trim(),
-          category: category || 'GENERAL',
-          authorId: req.user.id as string,
-          organizationId: user?.organizationId ?? undefined,
-          media: mediaData,
-        },
-        include: postInclude(req.user.id as string),
-      });
-    } catch (queryErr: any) {
-      if (queryErr.message?.includes('post_media') || queryErr.code === 'P2021') {
-        console.warn('post_media table missing, creating post without media');
-        const fallbackInclude = postInclude(req.user.id as string);
-        delete fallbackInclude.media;
-        post = await prisma.post.create({
-          data: {
-            content: content.trim(),
-            category: category || 'GENERAL',
-            authorId: req.user.id as string,
-            organizationId: user?.organizationId ?? undefined,
-          },
-          include: fallbackInclude,
-        });
-      } else {
-        throw queryErr;
-      }
-    }
+    const post = await prisma.post.create({
+      data: {
+        content: content.trim(),
+        category: category || 'GENERAL',
+        authorId: req.user.id as string,
+        organizationId: user?.organizationId ?? undefined,
+        ...(mediaData ? { media: mediaData } : {}),
+      },
+      include: postInclude(req.user.id as string, hasMedia),
+    });
 
     res.status(201).json({
       post: {
         ...post,
+        media: (post as any).media ?? [],
         likedByMe: false,
         likesCount: 0,
         commentsCount: 0,
@@ -168,22 +149,18 @@ export const createPost = async (req: AuthRequest, res: Response) => {
 export const deletePost = async (req: AuthRequest, res: Response) => {
   try {
     const id = req.params.id as string;
-    let post: any;
-    try {
-      post = await prisma.post.findUnique({
-        where: { id },
-        include: { media: true },
-      });
-    } catch {
-      post = await prisma.post.findUnique({ where: { id } });
-    }
+    const hasMedia = await checkMediaTable();
+    const post = await prisma.post.findUnique({
+      where: { id },
+      ...(hasMedia ? { include: { media: true } } : {}),
+    });
     if (!post) return res.status(404).json({ error: 'Post not found' });
     if (post.authorId !== req.user.id && req.user.role !== 'ADMIN') {
       return res.status(403).json({ error: 'Not authorized' });
     }
 
     // Clean up media files from disk
-    for (const m of (post.media ?? [])) {
+    for (const m of ((post as any).media ?? [])) {
       const filePath = path.join(__dirname, '../..', m.url);
       if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
     }

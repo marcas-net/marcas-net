@@ -101,7 +101,7 @@ app.use('/api/messages', messagingRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {
-  res.json({ status: 'OK', message: 'MarcasNet API is running', timestamp: new Date().toISOString() });
+  res.json({ status: 'OK', message: 'MarcasNet API is running', version: 'v4', timestamp: new Date().toISOString() });
 });
 
 // ─── Serve frontend in production ────────────────────────
