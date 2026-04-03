@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
-  getConversations, getMessages, sendMessage, getUnreadCount,
+  getConversations, getMessages, sendMessage,
   type Conversation, type Message,
 } from '../services/messagingService';
 import { listUsers, type UserListItem } from '../services/userService';

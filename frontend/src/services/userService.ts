@@ -6,6 +6,7 @@ export interface PublicUser {
   email: string;
   bio: string | null;
   role: string;
+  avatarUrl?: string | null;
   organizationId: string | null;
   organization: { id: string; name: string; type: string } | null;
   documents: { id: string; title: string; fileType: string | null; createdAt: string }[];
