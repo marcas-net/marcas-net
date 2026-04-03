@@ -63,9 +63,9 @@ export const getPosts = async (req: AuthRequest, res: Response) => {
     }));
 
     res.json({ posts: mapped });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Get posts error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error', debug: error?.message || String(error) });
   }
 };
 
@@ -159,9 +159,9 @@ export const createPost = async (req: AuthRequest, res: Response) => {
         _count: undefined,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Create post error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error', debug: error?.message || String(error) });
   }
 };
 
