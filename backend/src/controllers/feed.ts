@@ -27,15 +27,34 @@ export const getPosts = async (req: AuthRequest, res: Response) => {
     const userId = req.user?.id as string | undefined;
     const where = category && category !== 'ALL' ? { category: category as any } : {};
 
-    const posts = await prisma.post.findMany({
-      where,
-      include: postInclude(userId),
-      orderBy: { createdAt: 'desc' },
-      take: 50,
-    });
+    let posts;
+    try {
+      posts = await prisma.post.findMany({
+        where,
+        include: postInclude(userId),
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+      });
+    } catch (queryErr: any) {
+      // Fallback: if post_media table doesn't exist yet, query without media
+      if (queryErr.message?.includes('post_media') || queryErr.code === 'P2021') {
+        console.warn('post_media table missing, querying without media');
+        const fallbackInclude = postInclude(userId);
+        delete fallbackInclude.media;
+        posts = await prisma.post.findMany({
+          where,
+          include: fallbackInclude,
+          orderBy: { createdAt: 'desc' },
+          take: 50,
+        });
+      } else {
+        throw queryErr;
+      }
+    }
 
     const mapped = posts.map((p: any) => ({
       ...p,
+      media: p.media ?? [],
       likedByMe: userId ? p.likes?.length > 0 : false,
       likesCount: p._count.likes,
       commentsCount: p._count.comments,
@@ -87,23 +106,48 @@ export const createPost = async (req: AuthRequest, res: Response) => {
     const files = (req.files as Express.Multer.File[]) || [];
     const imageExts = /\.(jpg|jpeg|png|gif|webp)$/i;
 
-    const post = await prisma.post.create({
-      data: {
-        content: content.trim(),
-        category: category || 'GENERAL',
-        authorId: req.user.id as string,
-        organizationId: user?.organizationId ?? undefined,
-        media: files.length > 0 ? {
-          create: files.map((f) => ({
-            url: `/uploads/media/${f.filename}`,
-            type: imageExts.test(f.originalname) ? 'image' : 'video',
-            filename: f.originalname,
-            size: f.size,
-          })),
-        } : undefined,
-      },
-      include: postInclude(req.user.id as string),
-    });
+    let mediaData: any = undefined;
+    if (files.length > 0) {
+      mediaData = {
+        create: files.map((f) => ({
+          url: `/uploads/media/${f.filename}`,
+          type: imageExts.test(f.originalname) ? 'image' : 'video',
+          filename: f.originalname,
+          size: f.size,
+        })),
+      };
+    }
+
+    let post;
+    try {
+      post = await prisma.post.create({
+        data: {
+          content: content.trim(),
+          category: category || 'GENERAL',
+          authorId: req.user.id as string,
+          organizationId: user?.organizationId ?? undefined,
+          media: mediaData,
+        },
+        include: postInclude(req.user.id as string),
+      });
+    } catch (queryErr: any) {
+      if (queryErr.message?.includes('post_media') || queryErr.code === 'P2021') {
+        console.warn('post_media table missing, creating post without media');
+        const fallbackInclude = postInclude(req.user.id as string);
+        delete fallbackInclude.media;
+        post = await prisma.post.create({
+          data: {
+            content: content.trim(),
+            category: category || 'GENERAL',
+            authorId: req.user.id as string,
+            organizationId: user?.organizationId ?? undefined,
+          },
+          include: fallbackInclude,
+        });
+      } else {
+        throw queryErr;
+      }
+    }
 
     res.status(201).json({
       post: {
@@ -124,17 +168,22 @@ export const createPost = async (req: AuthRequest, res: Response) => {
 export const deletePost = async (req: AuthRequest, res: Response) => {
   try {
     const id = req.params.id as string;
-    const post = await prisma.post.findUnique({
-      where: { id },
-      include: { media: true },
-    });
+    let post: any;
+    try {
+      post = await prisma.post.findUnique({
+        where: { id },
+        include: { media: true },
+      });
+    } catch {
+      post = await prisma.post.findUnique({ where: { id } });
+    }
     if (!post) return res.status(404).json({ error: 'Post not found' });
     if (post.authorId !== req.user.id && req.user.role !== 'ADMIN') {
       return res.status(403).json({ error: 'Not authorized' });
     }
 
     // Clean up media files from disk
-    for (const m of post.media) {
+    for (const m of (post.media ?? [])) {
       const filePath = path.join(__dirname, '../..', m.url);
       if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
     }
