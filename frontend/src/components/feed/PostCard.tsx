@@ -153,6 +153,45 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
           {post.content}
         </p>
 
+        {/* Media Gallery */}
+        {post.media && post.media.length > 0 && (
+          <div className={`mt-3 grid gap-1.5 rounded-xl overflow-hidden ${
+            post.media.length === 1 ? 'grid-cols-1' :
+            post.media.length === 2 ? 'grid-cols-2' :
+            post.media.length === 3 ? 'grid-cols-2' :
+            'grid-cols-2'
+          }`}>
+            {post.media.map((m, i) => {
+              const backendUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+              const src = m.url.startsWith('http') ? m.url : `${backendUrl}${m.url}`;
+              const isFirstOfThree = post.media.length === 3 && i === 0;
+
+              return (
+                <div
+                  key={m.id}
+                  className={`relative bg-gray-100 dark:bg-neutral-700 ${isFirstOfThree ? 'row-span-2' : ''}`}
+                >
+                  {m.type === 'video' ? (
+                    <video
+                      src={src}
+                      controls
+                      preload="metadata"
+                      className={`w-full object-cover ${post.media.length === 1 ? 'max-h-[500px]' : isFirstOfThree ? 'h-full' : 'h-48'}`}
+                    />
+                  ) : (
+                    <img
+                      src={src}
+                      alt=""
+                      loading="lazy"
+                      className={`w-full object-cover ${post.media.length === 1 ? 'max-h-[500px]' : isFirstOfThree ? 'h-full' : 'h-48'}`}
+                    />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         {/* Stats Row */}
         {(post.likesCount > 0 || post.commentsCount > 0) && (
           <div className="flex items-center gap-4 mt-3 pt-2">

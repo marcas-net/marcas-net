@@ -9,6 +9,14 @@ export interface Comment {
   createdAt: string;
 }
 
+export interface PostMedia {
+  id: string;
+  url: string;
+  type: 'image' | 'video';
+  filename: string;
+  size: number;
+}
+
 export interface Post {
   id: string;
   content: string;
@@ -17,6 +25,7 @@ export interface Post {
   author: { id: string; name: string; role: string; avatarUrl: string | null };
   organizationId: string | null;
   organization: { id: string; name: string; type: string } | null;
+  media: PostMedia[];
   comments: Comment[];
   likedByMe: boolean;
   likesCount: number;
@@ -41,8 +50,17 @@ export const getPostById = async (id: string): Promise<Post> => {
 export const createPost = async (data: {
   content: string;
   category?: string;
+  media?: File[];
 }): Promise<Post> => {
-  const res = await api.post('/feed', data);
+  const formData = new FormData();
+  formData.append('content', data.content);
+  if (data.category) formData.append('category', data.category);
+  if (data.media) {
+    data.media.forEach((file) => formData.append('media', file));
+  }
+  const res = await api.post('/feed', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
   return res.data.post;
 };
 

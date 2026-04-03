@@ -1,4 +1,7 @@
 import express from 'express';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 import {
   getPosts, getPostById, createPost, deletePost,
   addComment, deleteComment,
@@ -9,10 +12,37 @@ import { authenticateToken } from '../middleware/auth';
 
 const router = express.Router();
 
+// ─── Media upload config ─────────────────────────────────
+const mediaDir = path.join(__dirname, '../../uploads/media');
+if (!fs.existsSync(mediaDir)) fs.mkdirSync(mediaDir, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: mediaDir,
+  filename: (_req, file, cb) => {
+    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    cb(null, `${unique}${path.extname(file.originalname)}`);
+  },
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB for videos
+  fileFilter: (_req, file, cb) => {
+    const allowedImage = /\.(jpg|jpeg|png|gif|webp)$/i;
+    const allowedVideo = /\.(mp4|webm|mov)$/i;
+    const ext = path.extname(file.originalname);
+    if (allowedImage.test(ext) || allowedVideo.test(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only images (jpg, png, gif, webp) and videos (mp4, webm, mov) are allowed'));
+    }
+  },
+});
+
 // Posts
 router.get('/', authenticateToken, getPosts);
 router.get('/:id', authenticateToken, getPostById);
-router.post('/', authenticateToken, createPost);
+router.post('/', authenticateToken, upload.array('media', 10), createPost);
 router.delete('/:id', authenticateToken, deletePost);
 
 // Comments

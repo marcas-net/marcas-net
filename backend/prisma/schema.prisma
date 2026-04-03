@@ -243,12 +243,26 @@ model Post {
   author         User          @relation(fields: [authorId], references: [id])
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
+  media          PostMedia[]
   comments       Comment[]
   likes          Like[]
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
   @@map("posts")
+}
+
+model PostMedia {
+  id        String   @id @default(cuid())
+  url       String
+  type      String   // "image" or "video"
+  filename  String
+  size      Int
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@map("post_media")
 }
 
 model Comment {

@@ -1,11 +1,14 @@
 import { Request, Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../config/database';
+import fs from 'fs';
+import path from 'path';
 
 const postInclude = (userId?: string) => {
   const base: Record<string, any> = {
     author: { select: { id: true, name: true, role: true, avatarUrl: true } },
     organization: { select: { id: true, name: true, type: true } },
+    media: { select: { id: true, url: true, type: true, filename: true, size: true } },
     comments: {
       include: { user: { select: { id: true, name: true, avatarUrl: true } } },
       orderBy: { createdAt: 'asc' as const },
@@ -81,12 +84,23 @@ export const createPost = async (req: AuthRequest, res: Response) => {
 
     const user = await prisma.user.findUnique({ where: { id: req.user.id as string } });
 
+    const files = (req.files as Express.Multer.File[]) || [];
+    const imageExts = /\.(jpg|jpeg|png|gif|webp)$/i;
+
     const post = await prisma.post.create({
       data: {
         content: content.trim(),
         category: category || 'GENERAL',
         authorId: req.user.id as string,
         organizationId: user?.organizationId ?? undefined,
+        media: files.length > 0 ? {
+          create: files.map((f) => ({
+            url: `/uploads/media/${f.filename}`,
+            type: imageExts.test(f.originalname) ? 'image' : 'video',
+            filename: f.originalname,
+            size: f.size,
+          })),
+        } : undefined,
       },
       include: postInclude(req.user.id as string),
     });
@@ -110,10 +124,19 @@ export const createPost = async (req: AuthRequest, res: Response) => {
 export const deletePost = async (req: AuthRequest, res: Response) => {
   try {
     const id = req.params.id as string;
-    const post = await prisma.post.findUnique({ where: { id } });
+    const post = await prisma.post.findUnique({
+      where: { id },
+      include: { media: true },
+    });
     if (!post) return res.status(404).json({ error: 'Post not found' });
     if (post.authorId !== req.user.id && req.user.role !== 'ADMIN') {
       return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    // Clean up media files from disk
+    for (const m of post.media) {
+      const filePath = path.join(__dirname, '../..', m.url);
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
     }
 
     await prisma.post.delete({ where: { id } });

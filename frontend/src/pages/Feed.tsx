@@ -38,8 +38,8 @@ export default function Feed() {
     loadPosts(category);
   }, [category]);
 
-  const handleCreate = async (content: string, postCategory: string) => {
-    const post = await createPost({ content, category: postCategory });
+  const handleCreate = async (content: string, postCategory: string, media?: File[]) => {
+    const post = await createPost({ content, category: postCategory, media });
     setPosts((prev) => [post, ...prev]);
     toast.success('Post published');
   };

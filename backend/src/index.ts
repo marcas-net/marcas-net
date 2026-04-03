@@ -42,8 +42,10 @@ initSocketServer(httpServer);
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, '../uploads');
 const documentsDir = path.join(__dirname, '../uploads/documents');
+const mediaDir = path.join(__dirname, '../uploads/media');
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 if (!fs.existsSync(documentsDir)) fs.mkdirSync(documentsDir, { recursive: true });
+if (!fs.existsSync(mediaDir)) fs.mkdirSync(mediaDir, { recursive: true });
 
 // Middleware
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
