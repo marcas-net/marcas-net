@@ -16,8 +16,11 @@ COPY tsconfig.json ./
 COPY src ./src
 RUN npx tsc
 
-# Expose port
-EXPOSE 3000
+# Create uploads directories
+RUN mkdir -p uploads/documents uploads/media
 
-# Run migrations then start server
-CMD npx prisma migrate deploy && node dist/index.js
+# Expose port (Railway sets PORT dynamically)
+EXPOSE 5000
+
+# Start server — migrate first but don't block startup on failure
+CMD sh -c 'npx prisma migrate deploy || echo "Migration warning: continuing anyway" && node dist/index.js'
