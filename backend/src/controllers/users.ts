@@ -155,9 +155,16 @@ export const getUserPosts = async (req: Request<{ id: string }>, res: Response) 
       take: 50,
     });
 
+    const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+    const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost:5000';
+    const baseUrl = `${proto}://${host}`;
+
     const mapped = posts.map((p: any) => ({
       ...p,
-      media: p.media ?? [],
+      media: (p.media ?? []).map((m: any) => ({
+        ...m,
+        url: m.url?.startsWith('http') ? m.url : `${baseUrl}${m.url}`,
+      })),
       editedAt: p.editedAt ?? null,
       likedByMe: false,
       likesCount: p._count?.likes ?? 0,

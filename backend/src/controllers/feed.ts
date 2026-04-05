@@ -52,10 +52,24 @@ async function checkMediaTable(): Promise<boolean> {
   return mediaTableExists;
 }
 
-function mapPost(p: any, userId?: string) {
+function getBaseUrl(req: Request) {
+  const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+  const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost:5000';
+  return `${proto}://${host}`;
+}
+
+function toAbsoluteUrl(url: string, baseUrl: string): string {
+  if (!url || url.startsWith('http')) return url;
+  return `${baseUrl}${url}`;
+}
+
+function mapPost(p: any, userId?: string, baseUrl?: string) {
   return {
     ...p,
-    media: p.media ?? [],
+    media: (p.media ?? []).map((m: any) => ({
+      ...m,
+      url: baseUrl ? toAbsoluteUrl(m.url, baseUrl) : m.url,
+    })),
     editedAt: p.editedAt ?? null,
     likedByMe: userId ? p.likes?.length > 0 : false,
     likesCount: p._count?.likes ?? 0,
@@ -87,7 +101,8 @@ export const getPosts = async (req: AuthRequest, res: Response) => {
       take: 50,
     });
 
-    res.json({ posts: posts.map((p: any) => mapPost(p, userId)) });
+    const baseUrl = getBaseUrl(req);
+    res.json({ posts: posts.map((p: any) => mapPost(p, userId, baseUrl)) });
   } catch (error) {
     console.error('Get posts error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -103,7 +118,7 @@ export const getPostById = async (req: AuthRequest, res: Response) => {
       include: postInclude(userId, hasMedia),
     });
     if (!post) return res.status(404).json({ error: 'Post not found' });
-    res.json({ post: mapPost(post, userId) });
+    res.json({ post: mapPost(post, userId, getBaseUrl(req)) });
   } catch (error) {
     console.error('Get post error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -170,7 +185,7 @@ export const createPost = async (req: AuthRequest, res: Response) => {
       include: postInclude(req.user.id as string, hasMedia),
     });
 
-    res.status(201).json({ post: mapPost(post, req.user.id as string) });
+    res.status(201).json({ post: mapPost(post, req.user.id as string, getBaseUrl(req)) });
   } catch (error) {
     console.error('Create post error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -211,7 +226,7 @@ export const repostPost = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    res.status(201).json({ post: mapPost(post, req.user.id as string) });
+    res.status(201).json({ post: mapPost(post, req.user.id as string, getBaseUrl(req)) });
   } catch (error) {
     console.error('Repost error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -304,7 +319,7 @@ export const editPost = async (req: AuthRequest, res: Response) => {
       include: postInclude(req.user.id as string, hasMedia),
     });
 
-    res.json({ post: mapPost(updated, req.user.id as string) });
+    res.json({ post: mapPost(updated, req.user.id as string, getBaseUrl(req)) });
   } catch (error) {
     console.error('Edit post error:', error);
     res.status(500).json({ error: 'Internal server error' });
