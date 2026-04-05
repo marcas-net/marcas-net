@@ -141,9 +141,9 @@ export function CreatePostCard({ onSubmit }: CreatePostCardProps) {
               className="hidden"
             />
 
-            {expanded && (content.trim() || mediaFiles.length > 0) && (
-              <div className="flex items-center justify-between mt-3">
-                <div className="flex items-center gap-2">
+            {expanded && (
+              <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   {/* Media upload buttons */}
                   <button
                     type="button"

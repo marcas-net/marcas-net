@@ -6,17 +6,31 @@ import { AuthRequest } from '../middleware/auth';
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { email, password, name, role } = req.body;
+    const { email, password, name, role, dateOfBirth } = req.body;
 
     const existingUser = await findUserByEmail(email);
     if (existingUser) {
       return res.status(400).json({ error: 'User already exists' });
     }
 
+    // Validate age >= 18
+    if (dateOfBirth) {
+      const dob = new Date(dateOfBirth);
+      const now = new Date();
+      const age = now.getFullYear() - dob.getFullYear();
+      const monthDiff = now.getMonth() - dob.getMonth();
+      const actualAge = monthDiff < 0 || (monthDiff === 0 && now.getDate() < dob.getDate()) ? age - 1 : age;
+      if (actualAge < 18) {
+        return res.status(400).json({ error: 'You must be at least 18 years old to create an account' });
+      }
+    } else {
+      return res.status(400).json({ error: 'Date of birth is required' });
+    }
+
     const assignedRole: Role = role ?? Role.USER;
 
     const hashedPassword = await hashPassword(password);
-    const user = await createUser({ email, password: hashedPassword, name, role: assignedRole });
+    const user = await createUser({ email, password: hashedPassword, name, role: assignedRole, dateOfBirth: new Date(dateOfBirth) });
     const token = generateToken({ id: user.id, email: user.email, role: user.role });
 
     res.status(201).json({

@@ -10,6 +10,7 @@ export interface RegisterPayload {
   password: string;
   name: string;
   role?: string;
+  dateOfBirth: string;
 }
 
 export interface AuthResponse {

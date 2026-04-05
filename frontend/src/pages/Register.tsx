@@ -26,6 +26,7 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [role, setRole] = useState('USER');
+  const [dateOfBirth, setDateOfBirth] = useState('');
   const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -34,12 +35,24 @@ const Register = () => {
     if (password !== confirmPassword) {
       return toast.error('Passwords do not match');
     }
+    if (!dateOfBirth) {
+      return toast.error('Date of birth is required');
+    }
+    // Age check
+    const dob = new Date(dateOfBirth);
+    const now = new Date();
+    const age = now.getFullYear() - dob.getFullYear();
+    const monthDiff = now.getMonth() - dob.getMonth();
+    const actualAge = monthDiff < 0 || (monthDiff === 0 && now.getDate() < dob.getDate()) ? age - 1 : age;
+    if (actualAge < 18) {
+      return toast.error('You must be at least 18 years old');
+    }
     if (!agreed) {
       return toast.error('Please agree to the Terms of Service');
     }
     setLoading(true);
     try {
-      await register(email, password, name, role);
+      await register(email, password, name, role, dateOfBirth);
       toast.success('Account created!');
       navigate('/feed');
     } catch (err: unknown) {
@@ -133,6 +146,21 @@ const Register = () => {
           onChange={(e) => setRole(e.target.value)}
           options={ROLES}
         />
+        <Input
+          label="Date of Birth"
+          type="date"
+          placeholder="Select your date of birth"
+          value={dateOfBirth}
+          onChange={(e) => setDateOfBirth(e.target.value)}
+          required
+          max={new Date(new Date().getFullYear() - 18, new Date().getMonth(), new Date().getDate()).toISOString().split('T')[0]}
+          icon={
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          }
+        />
+        <p className="text-xs text-gray-400 dark:text-gray-500 -mt-2">You must be at least 18 years old to create an account.</p>
         {/* Terms checkbox */}
         <label className="flex items-start gap-2.5 cursor-pointer">
           <input
