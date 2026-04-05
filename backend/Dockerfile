@@ -22,5 +22,5 @@ RUN mkdir -p uploads/documents uploads/media
 # Expose port (Railway sets PORT dynamically)
 EXPOSE 5000
 
-# Start server directly (skip migrate at startup — run manually if needed)
-CMD ["node", "dist/index.js"]
+# Run migrations then start server. If migrate fails, start anyway.
+CMD sh -c "npx prisma migrate deploy --schema=./prisma/schema.prisma 2>&1 || echo 'Migration skipped'; exec node dist/index.js"
