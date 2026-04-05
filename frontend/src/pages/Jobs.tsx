@@ -286,7 +286,7 @@ export default function Jobs() {
                   </h2>
                   <div className="space-y-3">
                     {recentJobs.map((job) => (
-                      <JobCard key={job.id} job={job} userId={user?.id} userOrgId={user?.organizationId} onClose={handleClose} onApply={(id) => setApplyingTo(id)} />
+                      <JobCard key={job.id} job={job} userId={user?.id} userOrgId={user?.organizationId ?? undefined} onClose={handleClose} onApply={(id) => setApplyingTo(id)} />
                     ))}
                   </div>
                 </div>
@@ -303,7 +303,7 @@ export default function Jobs() {
                   </h2>
                   <div className="space-y-3">
                     {moreJobs.map((job) => (
-                      <JobCard key={job.id} job={job} userId={user?.id} userOrgId={user?.organizationId} onClose={handleClose} onApply={(id) => setApplyingTo(id)} />
+                      <JobCard key={job.id} job={job} userId={user?.id} userOrgId={user?.organizationId ?? undefined} onClose={handleClose} onApply={(id) => setApplyingTo(id)} />
                     ))}
                   </div>
                 </div>
@@ -383,7 +383,7 @@ export default function Jobs() {
 }
 
 /* ─── Job Card Component ──────────────────────────────── */
-function JobCard({ job, userId, userOrgId, onClose, onApply }: { job: Job; userId?: string; userOrgId?: string; onClose: (id: string) => void; onApply: (id: string) => void }) {
+function JobCard({ job, userId: _userId, userOrgId, onClose, onApply }: { job: Job; userId?: string; userOrgId?: string; onClose: (id: string) => void; onApply: (id: string) => void }) {
   return (
     <Card hover>
       <div className="p-5">
