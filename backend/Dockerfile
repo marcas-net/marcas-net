@@ -16,15 +16,11 @@ COPY tsconfig.json ./
 COPY src ./src
 RUN npx tsc
 
-# Copy startup script
-COPY start.sh ./
-RUN chmod +x start.sh
-
 # Create uploads directories
 RUN mkdir -p uploads/documents uploads/media
 
 # Expose port (Railway sets PORT dynamically)
 EXPOSE 5000
 
-# Start server via startup script (handles migration failures gracefully)
-CMD ["./start.sh"]
+# Start server directly (skip migrate at startup — run manually if needed)
+CMD ["node", "dist/index.js"]
