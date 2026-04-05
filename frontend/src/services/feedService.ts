@@ -17,9 +17,17 @@ export interface PostMedia {
   size: number;
 }
 
+export interface PollOption {
+  id: string;
+  text: string;
+  votesCount: number;
+  votedByMe?: boolean;
+}
+
 export interface Post {
   id: string;
   content: string;
+  type: 'POST' | 'POLL' | 'EVENT';
   category: 'SUPPLY_OFFER' | 'PARTNERSHIP_REQUEST' | 'INDUSTRY_ANNOUNCEMENT' | 'GENERAL';
   authorId: string;
   author: { id: string; name: string; role: string; avatarUrl: string | null };
@@ -30,8 +38,27 @@ export interface Post {
   likedByMe: boolean;
   likesCount: number;
   commentsCount: number;
+  repostsCount: number;
+  // Repost fields
+  repostOfId: string | null;
+  repostOf: Post | null;
+  // Poll fields
+  pollQuestion: string | null;
+  pollOptions: PollOption[];
+  pollEndsAt: string | null;
+  // Event fields
+  eventTitle: string | null;
+  eventDate: string | null;
+  eventLocation: string | null;
+  eventLink: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface NetworkData {
+  following: Array<{ id: string; name: string; avatarUrl: string | null; role: string }>;
+  followers: Array<{ id: string; name: string; avatarUrl: string | null; role: string }>;
+  suggestions: Array<{ id: string; name: string; avatarUrl: string | null; role: string }>;
 }
 
 // ─── Posts ───────────────────────────────────────────────
@@ -50,14 +77,30 @@ export const getPostById = async (id: string): Promise<Post> => {
 export const createPost = async (data: {
   content: string;
   category?: string;
+  type?: 'POST' | 'POLL' | 'EVENT';
   media?: File[];
+  pollQuestion?: string;
+  pollOptions?: string[];
+  pollDuration?: number;
+  eventTitle?: string;
+  eventDate?: string;
+  eventLocation?: string;
+  eventLink?: string;
 }): Promise<Post> => {
   const formData = new FormData();
   formData.append('content', data.content);
   if (data.category) formData.append('category', data.category);
+  if (data.type) formData.append('type', data.type);
   if (data.media) {
     data.media.forEach((file) => formData.append('media', file));
   }
+  if (data.pollQuestion) formData.append('pollQuestion', data.pollQuestion);
+  if (data.pollOptions) formData.append('pollOptions', JSON.stringify(data.pollOptions));
+  if (data.pollDuration) formData.append('pollDuration', String(data.pollDuration));
+  if (data.eventTitle) formData.append('eventTitle', data.eventTitle);
+  if (data.eventDate) formData.append('eventDate', data.eventDate);
+  if (data.eventLocation) formData.append('eventLocation', data.eventLocation);
+  if (data.eventLink) formData.append('eventLink', data.eventLink);
   const res = await api.post('/feed', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
@@ -66,6 +109,20 @@ export const createPost = async (data: {
 
 export const deletePost = async (id: string): Promise<void> => {
   await api.delete(`/feed/${id}`);
+};
+
+// ─── Reposts ─────────────────────────────────────────────
+
+export const repostPost = async (postId: string, content?: string): Promise<Post> => {
+  const res = await api.post(`/feed/${postId}/repost`, { content });
+  return res.data.post;
+};
+
+// ─── Polls ───────────────────────────────────────────────
+
+export const votePoll = async (optionId: string): Promise<{ option: PollOption }> => {
+  const res = await api.post(`/feed/poll/${optionId}/vote`);
+  return res.data;
 };
 
 // ─── Comments ────────────────────────────────────────────
@@ -105,5 +162,12 @@ export const getFollowStatus = async (params: { userId?: string; orgId?: string 
 
 export const getFollowCounts = async (params: { userId?: string; orgId?: string }): Promise<{ followers: number; following: number }> => {
   const res = await api.get('/feed/social/follow-counts', { params });
+  return res.data;
+};
+
+// ─── Network ─────────────────────────────────────────────
+
+export const getMyNetwork = async (): Promise<NetworkData> => {
+  const res = await api.get('/feed/social/network');
   return res.data;
 };

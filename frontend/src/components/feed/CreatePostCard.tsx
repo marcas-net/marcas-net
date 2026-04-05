@@ -10,10 +10,24 @@ const CATEGORIES = [
 ];
 
 const MAX_FILES = 10;
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
+const MAX_FILE_SIZE = 50 * 1024 * 1024;
+
+type PostMode = 'post' | 'poll' | 'event';
 
 interface CreatePostCardProps {
-  onSubmit: (content: string, category: string, media?: File[]) => Promise<void>;
+  onSubmit: (data: {
+    content: string;
+    category: string;
+    type?: 'POST' | 'POLL' | 'EVENT';
+    media?: File[];
+    pollQuestion?: string;
+    pollOptions?: string[];
+    pollDuration?: number;
+    eventTitle?: string;
+    eventDate?: string;
+    eventLocation?: string;
+    eventLink?: string;
+  }) => Promise<void>;
 }
 
 export function CreatePostCard({ onSubmit }: CreatePostCardProps) {
@@ -25,6 +39,16 @@ export function CreatePostCard({ onSubmit }: CreatePostCardProps) {
   const [showCategories, setShowCategories] = useState(false);
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const [mediaPreviews, setMediaPreviews] = useState<{ url: string; type: 'image' | 'video' }[]>([]);
+  const [mode, setMode] = useState<PostMode>('post');
+  // Poll state
+  const [pollQuestion, setPollQuestion] = useState('');
+  const [pollOptions, setPollOptions] = useState(['', '']);
+  const [pollDuration, setPollDuration] = useState(7);
+  // Event state
+  const [eventTitle, setEventTitle] = useState('');
+  const [eventDate, setEventDate] = useState('');
+  const [eventLocation, setEventLocation] = useState('');
+  const [eventLink, setEventLink] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -33,7 +57,6 @@ export function CreatePostCard({ onSubmit }: CreatePostCardProps) {
     const newFiles: File[] = [];
     const newPreviews: { url: string; type: 'image' | 'video' }[] = [];
     const remaining = MAX_FILES - mediaFiles.length;
-
     for (let i = 0; i < Math.min(files.length, remaining); i++) {
       const f = files[i];
       if (f.size > MAX_FILE_SIZE) continue;
@@ -41,7 +64,6 @@ export function CreatePostCard({ onSubmit }: CreatePostCardProps) {
       const isVideo = f.type.startsWith('video/');
       newPreviews.push({ url: URL.createObjectURL(f), type: isVideo ? 'video' : 'image' });
     }
-
     setMediaFiles((prev) => [...prev, ...newFiles]);
     setMediaPreviews((prev) => [...prev, ...newPreviews]);
     setExpanded(true);
@@ -53,26 +75,53 @@ export function CreatePostCard({ onSubmit }: CreatePostCardProps) {
     setMediaPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const resetForm = () => {
+    setContent('');
+    setCategory('GENERAL');
+    setExpanded(false);
+    setShowCategories(false);
+    setMode('post');
+    setPollQuestion('');
+    setPollOptions(['', '']);
+    setPollDuration(7);
+    setEventTitle('');
+    setEventDate('');
+    setEventLocation('');
+    setEventLink('');
+    mediaPreviews.forEach((p) => URL.revokeObjectURL(p.url));
+    setMediaFiles([]);
+    setMediaPreviews([]);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if ((!content.trim() && mediaFiles.length === 0) || submitting) return;
+    if (submitting) return;
+    if (mode === 'post' && !content.trim() && mediaFiles.length === 0) return;
+    if (mode === 'poll' && (!pollQuestion.trim() || pollOptions.filter(o => o.trim()).length < 2)) return;
+    if (mode === 'event' && !eventTitle.trim()) return;
     setSubmitting(true);
     try {
-      await onSubmit(content.trim(), category, mediaFiles.length > 0 ? mediaFiles : undefined);
-      setContent('');
-      setCategory('GENERAL');
-      setExpanded(false);
-      setShowCategories(false);
-      mediaPreviews.forEach((p) => URL.revokeObjectURL(p.url));
-      setMediaFiles([]);
-      setMediaPreviews([]);
+      await onSubmit({
+        content: content.trim(),
+        category,
+        type: mode === 'poll' ? 'POLL' : mode === 'event' ? 'EVENT' : 'POST',
+        media: mediaFiles.length > 0 ? mediaFiles : undefined,
+        ...(mode === 'poll' && {
+          pollQuestion: pollQuestion.trim(),
+          pollOptions: pollOptions.filter(o => o.trim()),
+          pollDuration,
+        }),
+        ...(mode === 'event' && {
+          eventTitle: eventTitle.trim(),
+          eventDate: eventDate || undefined,
+          eventLocation: eventLocation.trim() || undefined,
+          eventLink: eventLink.trim() || undefined,
+        }),
+      });
+      resetForm();
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const handleFocus = () => {
-    setExpanded(true);
   };
 
   const selectedCategoryLabel = CATEGORIES.find((c) => c.value === category)?.label ?? 'General';
@@ -90,13 +139,93 @@ export function CreatePostCard({ onSubmit }: CreatePostCardProps) {
           <div className="flex-1 min-w-0">
             <textarea
               ref={textareaRef}
-              placeholder="What's happening in the industry?"
+              placeholder={mode === 'poll' ? 'Add context to your poll...' : mode === 'event' ? 'Tell people about this event...' : "What's happening in the industry?"}
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              onFocus={handleFocus}
+              onFocus={() => setExpanded(true)}
               rows={expanded ? 3 : 1}
               className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-neutral-600 bg-gray-50 dark:bg-neutral-700/50 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-500 outline-none resize-none transition-all"
             />
+
+            {/* Poll fields */}
+            {expanded && mode === 'poll' && (
+              <div className="mt-3 space-y-2 p-3 rounded-xl border border-gray-200 dark:border-neutral-600 bg-gray-50 dark:bg-neutral-700/30">
+                <input
+                  type="text"
+                  placeholder="Your question..."
+                  value={pollQuestion}
+                  onChange={(e) => setPollQuestion(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                />
+                {pollOptions.map((opt, i) => (
+                  <div key={i} className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder={`Option ${i + 1}`}
+                      value={opt}
+                      onChange={(e) => {
+                        const next = [...pollOptions];
+                        next[i] = e.target.value;
+                        setPollOptions(next);
+                      }}
+                      className="flex-1 px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                    />
+                    {pollOptions.length > 2 && (
+                      <button type="button" onClick={() => setPollOptions(pollOptions.filter((_, j) => j !== i))} className="text-red-400 hover:text-red-500 px-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                      </button>
+                    )}
+                  </div>
+                ))}
+                {pollOptions.length < 6 && (
+                  <button type="button" onClick={() => setPollOptions([...pollOptions, ''])} className="text-xs text-blue-600 dark:text-blue-400 font-medium hover:underline">
+                    + Add option
+                  </button>
+                )}
+                <div className="flex items-center gap-2 pt-1">
+                  <span className="text-xs text-gray-500">Duration:</span>
+                  <select value={pollDuration} onChange={(e) => setPollDuration(Number(e.target.value))} className="px-2 py-1 rounded border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-xs text-gray-700 dark:text-gray-200 outline-none">
+                    <option value={1}>1 day</option>
+                    <option value={3}>3 days</option>
+                    <option value={7}>1 week</option>
+                    <option value={14}>2 weeks</option>
+                  </select>
+                </div>
+              </div>
+            )}
+
+            {/* Event fields */}
+            {expanded && mode === 'event' && (
+              <div className="mt-3 space-y-2 p-3 rounded-xl border border-blue-200 dark:border-blue-900/50 bg-blue-50/50 dark:bg-blue-950/20">
+                <input
+                  type="text"
+                  placeholder="Event name *"
+                  value={eventTitle}
+                  onChange={(e) => setEventTitle(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                />
+                <input
+                  type="datetime-local"
+                  value={eventDate}
+                  onChange={(e) => setEventDate(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                />
+                <input
+                  type="text"
+                  placeholder="Location (optional)"
+                  value={eventLocation}
+                  onChange={(e) => setEventLocation(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                />
+                <input
+                  type="url"
+                  placeholder="Event link (optional)"
+                  value={eventLink}
+                  onChange={(e) => setEventLink(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                />
+              </div>
+            )}
 
             {/* Media previews */}
             {mediaPreviews.length > 0 && (
@@ -117,21 +246,11 @@ export function CreatePostCard({ onSubmit }: CreatePostCardProps) {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </button>
-                    {preview.type === 'video' && (
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div className="w-8 h-8 rounded-full bg-black/50 flex items-center justify-center">
-                          <svg className="w-4 h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                          </svg>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
             )}
 
-            {/* Hidden file input */}
             <input
               ref={fileInputRef}
               type="file"
@@ -143,22 +262,46 @@ export function CreatePostCard({ onSubmit }: CreatePostCardProps) {
 
             {expanded && (
               <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
-                <div className="flex items-center gap-2 flex-wrap">
-                  {/* Media upload buttons */}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {/* Mode tabs */}
+                  <button
+                    type="button"
+                    onClick={() => setMode('post')}
+                    className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium transition-colors ${mode === 'post' ? 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300' : 'bg-gray-100 dark:bg-neutral-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-neutral-600'}`}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                    Post
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setMode('poll'); setExpanded(true); }}
+                    className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium transition-colors ${mode === 'poll' ? 'bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300' : 'bg-gray-100 dark:bg-neutral-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-neutral-600'}`}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                    Poll
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setMode('event'); setExpanded(true); }}
+                    className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium transition-colors ${mode === 'event' ? 'bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300' : 'bg-gray-100 dark:bg-neutral-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-neutral-600'}`}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    Event
+                  </button>
+
+                  <div className="w-px h-5 bg-gray-200 dark:bg-neutral-600 mx-1" />
+
+                  {/* Media upload */}
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={mediaFiles.length >= MAX_FILES}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-neutral-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-neutral-600 disabled:opacity-40 transition-colors"
-                    title={`Add photos or videos (${mediaFiles.length}/${MAX_FILES})`}
                   >
                     <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
                     </svg>
                     Media
-                    {mediaFiles.length > 0 && (
-                      <span className="text-[10px] text-gray-400">({mediaFiles.length})</span>
-                    )}
                   </button>
 
                   {/* Category picker */}
@@ -200,7 +343,7 @@ export function CreatePostCard({ onSubmit }: CreatePostCardProps) {
                 {/* Post button */}
                 <button
                   type="submit"
-                  disabled={submitting || (!content.trim() && mediaFiles.length === 0)}
+                  disabled={submitting || (mode === 'post' && !content.trim() && mediaFiles.length === 0) || (mode === 'poll' && (!pollQuestion.trim() || pollOptions.filter(o => o.trim()).length < 2)) || (mode === 'event' && !eventTitle.trim())}
                   className="px-5 py-2 rounded-full bg-gradient-to-r from-blue-600 to-emerald-500 text-white text-xs font-semibold hover:shadow-md hover:shadow-blue-500/20 disabled:opacity-50 disabled:hover:shadow-none transition-all"
                 >
                   {submitting ? (
@@ -211,7 +354,7 @@ export function CreatePostCard({ onSubmit }: CreatePostCardProps) {
                       </svg>
                       Posting...
                     </span>
-                  ) : 'Post'}
+                  ) : mode === 'poll' ? 'Create Poll' : mode === 'event' ? 'Create Event' : 'Post'}
                 </button>
               </div>
             )}

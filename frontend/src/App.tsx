@@ -16,11 +16,13 @@ import Settings from './pages/Settings';
 import Feed from './pages/Feed';
 import Jobs from './pages/Jobs';
 import Messages from './pages/Messages';
+import Network from './pages/Network';
 import AcceptInvitation from './pages/AcceptInvitation';
 import AuthCallback from './pages/AuthCallback';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { DashboardLayout } from './layouts/DashboardLayout';
+import { MobileFAB } from './components/MobileFAB';
 
 function App() {
   return (
@@ -63,11 +65,13 @@ function App() {
             <Route path="/profile/:id" element={<UserProfile />} />
             <Route path="/messages" element={<Messages />} />
             <Route path="/jobs" element={<Jobs />} />
+            <Route path="/network" element={<Network />} />
             <Route path="/dashboard/settings" element={<Settings />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        <MobileFAB />
       </BrowserRouter>
     </ErrorBoundary>
   );

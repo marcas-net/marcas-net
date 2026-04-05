@@ -35,6 +35,7 @@ export default function Messages() {
   const [users, setUsers] = useState<UserListItem[]>([]);
   const [userSearch, setUserSearch] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [mobileShowThread, setMobileShowThread] = useState(false);
 
   // Active conversation's other user
   const activeConvo = conversations.find((c) => c.id === activeConversationId);
@@ -164,7 +165,7 @@ export default function Messages() {
       <Card padding="none" className="overflow-hidden">
         <div className="flex h-[calc(100vh-10rem)]">
           {/* ─── Conversation List ─── */}
-          <div className="w-80 border-r border-slate-200 dark:border-neutral-700 flex flex-col">
+          <div className={`w-full md:w-80 border-r border-slate-200 dark:border-neutral-700 flex flex-col ${mobileShowThread ? 'hidden md:flex' : 'flex'}`}>
             {/* Header */}
             <div className="p-4 border-b border-slate-200 dark:border-neutral-700 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Messages</h2>
@@ -248,7 +249,7 @@ export default function Messages() {
                 conversations.map((convo) => (
                   <button
                     key={convo.id}
-                    onClick={() => setActiveConversationId(convo.id)}
+                    onClick={() => { setActiveConversationId(convo.id); setMobileShowThread(true); }}
                     className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
                       activeConversationId === convo.id
                         ? 'bg-blue-50 dark:bg-blue-950/30 border-r-2 border-blue-600'
@@ -288,11 +289,14 @@ export default function Messages() {
           </div>
 
           {/* ─── Message Thread ─── */}
-          <div className="flex-1 flex flex-col">
+          <div className={`flex-1 flex flex-col ${!mobileShowThread ? 'hidden md:flex' : 'flex'}`}>
             {activeConvo ? (
               <>
                 {/* Thread Header */}
                 <div className="p-4 border-b border-slate-200 dark:border-neutral-700 flex items-center gap-3">
+                  <button onClick={() => setMobileShowThread(false)} className="md:hidden p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-neutral-700 mr-1">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                  </button>
                   <Avatar name={activeConvo.otherUser.name} size="md" src={activeConvo.otherUser.avatarUrl ?? undefined} />
                   <div>
                     <p className="text-sm font-semibold text-slate-900 dark:text-white">{activeConvo.otherUser.name}</p>

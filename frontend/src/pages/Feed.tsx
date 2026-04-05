@@ -38,10 +38,26 @@ export default function Feed() {
     loadPosts(category);
   }, [category]);
 
-  const handleCreate = async (content: string, postCategory: string, media?: File[]) => {
-    const post = await createPost({ content, category: postCategory, media });
+  const handleCreate = async (data: {
+    content: string;
+    category: string;
+    type?: 'POST' | 'POLL' | 'EVENT';
+    media?: File[];
+    pollQuestion?: string;
+    pollOptions?: string[];
+    pollDuration?: number;
+    eventTitle?: string;
+    eventDate?: string;
+    eventLocation?: string;
+    eventLink?: string;
+  }) => {
+    const post = await createPost(data);
     setPosts((prev) => [post, ...prev]);
     toast.success('Post published');
+  };
+
+  const handleRepost = (post: Post) => {
+    setPosts((prev) => [post, ...prev]);
   };
 
   const handleDelete = async (id: string) => {
@@ -149,6 +165,7 @@ export default function Feed() {
                 onLikeToggle={handleLikeToggle}
                 onCommentAdded={handleCommentAdded}
                 onCommentDeleted={handleCommentDeleted}
+                onRepost={handleRepost}
               />
             ))}
           </div>

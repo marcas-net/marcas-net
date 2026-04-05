@@ -1,8 +1,11 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Avatar } from '../ui/Avatar';
 import { Badge } from '../ui/Badge';
-import { toggleLike, addComment, deleteComment, type Post, type Comment } from '../../services/feedService';
+import {
+  toggleLike, addComment, deleteComment, repostPost, votePoll,
+  type Post, type Comment,
+} from '../../services/feedService';
 import toast from 'react-hot-toast';
 
 const categoryVariant: Record<string, 'blue' | 'green' | 'yellow' | 'purple' | 'gray'> = {
@@ -48,13 +51,17 @@ interface PostCardProps {
   onLikeToggle: (postId: string, liked: boolean, count: number) => void;
   onCommentAdded: (postId: string, comment: Comment) => void;
   onCommentDeleted: (postId: string, commentId: string) => void;
+  onRepost?: (post: Post) => void;
 }
 
-export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded, onCommentDeleted }: PostCardProps) {
+export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded, onCommentDeleted, onRepost }: PostCardProps) {
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
   const [liking, setLiking] = useState(false);
+  const [reposting, setReposting] = useState(false);
+  const [localPollOptions, setLocalPollOptions] = useState(post.pollOptions || []);
+  const [hasVoted, setHasVoted] = useState(post.pollOptions?.some(o => o.votedByMe) ?? false);
   const commentInputRef = useRef<HTMLInputElement>(null);
 
   const handleLike = async () => {
@@ -67,6 +74,33 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
       toast.error('Failed to like post');
     } finally {
       setLiking(false);
+    }
+  };
+
+  const handleRepost = async () => {
+    if (reposting) return;
+    setReposting(true);
+    try {
+      const newPost = await repostPost(post.repostOfId || post.id);
+      toast.success('Reposted!');
+      onRepost?.(newPost);
+    } catch {
+      toast.error('Failed to repost');
+    } finally {
+      setReposting(false);
+    }
+  };
+
+  const handleVote = async (optionId: string) => {
+    if (hasVoted) return;
+    try {
+      await votePoll(optionId);
+      setLocalPollOptions(prev =>
+        prev.map(o => o.id === optionId ? { ...o, votesCount: o.votesCount + 1, votedByMe: true } : o)
+      );
+      setHasVoted(true);
+    } catch {
+      toast.error('Failed to vote');
     }
   };
 
@@ -94,45 +128,61 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
     }
   };
 
+  // Original post for reposts
+  const displayPost = post.repostOf || post;
+
   return (
     <div className="bg-white dark:bg-neutral-800 rounded-xl border border-gray-100 dark:border-neutral-700/80 shadow-sm hover:shadow-md dark:hover:shadow-black/20 transition-shadow">
+      {/* Repost indicator */}
+      {post.repostOf && (
+        <div className="px-5 pt-3 pb-0 flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <Link to={`/profile/${post.author.id}`} className="font-medium hover:text-blue-500 transition-colors">
+            {post.author.name}
+          </Link>
+          reposted
+        </div>
+      )}
+
       <div className="p-5">
         {/* Author Row */}
         <div className="flex items-start gap-3 mb-3">
-          <Link to={`/profile/${post.author.id}`} className="flex-shrink-0">
-            <Avatar name={post.author.name} size="md" src={post.author.avatarUrl ?? undefined} />
+          <Link to={`/profile/${displayPost.author.id}`} className="flex-shrink-0">
+            <Avatar name={displayPost.author.name} size="md" src={displayPost.author.avatarUrl ?? undefined} />
           </Link>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <Link
-                to={`/profile/${post.author.id}`}
+                to={`/profile/${displayPost.author.id}`}
                 className="text-sm font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 truncate transition-colors"
               >
-                {post.author.name}
+                {displayPost.author.name}
               </Link>
               <span className="text-xs text-gray-300 dark:text-gray-600">&middot;</span>
-              <span className="text-xs text-gray-400 dark:text-gray-500">{timeAgo(post.createdAt)}</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500">{timeAgo(displayPost.createdAt)}</span>
             </div>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="text-xs text-gray-500 dark:text-gray-400">
-                {ROLE_LABELS[post.author.role] ?? post.author.role}
+                {ROLE_LABELS[displayPost.author.role] ?? displayPost.author.role}
               </span>
-              {post.organization && (
+              {displayPost.organization && (
                 <>
                   <span className="text-xs text-gray-300 dark:text-gray-600">·</span>
                   <Link
-                    to={`/orgs/${post.organizationId}`}
+                    to={`/orgs/${displayPost.organizationId}`}
                     className="text-xs text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 truncate transition-colors"
                   >
-                    {post.organization.name}
+                    {displayPost.organization.name}
                   </Link>
                 </>
               )}
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <Badge variant={categoryVariant[post.category] || 'gray'}>
-              {categoryLabel[post.category] || post.category}
+            <Badge variant={categoryVariant[displayPost.category] || 'gray'}>
+              {categoryLabel[displayPost.category] || displayPost.category}
             </Badge>
             {post.authorId === userId && (
               <button
@@ -149,22 +199,107 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
         </div>
 
         {/* Content */}
-        <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
-          {post.content}
-        </p>
+        {post.content && (
+          <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
+            {post.content}
+          </p>
+        )}
+
+        {/* Event Card */}
+        {(post.type === 'EVENT' || displayPost.type === 'EVENT') && displayPost.eventTitle && (
+          <div className="mt-3 rounded-xl border border-blue-100 dark:border-blue-900/50 bg-blue-50/50 dark:bg-blue-950/20 p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-lg bg-blue-500 text-white flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{displayPost.eventTitle}</h4>
+                {displayPost.eventDate && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    {new Date(displayPost.eventDate).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                )}
+                {displayPost.eventLocation && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    </svg>
+                    {displayPost.eventLocation}
+                  </p>
+                )}
+                {displayPost.eventLink && (
+                  <a
+                    href={displayPost.eventLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 mt-2 text-xs text-blue-600 dark:text-blue-400 font-medium hover:underline"
+                  >
+                    Event Link
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Poll */}
+        {(post.type === 'POLL' || displayPost.type === 'POLL') && displayPost.pollQuestion && (
+          <div className="mt-3">
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">{displayPost.pollQuestion}</p>
+            <div className="space-y-2">
+              {localPollOptions.map((option) => {
+                const totalVotes = localPollOptions.reduce((s, o) => s + o.votesCount, 0);
+                const pct = totalVotes > 0 ? Math.round((option.votesCount / totalVotes) * 100) : 0;
+                return (
+                  <button
+                    key={option.id}
+                    onClick={() => handleVote(option.id)}
+                    disabled={hasVoted}
+                    className={`w-full text-left rounded-lg border transition-all relative overflow-hidden ${
+                      option.votedByMe
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30'
+                        : hasVoted
+                        ? 'border-gray-200 dark:border-neutral-600 bg-gray-50 dark:bg-neutral-700/50'
+                        : 'border-gray-200 dark:border-neutral-600 hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-950/20'
+                    }`}
+                  >
+                    {hasVoted && (
+                      <div
+                        className={`absolute inset-y-0 left-0 ${option.votedByMe ? 'bg-blue-100 dark:bg-blue-900/40' : 'bg-gray-100 dark:bg-neutral-600/40'}`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    )}
+                    <div className="relative px-3 py-2.5 flex items-center justify-between">
+                      <span className="text-xs font-medium text-gray-700 dark:text-gray-200">{option.text}</span>
+                      {hasVoted && <span className="text-xs text-gray-500 dark:text-gray-400">{pct}%</span>}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-2">
+              {localPollOptions.reduce((s, o) => s + o.votesCount, 0)} votes
+              {displayPost.pollEndsAt && ` · Ends ${new Date(displayPost.pollEndsAt).toLocaleDateString()}`}
+            </p>
+          </div>
+        )}
 
         {/* Media Gallery */}
-        {post.media && post.media.length > 0 && (
+        {displayPost.media && displayPost.media.length > 0 && (
           <div className={`mt-3 grid gap-1.5 rounded-xl overflow-hidden ${
-            post.media.length === 1 ? 'grid-cols-1' :
-            post.media.length === 2 ? 'grid-cols-2' :
-            post.media.length === 3 ? 'grid-cols-2' :
+            displayPost.media.length === 1 ? 'grid-cols-1' :
+            displayPost.media.length === 2 ? 'grid-cols-2' :
             'grid-cols-2'
           }`}>
-            {post.media.map((m, i) => {
+            {displayPost.media.map((m, i) => {
               const backendUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
               const src = m.url.startsWith('http') ? m.url : `${backendUrl}${m.url}`;
-              const isFirstOfThree = post.media.length === 3 && i === 0;
+              const isFirstOfThree = displayPost.media.length === 3 && i === 0;
 
               return (
                 <div
@@ -172,18 +307,16 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
                   className={`relative bg-gray-100 dark:bg-neutral-700 ${isFirstOfThree ? 'row-span-2' : ''}`}
                 >
                   {m.type === 'video' ? (
-                    <video
+                    <AutoplayVideo
                       src={src}
-                      controls
-                      preload="metadata"
-                      className={`w-full object-cover ${post.media.length === 1 ? 'max-h-[500px]' : isFirstOfThree ? 'h-full' : 'h-48'}`}
+                      className={`w-full object-cover ${displayPost.media.length === 1 ? 'max-h-[500px]' : isFirstOfThree ? 'h-full' : 'h-48'}`}
                     />
                   ) : (
                     <img
                       src={src}
                       alt=""
                       loading="lazy"
-                      className={`w-full object-cover ${post.media.length === 1 ? 'max-h-[500px]' : isFirstOfThree ? 'h-full' : 'h-48'}`}
+                      className={`w-full object-cover ${displayPost.media.length === 1 ? 'max-h-[500px]' : isFirstOfThree ? 'h-full' : 'h-48'}`}
                     />
                   )}
                 </div>
@@ -193,7 +326,7 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
         )}
 
         {/* Stats Row */}
-        {(post.likesCount > 0 || post.commentsCount > 0) && (
+        {(post.likesCount > 0 || post.commentsCount > 0 || post.repostsCount > 0) && (
           <div className="flex items-center gap-4 mt-3 pt-2">
             {post.likesCount > 0 && (
               <span className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
@@ -212,6 +345,11 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
               >
                 {post.commentsCount} comment{post.commentsCount !== 1 ? 's' : ''}
               </button>
+            )}
+            {post.repostsCount > 0 && (
+              <span className="text-xs text-gray-400 dark:text-gray-500">
+                {post.repostsCount} repost{post.repostsCount !== 1 ? 's' : ''}
+              </span>
             )}
           </div>
         )}
@@ -245,18 +383,21 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
           </svg>
           Comment
         </button>
-        <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-all">
+        <button
+          onClick={handleRepost}
+          disabled={reposting}
+          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:bg-green-50 dark:hover:bg-green-950/30 hover:text-green-600 dark:hover:text-green-400 transition-all"
+        >
           <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          Share
+          Repost
         </button>
       </div>
 
       {/* Comments Section */}
       {showComments && (
         <div className="border-t border-gray-100 dark:border-neutral-700/80 px-5 py-3 space-y-3 bg-gray-50/50 dark:bg-neutral-900/30">
-          {/* Existing comments */}
           {post.comments.map((c) => (
             <div key={c.id} className="flex gap-2.5 group">
               <Link to={`/profile/${c.user.id}`} className="flex-shrink-0 mt-0.5">
@@ -284,7 +425,6 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
             </div>
           ))}
 
-          {/* Comment input */}
           <form onSubmit={handleComment} className="flex gap-2.5">
             <Avatar name={undefined} size="xs" />
             <div className="flex-1 flex gap-2">
@@ -310,6 +450,47 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
           </form>
         </div>
       )}
+    </div>
+  );
+}
+
+/* ─── Video Autoplay Component ───────────────────────────── */
+function AutoplayVideo({ src, className }: { src: string; className: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    const container = containerRef.current;
+    if (!video || !container) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          video.play().catch(() => {});
+        } else {
+          video.pause();
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={containerRef}>
+      <video
+        ref={videoRef}
+        src={src}
+        muted
+        loop
+        playsInline
+        controls
+        preload="metadata"
+        className={className}
+      />
     </div>
   );
 }

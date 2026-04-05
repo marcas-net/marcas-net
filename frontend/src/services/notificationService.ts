@@ -3,7 +3,7 @@ import api from './api';
 export interface Notification {
   id: string;
   userId: string;
-  type: 'INVITATION' | 'DOCUMENT' | 'ORGANIZATION' | 'SYSTEM';
+  type: 'INVITATION' | 'DOCUMENT' | 'ORGANIZATION' | 'SYSTEM' | 'LIKE' | 'COMMENT' | 'FOLLOW' | 'REPOST' | 'JOB';
   title: string;
   message: string;
   link?: string;
