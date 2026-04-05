@@ -56,6 +56,7 @@ function mapPost(p: any, userId?: string) {
   return {
     ...p,
     media: p.media ?? [],
+    editedAt: p.editedAt ?? null,
     likedByMe: userId ? p.likes?.length > 0 : false,
     likesCount: p._count?.likes ?? 0,
     commentsCount: p._count?.comments ?? 0,
@@ -274,6 +275,43 @@ export const deletePost = async (req: AuthRequest, res: Response) => {
 };
 
 // ─── Comments ───────────────────────────────────────────
+
+export const editPost = async (req: AuthRequest, res: Response) => {
+  try {
+    const id = req.params.id as string;
+    const { content } = req.body;
+    if (!content || !content.trim()) {
+      return res.status(400).json({ error: 'Content is required' });
+    }
+
+    const post = await prisma.post.findUnique({ where: { id } });
+    if (!post) return res.status(404).json({ error: 'Post not found' });
+    if (post.authorId !== req.user.id) {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    // Allow editing within 15 minutes of creation
+    const elapsed = Date.now() - new Date(post.createdAt).getTime();
+    const EDIT_WINDOW_MS = 15 * 60 * 1000;
+    if (elapsed > EDIT_WINDOW_MS) {
+      return res.status(403).json({ error: 'Editing window has expired (15 minutes)' });
+    }
+
+    const hasMedia = await checkMediaTable();
+    const updated = await prisma.post.update({
+      where: { id },
+      data: { content: content.trim(), editedAt: new Date() },
+      include: postInclude(req.user.id as string, hasMedia),
+    });
+
+    res.json({ post: mapPost(updated, req.user.id as string) });
+  } catch (error) {
+    console.error('Edit post error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// ─── Comments (continued) ───────────────────────────────
 
 export const addComment = async (req: AuthRequest, res: Response) => {
   try {

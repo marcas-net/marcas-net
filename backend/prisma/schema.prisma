@@ -107,6 +107,7 @@ model User {
   password       String?
   name           String?
   bio            String?
+  country        String?
   dateOfBirth    DateTime?
   role           Role           @default(USER)
   provider       String?
@@ -269,6 +270,7 @@ model Post {
   eventDate      DateTime?
   eventLocation  String?
   eventLink      String?
+  editedAt       DateTime?
   media          PostMedia[]
   comments       Comment[]
   likes          Like[]

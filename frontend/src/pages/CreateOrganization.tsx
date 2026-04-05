@@ -4,6 +4,7 @@ import { createOrganization } from '../services/orgService';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input, Select } from '../components/ui/Input';
+import { CountrySelect } from '../components/ui/CountrySelect';
 import toast from 'react-hot-toast';
 
 const ORG_TYPES = [
@@ -66,16 +67,11 @@ export default function CreateOrganization() {
             onChange={set('type')}
             options={ORG_TYPES}
           />
-          <Input
+          <CountrySelect
             label="Country"
-            placeholder="e.g. Morocco"
             value={form.country}
-            onChange={set('country')}
-            icon={
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            }
+            onChange={(val) => setForm((f) => ({ ...f, country: val }))}
+            placeholder="Select a country..."
           />
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Description</label>

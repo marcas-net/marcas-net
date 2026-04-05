@@ -11,6 +11,7 @@ export interface RegisterPayload {
   name: string;
   role?: string;
   dateOfBirth: string;
+  country?: string;
 }
 
 export interface AuthResponse {

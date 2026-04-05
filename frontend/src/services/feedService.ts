@@ -51,6 +51,7 @@ export interface Post {
   eventDate: string | null;
   eventLocation: string | null;
   eventLink: string | null;
+  editedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -109,6 +110,11 @@ export const createPost = async (data: {
 
 export const deletePost = async (id: string): Promise<void> => {
   await api.delete(`/feed/${id}`);
+};
+
+export const editPost = async (id: string, content: string): Promise<Post> => {
+  const res = await api.put(`/feed/${id}`, { content });
+  return res.data.post;
 };
 
 // ─── Reposts ─────────────────────────────────────────────

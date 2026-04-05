@@ -6,6 +6,7 @@ import { SocialButtons, Divider } from '../components/SocialButtons';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Input';
+import { CountrySelect } from '../components/ui/CountrySelect';
 import toast from 'react-hot-toast';
 
 const ROLES = [
@@ -26,6 +27,7 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [role, setRole] = useState('USER');
+  const [country, setCountry] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -52,7 +54,7 @@ const Register = () => {
     }
     setLoading(true);
     try {
-      await register(email, password, name, role, dateOfBirth);
+      await register(email, password, name, role, dateOfBirth, country);
       toast.success('Account created!');
       navigate('/feed');
     } catch (err: unknown) {
@@ -145,6 +147,12 @@ const Register = () => {
           value={role}
           onChange={(e) => setRole(e.target.value)}
           options={ROLES}
+        />
+        <CountrySelect
+          label="Country"
+          value={country}
+          onChange={setCountry}
+          placeholder="Select your country..."
         />
         <Input
           label="Date of Birth"

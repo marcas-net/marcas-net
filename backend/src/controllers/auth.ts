@@ -6,7 +6,7 @@ import { AuthRequest } from '../middleware/auth';
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { email, password, name, role, dateOfBirth } = req.body;
+    const { email, password, name, role, dateOfBirth, country } = req.body;
 
     const existingUser = await findUserByEmail(email);
     if (existingUser) {
@@ -30,7 +30,7 @@ export const register = async (req: Request, res: Response) => {
     const assignedRole: Role = role ?? Role.USER;
 
     const hashedPassword = await hashPassword(password);
-    const user = await createUser({ email, password: hashedPassword, name, role: assignedRole, dateOfBirth: new Date(dateOfBirth) });
+    const user = await createUser({ email, password: hashedPassword, name, role: assignedRole, dateOfBirth: new Date(dateOfBirth), country: country || undefined });
     const token = generateToken({ id: user.id, email: user.email, role: user.role });
 
     res.status(201).json({

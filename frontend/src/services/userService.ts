@@ -1,4 +1,5 @@
 import api from './api';
+import type { Post } from './feedService';
 
 export interface PublicUser {
   id: string;
@@ -42,4 +43,9 @@ export const updateProfile = async (data: { name?: string; email?: string; bio?:
 export const changePassword = async (data: { currentPassword: string; newPassword: string }) => {
   const res = await api.put('/users/password', data);
   return res.data;
+};
+
+export const getUserPosts = async (userId: string, tab: 'posts' | 'media' = 'posts'): Promise<Post[]> => {
+  const res = await api.get(`/users/${userId}/posts`, { params: { tab } });
+  return res.data.posts;
 };

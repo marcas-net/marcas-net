@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Avatar } from '../ui/Avatar';
 import { Badge } from '../ui/Badge';
 import {
-  toggleLike, addComment, deleteComment, repostPost, votePoll,
+  toggleLike, addComment, deleteComment, repostPost, votePoll, editPost,
   type Post, type Comment,
 } from '../../services/feedService';
 import toast from 'react-hot-toast';
@@ -52,14 +52,19 @@ interface PostCardProps {
   onCommentAdded: (postId: string, comment: Comment) => void;
   onCommentDeleted: (postId: string, commentId: string) => void;
   onRepost?: (post: Post) => void;
+  onPostEdited?: (postId: string, updatedPost: Post) => void;
 }
 
-export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded, onCommentDeleted, onRepost }: PostCardProps) {
+export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded, onCommentDeleted, onRepost, onPostEdited }: PostCardProps) {
   const [showComments, setShowComments] = useState(false);
+  const [showAllComments, setShowAllComments] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
   const [liking, setLiking] = useState(false);
   const [reposting, setReposting] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editText, setEditText] = useState(post.content);
+  const [savingEdit, setSavingEdit] = useState(false);
   const [localPollOptions, setLocalPollOptions] = useState(post.pollOptions || []);
   const [hasVoted, setHasVoted] = useState(post.pollOptions?.some(o => o.votedByMe) ?? false);
   const commentInputRef = useRef<HTMLInputElement>(null);
@@ -128,6 +133,25 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
     }
   };
 
+  const handleSaveEdit = async () => {
+    if (!editText.trim() || savingEdit) return;
+    setSavingEdit(true);
+    try {
+      const updated = await editPost(post.id, editText.trim());
+      onPostEdited?.(post.id, updated);
+      setEditing(false);
+      toast.success('Post updated');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || 'Failed to edit post');
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  // Can edit within 15 minutes
+  const canEdit = post.authorId === userId && post.type === 'POST' && !post.repostOfId &&
+    (Date.now() - new Date(post.createdAt).getTime()) < 15 * 60 * 1000;
+
   // Original post for reposts
   const displayPost = post.repostOf || post;
 
@@ -184,6 +208,17 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
             <Badge variant={categoryVariant[displayPost.category] || 'gray'}>
               {categoryLabel[displayPost.category] || displayPost.category}
             </Badge>
+            {canEdit && (
+              <button
+                onClick={() => { setEditing(!editing); setEditText(post.content); }}
+                className="p-1.5 rounded-lg text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors"
+                title="Edit post"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+            )}
             {post.authorId === userId && (
               <button
                 onClick={() => onDelete(post.id)}
@@ -199,11 +234,31 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
         </div>
 
         {/* Content */}
-        {post.content && (
-          <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
-            {post.content}
-          </p>
-        )}
+        {editing ? (
+          <div className="space-y-2">
+            <textarea
+              value={editText}
+              onChange={(e) => setEditText(e.target.value)}
+              rows={3}
+              className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-700/50 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none resize-none"
+            />
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => setEditing(false)} className="px-3 py-1.5 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">Cancel</button>
+              <button onClick={handleSaveEdit} disabled={savingEdit} className="px-3 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                {savingEdit ? 'Saving...' : 'Save'}
+              </button>
+            </div>
+          </div>
+        ) : post.content ? (
+          <div>
+            <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
+              {post.content}
+            </p>
+            {post.editedAt && (
+              <span className="text-[10px] text-gray-400 dark:text-gray-500 italic">edited</span>
+            )}
+          </div>
+        ) : null}
 
         {/* Event Card */}
         {(post.type === 'EVENT' || displayPost.type === 'EVENT') && displayPost.eventTitle && (
@@ -398,7 +453,16 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
       {/* Comments Section */}
       {showComments && (
         <div className="border-t border-gray-100 dark:border-neutral-700/80 px-5 py-3 space-y-3 bg-gray-50/50 dark:bg-neutral-900/30">
-          {post.comments.map((c) => (
+          {post.comments.length > 3 && !showAllComments && (
+            <button
+              onClick={() => setShowAllComments(true)}
+              className="text-xs text-blue-600 dark:text-blue-400 font-medium hover:underline"
+            >
+              View all {post.comments.length} comments
+            </button>
+          )}
+          <div className={post.comments.length > 3 && showAllComments ? 'max-h-64 overflow-y-auto space-y-3 pr-1' : 'space-y-3'}>
+            {(showAllComments ? post.comments : post.comments.slice(-2)).map((c) => (
             <div key={c.id} className="flex gap-2.5 group">
               <Link to={`/profile/${c.user.id}`} className="flex-shrink-0 mt-0.5">
                 <Avatar name={c.user.name} size="xs" src={c.user.avatarUrl ?? undefined} />
@@ -424,6 +488,7 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
               </div>
             </div>
           ))}
+          </div>
 
           <form onSubmit={handleComment} className="flex gap-2.5">
             <Avatar name={undefined} size="xs" />

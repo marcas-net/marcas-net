@@ -166,6 +166,9 @@ export default function Feed() {
                 onCommentAdded={handleCommentAdded}
                 onCommentDeleted={handleCommentDeleted}
                 onRepost={handleRepost}
+                onPostEdited={(postId, updated) =>
+                  setPosts(prev => prev.map(p => p.id === postId ? updated : p))
+                }
               />
             ))}
           </div>

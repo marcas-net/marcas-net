@@ -3,7 +3,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import {
-  getPosts, getPostById, createPost, deletePost,
+  getPosts, getPostById, createPost, deletePost, editPost,
   addComment, deleteComment,
   toggleLike, repostPost, votePoll, getMyNetwork,
   followUser, followOrg, getFollowStatus, getFollowCounts,
@@ -44,6 +44,7 @@ router.get('/', authenticateToken, getPosts);
 router.get('/:id', authenticateToken, getPostById);
 router.post('/', authenticateToken, upload.array('media', 10), createPost);
 router.delete('/:id', authenticateToken, deletePost);
+router.put('/:id', authenticateToken, editPost);
 router.post('/:id/repost', authenticateToken, repostPost);
 
 // Polls
