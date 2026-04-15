@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 import logger from './logger';
-import { invitationTemplate, welcomeTemplate, notificationTemplate } from './emailTemplates';
+import { invitationTemplate, welcomeTemplate, notificationTemplate, passwordResetTemplate } from './emailTemplates';
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -38,4 +38,9 @@ export const sendWelcomeEmail = (to: string, name: string) => {
 export const sendNotificationEmail = (to: string, title: string, message: string, link?: string) => {
   const actionUrl = link ? `${frontendUrl}${link}` : undefined;
   return sendMail(to, title, notificationTemplate(title, message, actionUrl));
+};
+
+export const sendPasswordResetEmail = (to: string, name: string, token: string) => {
+  const resetUrl = `${frontendUrl}/reset-password/${token}`;
+  return sendMail(to, 'Reset Your MarcasNet Password', passwordResetTemplate(name, resetUrl));
 };

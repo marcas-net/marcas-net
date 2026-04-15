@@ -96,13 +96,23 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
       <div className="flex-1 flex flex-col px-6 py-8 lg:px-16">
         {/* Top navigation bar */}
         <div className="flex items-center justify-between mb-8">
-          {/* Mobile logo */}
-          <div className="lg:hidden">
-            <Link to="/">
-              <Logo size="lg" />
+          {/* Mobile logo + back to home */}
+          <div className="flex items-center gap-4">
+            <div className="lg:hidden">
+              <Link to="/">
+                <Logo size="lg" />
+              </Link>
+            </div>
+            <Link
+              to="/"
+              className="flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Back to Home
             </Link>
           </div>
-          <div className="hidden lg:block" />
           <div className="flex items-center gap-3 text-sm">
             <span className="text-slate-500 dark:text-slate-400">
               {subtitle === 'register' ? 'Already have an account?' : "Don't have an account?"}

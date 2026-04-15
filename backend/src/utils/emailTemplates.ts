@@ -65,3 +65,17 @@ export function notificationTemplate(title: string, message: string, actionUrl?:
     ${actionUrl ? button('View Details', actionUrl) : ''}
   `);
 }
+
+export function passwordResetTemplate(name: string, resetUrl: string): string {
+  return baseLayout(`
+    <h2 style="margin:0 0 8px;color:#1e293b;font-size:18px;">Reset Your Password</h2>
+    <p style="color:#475569;line-height:1.6;">
+      Hi ${name}, we received a request to reset your MarcasNet password. Click the button below to choose a new one.
+    </p>
+    ${button('Reset Password', resetUrl)}
+    <p style="color:#94a3b8;font-size:13px;margin-top:24px;">
+      This link expires in 1 hour. If you didn't request this, you can safely ignore this email.<br/>
+      <a href="${resetUrl}" style="color:${brandColor};word-break:break-all;">${resetUrl}</a>
+    </p>
+  `);
+}

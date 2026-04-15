@@ -1,26 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Avatar } from '../ui/Avatar';
-import { Badge } from '../ui/Badge';
 import {
   toggleLike, addComment, deleteComment, repostPost, votePoll, editPost,
+  followUser, getFollowStatus,
   type Post, type Comment,
 } from '../../services/feedService';
 import toast from 'react-hot-toast';
-
-const categoryVariant: Record<string, 'blue' | 'green' | 'yellow' | 'purple' | 'gray'> = {
-  SUPPLY_OFFER: 'green',
-  PARTNERSHIP_REQUEST: 'blue',
-  INDUSTRY_ANNOUNCEMENT: 'yellow',
-  GENERAL: 'gray',
-};
-
-const categoryLabel: Record<string, string> = {
-  SUPPLY_OFFER: 'Supply Offer',
-  PARTNERSHIP_REQUEST: 'Partnership',
-  INDUSTRY_ANNOUNCEMENT: 'Announcement',
-  GENERAL: 'General',
-};
 
 const ROLE_LABELS: Record<string, string> = {
   ADMIN: 'Admin',
@@ -56,6 +42,9 @@ interface PostCardProps {
 }
 
 export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded, onCommentDeleted, onRepost, onPostEdited }: PostCardProps) {
+  // Original post for reposts
+  const displayPost = post.repostOf || post;
+
   const [showComments, setShowComments] = useState(false);
   const [showAllComments, setShowAllComments] = useState(false);
   const [commentText, setCommentText] = useState('');
@@ -67,7 +56,30 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
   const [savingEdit, setSavingEdit] = useState(false);
   const [localPollOptions, setLocalPollOptions] = useState(post.pollOptions || []);
   const [hasVoted, setHasVoted] = useState(post.pollOptions?.some(o => o.votedByMe) ?? false);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
   const commentInputRef = useRef<HTMLInputElement>(null);
+
+  const isOwnPost = displayPost.authorId === userId;
+
+  useEffect(() => {
+    if (!isOwnPost && displayPost.authorId) {
+      getFollowStatus({ userId: displayPost.authorId }).then(({ following }) => setIsFollowing(following)).catch(() => {});
+    }
+  }, [displayPost.authorId, isOwnPost]);
+
+  const handleFollow = async () => {
+    if (followLoading || isOwnPost) return;
+    setFollowLoading(true);
+    try {
+      const { following } = await followUser(displayPost.authorId);
+      setIsFollowing(following);
+    } catch {
+      toast.error('Failed to update follow');
+    } finally {
+      setFollowLoading(false);
+    }
+  };
 
   const handleLike = async () => {
     if (liking) return;
@@ -152,9 +164,6 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
   const canEdit = post.authorId === userId && post.type === 'POST' && !post.repostOfId &&
     (Date.now() - new Date(post.createdAt).getTime()) < 15 * 60 * 1000;
 
-  // Original post for reposts
-  const displayPost = post.repostOf || post;
-
   return (
     <div className="bg-white dark:bg-neutral-800 rounded-xl border border-gray-100 dark:border-neutral-700/80 shadow-sm hover:shadow-md dark:hover:shadow-black/20 transition-shadow">
       {/* Repost indicator */}
@@ -205,9 +214,19 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <Badge variant={categoryVariant[displayPost.category] || 'gray'}>
-              {categoryLabel[displayPost.category] || displayPost.category}
-            </Badge>
+            {!isOwnPost && (
+              <button
+                onClick={handleFollow}
+                disabled={followLoading}
+                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
+                  isFollowing
+                    ? 'bg-gray-100 dark:bg-neutral-700 text-gray-600 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                } disabled:opacity-50`}
+              >
+                {followLoading ? '...' : isFollowing ? 'Following' : 'Follow'}
+              </button>
+            )}
             {canEdit && (
               <button
                 onClick={() => { setEditing(!editing); setEditText(post.content); }}

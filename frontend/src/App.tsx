@@ -17,8 +17,11 @@ import Feed from './pages/Feed';
 import Jobs from './pages/Jobs';
 import Messages from './pages/Messages';
 import Network from './pages/Network';
+import Sourcing from './pages/Sourcing';
 import AcceptInvitation from './pages/AcceptInvitation';
 import AuthCallback from './pages/AuthCallback';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { DashboardLayout } from './layouts/DashboardLayout';
@@ -44,6 +47,8 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/accept-invitation/:token" element={<AcceptInvitation />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
 
           {/* Dashboard layout wraps all protected routes */}
           <Route
@@ -66,6 +71,7 @@ function App() {
             <Route path="/messages" element={<Messages />} />
             <Route path="/jobs" element={<Jobs />} />
             <Route path="/network" element={<Network />} />
+            <Route path="/sourcing" element={<Sourcing />} />
             <Route path="/dashboard/settings" element={<Settings />} />
           </Route>
 

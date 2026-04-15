@@ -1,5 +1,5 @@
 import express from 'express';
-import { register, login, getMe } from '../controllers/auth';
+import { register, login, getMe, forgotPassword, resetPassword } from '../controllers/auth';
 import { authenticateToken } from '../middleware/auth';
 import { validate } from '../middleware/validate';
 import { registerSchema, loginSchema } from '../schemas/auth';
@@ -64,5 +64,8 @@ router.post('/login', validate(loginSchema), login);
  *       401: { description: Unauthorized }
  */
 router.get('/me', authenticateToken, getMe);
+
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password', resetPassword);
 
 export default router;

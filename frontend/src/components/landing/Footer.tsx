@@ -11,6 +11,10 @@ const footerLinks = {
     { label: 'Contact', href: 'mailto:contact@marcas-net.com' },
     { label: 'Impressum', href: '#impressum' },
   ],
+  Legal: [
+    { label: 'Privacy Policy', href: '#' },
+    { label: 'Terms of Service', href: '#' },
+  ],
 };
 
 export function Footer() {

@@ -79,15 +79,23 @@ enum JobType {
 
 enum SourcingStatus {
   PENDING
+  SUBMITTED
+  UNDER_REVIEW
   APPROVED
-  REJECTED
   CONFIRMED
+  IN_FULFILMENT
+  DELIVERED
+  CLOSED
+  REJECTED
+  WITHDRAWN
 }
 
 enum BatchStatus {
   ACTIVE
   DEPLETED
+  ON_HOLD
   RECALLED
+  EXPIRED
 }
 
 enum FormFieldType {
@@ -139,6 +147,18 @@ model User {
 
   @@unique([provider, providerId])
   @@map("users")
+}
+
+model PasswordReset {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@map("password_resets")
 }
 
 model Organization {
@@ -370,7 +390,13 @@ model Product {
   description    String?
   category       String?
   unit           String?
+  origin         String?
+  moq            Decimal?          // minimum order quantity
+  price          Decimal?          // indicative price per unit
+  currency       String?           @default("EUR")
+  leadTimeDays   Int?
   isCertified    Boolean           @default(false)
+  isPublished    Boolean           @default(true)
   organizationId String
   organization   Organization      @relation(fields: [organizationId], references: [id])
   batches        Batch[]
@@ -387,11 +413,14 @@ model SourcingRequest {
   product        Product         @relation(fields: [productId], references: [id])
   requesterId    String
   requester      User            @relation(fields: [requesterId], references: [id])
-  organizationId String
+  organizationId String          // supplier org
   organization   Organization    @relation(fields: [organizationId], references: [id])
+  buyerOrgId     String?         // buyer org (if applicable)
   quantity       Decimal
+  unit           String?
   message        String?
   status         SourcingStatus  @default(PENDING)
+  supplierNotes  String?
   allocations    BatchAllocation[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
@@ -410,11 +439,13 @@ model Batch {
   availableQuantity Decimal
   productionDate    DateTime?
   expiryDate        DateTime?
+  notes             String?
   status            BatchStatus       @default(ACTIVE)
   allocations       BatchAllocation[]
   recalls           Recall[]
   createdAt         DateTime          @default(now())
 
+  @@unique([productId, batchCode])
   @@map("batches")
 }
 
@@ -495,10 +526,12 @@ model Recall {
   batch          Batch        @relation(fields: [batchId], references: [id])
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
+  type           String       @default("WITHDRAWAL") // WITHDRAWAL or RECALL
   issue          String
   instructions   String
   createdById    String
   createdBy      User         @relation(fields: [createdById], references: [id])
+  resolvedAt     DateTime?
   createdAt      DateTime     @default(now())
 
   @@map("recalls")

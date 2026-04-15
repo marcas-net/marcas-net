@@ -68,20 +68,11 @@ export function Hero() {
               </span>
             </motion.h1>
 
-            <motion.p
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed mb-10"
-            >
-              Network, collaborate, and stay compliant. One platform built for food producers, labs, regulators, and researchers.
-            </motion.p>
-
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex flex-col sm:flex-row items-start sm:items-center gap-4"
+              className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6"
             >
               <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                 <Link

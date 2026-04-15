@@ -1,5 +1,5 @@
 import { useState, useEffect, type FormEvent } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { AuthLayout } from '../layouts/AuthLayout';
 import { SocialButtons, Divider } from '../components/SocialButtons';
@@ -84,6 +84,14 @@ const Login = () => {
             </button>
           }
         />
+        <div className="flex justify-end">
+          <Link
+            to="/forgot-password"
+            className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+          >
+            Forgot password?
+          </Link>
+        </div>
         <Button type="submit" loading={loading} fullWidth size="lg" className="mt-2">
           Sign in →
         </Button>
