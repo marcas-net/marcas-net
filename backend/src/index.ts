@@ -129,6 +129,27 @@ if (fs.existsSync(publicDir)) {
   });
 }
 
+// Debug: list uploads (remove after debugging)
+app.get('/api/debug/uploads', (_req, res) => {
+  try {
+    const resolved = path.resolve(uploadsDir);
+    const mediaDirPath = path.join(resolved, 'media');
+    const docsDirPath = path.join(resolved, 'documents');
+    const mediaFiles = fs.existsSync(mediaDirPath) ? fs.readdirSync(mediaDirPath) : [];
+    const docFiles = fs.existsSync(docsDirPath) ? fs.readdirSync(docsDirPath) : [];
+    res.json({
+      uploadsDir: resolved,
+      exists: fs.existsSync(resolved),
+      mediaCount: mediaFiles.length,
+      mediaFiles: mediaFiles.slice(0, 20),
+      docCount: docFiles.length,
+      docFiles: docFiles.slice(0, 10),
+    });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // Centralized error handler
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   logger.error('Unhandled error', { message: err.message, stack: err.stack });
@@ -147,6 +168,22 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
 
 httpServer.listen(PORT, () => {
   logger.info(`MarcasNet server running on port ${PORT}`);
+
+  // Log uploads directory info for debugging
+  const resolvedUploads = path.resolve(uploadsDir);
+  logger.info(`Uploads dir: ${resolvedUploads} (exists: ${fs.existsSync(resolvedUploads)})`);
+  try {
+    const mediaDirResolved = path.join(resolvedUploads, 'media');
+    if (fs.existsSync(mediaDirResolved)) {
+      const files = fs.readdirSync(mediaDirResolved);
+      logger.info(`Media files count: ${files.length}`);
+      if (files.length > 0) logger.info(`Sample media files: ${files.slice(0, 5).join(', ')}`);
+    } else {
+      logger.warn(`Media dir does not exist: ${mediaDirResolved}`);
+    }
+  } catch (e: any) {
+    logger.error(`Error reading uploads dir: ${e.message}`);
+  }
 });
 
 // Graceful shutdown
