@@ -13,7 +13,7 @@ const problems = [
     bg: 'bg-red-50 dark:bg-red-950/30',
     border: 'border-red-100 dark:border-red-900/50',
     title: 'Disconnected Industry',
-    description: 'Producers, labs, and regulators need to work together daily — but there\u2019s no shared network to find, connect, and collaborate with the right organizations.',
+    description: 'Producers, labs, and regulators need to work together daily, but there\u2019s no shared network to find, connect, and collaborate with the right organizations.',
   },
   {
     icon: (
@@ -25,7 +25,7 @@ const problems = [
     bg: 'bg-orange-50 dark:bg-orange-950/30',
     border: 'border-orange-100 dark:border-orange-900/50',
     title: 'Fragmented Workflows',
-    description: 'Certification tracking, lab submissions, and compliance documentation happen across email, spreadsheets, and siloed systems with no visibility or control.',
+    description: 'Certification tracking, lab submissions, and compliance documentation are scattered across email, spreadsheets, and siloed systems.',
   },
   {
     icon: (
@@ -37,7 +37,7 @@ const problems = [
     bg: 'bg-amber-50 dark:bg-amber-950/30',
     border: 'border-amber-100 dark:border-amber-900/50',
     title: 'No Trust Infrastructure',
-    description: 'Sensitive lab results, proprietary formulations, and regulatory submissions are exchanged without proper access controls — putting compliance and trust at risk.',
+    description: 'Sensitive lab results and regulatory submissions are exchanged without proper access controls, putting compliance and trust at risk.',
   },
   {
     icon: (
@@ -49,7 +49,7 @@ const problems = [
     bg: 'bg-rose-50 dark:bg-rose-950/30',
     border: 'border-rose-100 dark:border-rose-900/50',
     title: 'No Industry Platform',
-    description: 'The food industry has no dedicated professional network. Organizations rely on generic tools not built for compliance, certification, or cross-institutional coordination.',
+    description: 'The food industry has no dedicated professional network. Organizations rely on generic tools not built for compliance or coordination.',
   },
 ];
 
@@ -96,7 +96,7 @@ export function Problem() {
             A Disconnected Food Ecosystem
           </h2>
           <p className="text-gray-600 dark:text-gray-300 text-lg leading-relaxed">
-            The food industry runs on trust and coordination — but today\u2019s fragmented tools make it hard to connect, verify, and collaborate across organizations.
+            The food industry runs on trust and coordination, but today\u2019s fragmented tools make it hard to connect and collaborate.
           </p>
         </motion.div>
 

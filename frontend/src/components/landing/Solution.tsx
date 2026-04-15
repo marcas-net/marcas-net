@@ -9,7 +9,7 @@ const benefits = [
       </svg>
     ),
     title: 'Discover the Right Organizations',
-    desc: 'Find and connect with food producers, labs, universities, and regulators. Build your professional network within a trusted, industry-specific ecosystem.',
+    desc: 'Find and connect with food producers, labs, universities, and regulators within a trusted, industry-specific ecosystem.',
   },
   {
     icon: (
@@ -18,7 +18,7 @@ const benefits = [
       </svg>
     ),
     title: 'Share Certifications Securely',
-    desc: 'Upload lab reports, safety certificates, and compliance records in a secure system with role-based access. No more attachments lost in email.',
+    desc: 'Upload lab reports, safety certificates, and compliance records with role-based access. No more attachments lost in email.',
   },
   {
     icon: (
@@ -27,7 +27,7 @@ const benefits = [
       </svg>
     ),
     title: 'Maintain Structured Records',
-    desc: 'Keep organized product records, batch histories, and regulatory documentation across your organization — everything audit-ready from day one.',
+    desc: 'Keep organized product records, batch histories, and regulatory documentation. Everything audit-ready from day one.',
   },
   {
     icon: (
@@ -36,7 +36,7 @@ const benefits = [
       </svg>
     ),
     title: 'Prepare for Compliance Workflows',
-    desc: 'Track certifications, coordinate with labs and regulators, and prepare for batch, compliance, and recall workflows — all from a single workspace.',
+    desc: 'Track certifications, coordinate with labs and regulators, and manage batch and compliance workflows from a single workspace.',
   },
 ];
 
@@ -65,10 +65,10 @@ export function Solution() {
               </span>
             </h2>
             <p className="text-gray-600 dark:text-gray-300 text-lg leading-relaxed mb-4">
-              MarcasNet is more than a network — it's the structured workspace where food industry organizations discover partners, manage relationships, and coordinate compliance.
+              MarcasNet is the structured workspace where food industry organizations discover partners, manage relationships, and coordinate compliance.
             </p>
             <p className="text-gray-500 dark:text-gray-400 text-base leading-relaxed">
-              Share certifications and reports securely, maintain structured records across organizations, and prepare for batch, compliance, and recall workflows — all from a single platform designed for trust and operational control.
+              Share certifications securely, maintain structured records, and prepare for compliance workflows, all from one platform.
             </p>
           </motion.div>
 

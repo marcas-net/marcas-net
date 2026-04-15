@@ -72,22 +72,9 @@ export function Hero() {
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed mb-4"
+              className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed mb-10"
             >
-              Connect with producers, laboratories, regulators, and researchers
-              while managing certifications, documents, and compliance workflows
-              in one platform.
-            </motion.p>
-
-            <motion.p
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.25 }}
-              className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-10"
-            >
-              MarcasNet brings together every stakeholder in the food ecosystem —
-              from producers and testing labs to universities and regulatory bodies —
-              so your organization can network, operate, and stay compliant from a single hub.
+              Network, collaborate, and stay compliant. One platform built for food producers, labs, regulators, and researchers.
             </motion.p>
 
             <motion.div

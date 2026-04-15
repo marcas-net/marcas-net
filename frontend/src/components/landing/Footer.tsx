@@ -11,10 +11,6 @@ const footerLinks = {
     { label: 'Contact', href: 'mailto:contact@marcas-net.com' },
     { label: 'Impressum', href: '#impressum' },
   ],
-  Legal: [
-    { label: 'Privacy Policy', href: '#' },
-    { label: 'Terms of Service', href: '#' },
-  ],
 };
 
 export function Footer() {
@@ -28,7 +24,7 @@ export function Footer() {
               <Logo size="md" variant="light" />
             </Link>
             <p className="text-slate-400 text-sm leading-relaxed mb-5">
-              A digital platform connecting food producers, nutrition laboratories, universities, food safety regulators, and nutrition professionals.
+              The professional network for the food industry.
             </p>
             <div className="flex gap-3">
               {[
@@ -86,14 +82,14 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="pt-8 border-t border-slate-800 flex items-center justify-center">
           <p className="text-slate-500 text-xs">
-            © {new Date().getFullYear()} MarcasNet. All rights reserved.
+            © {new Date().getFullYear()}{' '}
+            <a href="https://www.globalnutrisolutions.com/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-300 transition-colors">
+              Global Nutri Solutions™
+            </a>
+            . All rights reserved.
           </p>
-          <div className="flex items-center gap-5">
-            <a href="#" className="text-xs text-slate-500 hover:text-slate-300 transition-colors">Privacy</a>
-            <a href="#" className="text-xs text-slate-500 hover:text-slate-300 transition-colors">Terms</a>
-          </div>
         </div>
       </div>
     </footer>

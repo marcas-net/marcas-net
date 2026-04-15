@@ -12,7 +12,7 @@ const features = [
     gradient: 'from-blue-500 to-blue-600',
     layer: 'Network',
     title: 'Organization Profiles',
-    description: 'Create and showcase your food company, lab, university, or regulatory body. Let others discover your capabilities and build trust.',
+    description: 'Create and showcase your food company, lab, university, or regulatory body. Let others discover your capabilities.',
   },
   {
     icon: (
@@ -23,7 +23,7 @@ const features = [
     gradient: 'from-indigo-500 to-blue-600',
     layer: 'Network',
     title: 'Professional Profiles',
-    description: 'Build your professional identity. Show your role, expertise, and contributions across the food and nutrition ecosystem.',
+    description: 'Build your professional identity. Show your role and expertise across the food and nutrition ecosystem.',
   },
   {
     icon: (
@@ -34,7 +34,7 @@ const features = [
     gradient: 'from-cyan-500 to-blue-500',
     layer: 'Network',
     title: 'Industry Connections',
-    description: 'Discover and connect with relevant organizations and professionals. Build partnerships, find labs, or identify suppliers in one place.',
+    description: 'Discover and connect with relevant organizations and professionals. Find labs or suppliers in one place.',
   },
   // Operational Layer
   {
@@ -46,7 +46,7 @@ const features = [
     gradient: 'from-emerald-500 to-green-600',
     layer: 'Operational',
     title: 'Product Records',
-    description: 'Register products and track batches. Keep an organized record of everything your organization produces and certifies.',
+    description: 'Register products and track batches. Keep organized records of everything your organization produces.',
   },
   {
     icon: (
@@ -57,7 +57,7 @@ const features = [
     gradient: 'from-teal-500 to-emerald-600',
     layer: 'Operational',
     title: 'Document Management',
-    description: 'Upload, version, and share lab reports, certifications, and research files with structured access controls and audit trails.',
+    description: 'Upload, version, and share lab reports, certifications, and research files with access controls and audit trails.',
   },
   {
     icon: (
@@ -68,7 +68,7 @@ const features = [
     gradient: 'from-green-500 to-lime-600',
     layer: 'Operational',
     title: 'Workflow Tools',
-    description: 'Coordinate activities across teams and organizations with shared workflows, activity tracking, and real-time notifications.',
+    description: 'Coordinate activities across teams and organizations with shared workflows and real-time notifications.',
   },
   // Compliance Layer
   {
@@ -80,7 +80,7 @@ const features = [
     gradient: 'from-violet-500 to-purple-600',
     layer: 'Compliance',
     title: 'Certifications & Lab Reports',
-    description: 'Manage food safety certificates, lab test results, and regulatory submissions in a structured, auditable system.',
+    description: 'Manage food safety certificates, lab test results, and regulatory submissions in a structured system.',
   },
   {
     icon: (
@@ -91,7 +91,7 @@ const features = [
     gradient: 'from-orange-400 to-amber-500',
     layer: 'Compliance',
     title: 'Role-Based Access Control',
-    description: 'Control who can view, upload, and manage sensitive documents. Fine-grained permissions for admins, labs, regulators, and team members.',
+    description: 'Control who can view, upload, and manage sensitive documents. Fine-grained permissions for all roles.',
   },
   {
     icon: (
@@ -102,7 +102,7 @@ const features = [
     gradient: 'from-rose-500 to-red-600',
     layer: 'Compliance',
     title: 'Regulatory Records',
-    description: 'Maintain organized, audit-ready records for inspections and regulatory reviews. Full activity logs and document version history.',
+    description: 'Maintain organized, audit-ready records for inspections and regulatory reviews with full activity logs.',
   },
 ];
 
@@ -155,7 +155,7 @@ export function Features() {
             Three Layers. One Platform.
           </h2>
           <p className="text-gray-600 dark:text-gray-300 text-lg">
-            Network with industry peers, streamline operations, and maintain compliance — all in one place built for the food ecosystem.
+            Network, streamline operations, and maintain compliance, all in one place.
           </p>
         </motion.div>
 

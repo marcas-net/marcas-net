@@ -49,7 +49,7 @@ export function CTA() {
           </h2>
 
           <p className="text-white/60 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
-            Create your free account and connect with food producers, labs, researchers, and regulators. Build your professional network today.
+            Create your free account and start connecting with food industry professionals today.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

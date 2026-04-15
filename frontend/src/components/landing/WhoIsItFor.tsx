@@ -90,7 +90,7 @@ export function WhoIsItFor() {
             Built for Every Part of the Food Ecosystem
           </h2>
           <p className="text-gray-600 dark:text-gray-300 text-lg leading-relaxed">
-            Whether you produce food, test it, research it, or regulate it — MarcasNet is the professional network where your organization belongs.
+            Whether you produce food, test it, research it, or regulate it, MarcasNet is where your organization belongs.
           </p>
         </motion.div>
 

@@ -42,7 +42,7 @@ const previews = [
   },
   {
     title: 'Organization Hub',
-    description: 'Browse, join, or manage organizations. Filter by type — company, lab, regulator, university.',
+    description: 'Browse, join, or manage organizations. Filter by type: company, lab, regulator, university.',
     badge: 'Organizations',
     badgeColor: 'bg-emerald-100 text-emerald-700',
     screen: (
@@ -126,7 +126,7 @@ export function PlatformPreview() {
             A workspace designed for clarity
           </h2>
           <p className="text-gray-500 dark:text-gray-400 text-lg max-w-xl mx-auto">
-            Clean interfaces that surface exactly what you need — no clutter, no complexity.
+            Clean interfaces that surface exactly what you need. No clutter, no complexity.
           </p>
         </div>
 
