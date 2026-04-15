@@ -548,7 +548,7 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
               />
               <div className="rounded-xl border border-gray-200 dark:border-neutral-700 p-3 bg-gray-50 dark:bg-neutral-900/40">
                 <div className="flex items-center gap-2 mb-1">
-                  <Avatar name={displayPost.author?.name} avatarUrl={displayPost.author?.avatarUrl} size={20} />
+                  <Avatar name={displayPost.author?.name} src={displayPost.author?.avatarUrl ?? undefined} size="xs" />
                   <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{displayPost.author?.name}</span>
                 </div>
                 {displayPost.content && <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-3">{displayPost.content}</p>}
