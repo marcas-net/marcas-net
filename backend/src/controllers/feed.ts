@@ -149,14 +149,13 @@ export const getPostById = async (req: AuthRequest, res: Response) => {
 export const createPost = async (req: AuthRequest, res: Response) => {
   try {
     const { content, category, type, pollQuestion, pollOptions, pollDuration, eventTitle, eventDate, eventLocation, eventLink } = req.body;
-    if (!content || !content.trim()) {
-      return res.status(400).json({ error: 'Content is required' });
+    const files = (req.files as Express.Multer.File[]) || [];
+    if ((!content || !content.trim()) && files.length === 0) {
+      return res.status(400).json({ error: 'Content or media is required' });
     }
 
     const user = await prisma.user.findUnique({ where: { id: req.user.id as string } });
     const hasMedia = await checkMediaTable();
-
-    const files = (req.files as Express.Multer.File[]) || [];
     const imageExts = /\.(jpg|jpeg|png|gif|webp)$/i;
 
     let mediaData: any = undefined;
@@ -194,7 +193,7 @@ export const createPost = async (req: AuthRequest, res: Response) => {
 
     const post = await prisma.post.create({
       data: {
-        content: content.trim(),
+        content: content?.trim() || '',
         category: category || 'GENERAL',
         type: postType,
         authorId: req.user.id as string,
