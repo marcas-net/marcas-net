@@ -51,6 +51,9 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
   const [submittingComment, setSubmittingComment] = useState(false);
   const [liking, setLiking] = useState(false);
   const [reposting, setReposting] = useState(false);
+  const [showRepostMenu, setShowRepostMenu] = useState(false);
+  const [showQuoteModal, setShowQuoteModal] = useState(false);
+  const [quoteText, setQuoteText] = useState('');
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(post.content);
   const [savingEdit, setSavingEdit] = useState(false);
@@ -59,8 +62,19 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
   const commentInputRef = useRef<HTMLInputElement>(null);
+  const repostMenuRef = useRef<HTMLDivElement>(null);
 
   const isOwnPost = displayPost.authorId === userId;
+
+  // Close repost menu on outside click
+  useEffect(() => {
+    if (!showRepostMenu) return;
+    const handler = (e: MouseEvent) => {
+      if (repostMenuRef.current && !repostMenuRef.current.contains(e.target as Node)) setShowRepostMenu(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showRepostMenu]);
 
   useEffect(() => {
     if (!isOwnPost && displayPost.authorId) {
@@ -94,17 +108,19 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
     }
   };
 
-  const handleRepost = async () => {
+  const handleRepost = async (content?: string) => {
     if (reposting) return;
     setReposting(true);
     try {
-      const newPost = await repostPost(post.repostOfId || post.id);
-      toast.success('Reposted!');
+      const newPost = await repostPost(post.repostOfId || post.id, content);
+      toast.success(content ? 'Quote reposted!' : 'Reposted!');
       onRepost?.(newPost);
     } catch {
       toast.error('Failed to repost');
     } finally {
       setReposting(false);
+      setShowQuoteModal(false);
+      setQuoteText('');
     }
   };
 
@@ -168,14 +184,19 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
     <div className="bg-white dark:bg-neutral-800 rounded-xl border border-gray-100 dark:border-neutral-700/80 shadow-sm hover:shadow-md dark:hover:shadow-black/20 transition-shadow">
       {/* Repost indicator */}
       {post.repostOf && (
-        <div className="px-5 pt-3 pb-0 flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-          <Link to={`/profile/${post.author.id}`} className="font-medium hover:text-blue-500 transition-colors">
-            {post.author.name}
-          </Link>
-          reposted
+        <div className="px-5 pt-3 pb-0">
+          <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <Link to={`/profile/${post.author.id}`} className="font-medium hover:text-blue-500 transition-colors">
+              {post.author.name}
+            </Link>
+            reposted
+          </div>
+          {post.content && (
+            <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">{post.content}</p>
+          )}
         </div>
       )}
 
@@ -364,40 +385,53 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
         )}
 
         {/* Media Gallery */}
-        {displayPost.media && displayPost.media.length > 0 && (
-          <div className={`mt-3 grid gap-1.5 rounded-xl overflow-hidden ${
-            displayPost.media.length === 1 ? 'grid-cols-1' :
-            displayPost.media.length === 2 ? 'grid-cols-2' :
-            'grid-cols-2'
-          }`}>
-            {displayPost.media.map((m, i) => {
-              const backendUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
-              const src = m.url.startsWith('http') ? m.url : `${backendUrl}${m.url}`;
-              const isFirstOfThree = displayPost.media.length === 3 && i === 0;
+        {displayPost.media && displayPost.media.length > 0 && (() => {
+          const allMedia = displayPost.media;
+          const showMedia = allMedia.slice(0, 4);
+          const extraCount = allMedia.length - 4;
+          const count = showMedia.length;
+          return (
+            <div className={`mt-3 grid gap-1.5 rounded-xl overflow-hidden ${
+              count === 1 ? 'grid-cols-1' :
+              count === 2 ? 'grid-cols-2' :
+              'grid-cols-2'
+            }`}>
+              {showMedia.map((m, i) => {
+                const backendUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+                const src = m.url.startsWith('http') ? m.url : `${backendUrl}${m.url}`;
+                const isFirstOfThree = count === 3 && i === 0;
+                const isLastWithOverlay = i === 3 && extraCount > 0;
 
-              return (
-                <div
-                  key={m.id}
-                  className={`relative bg-gray-100 dark:bg-neutral-700 ${isFirstOfThree ? 'row-span-2' : ''}`}
-                >
-                  {m.type === 'video' ? (
-                    <AutoplayVideo
-                      src={src}
-                      className={`w-full object-cover ${displayPost.media.length === 1 ? 'max-h-[500px]' : isFirstOfThree ? 'h-full' : 'h-48'}`}
-                    />
-                  ) : (
-                    <img
-                      src={src}
-                      alt=""
-                      loading="lazy"
-                      className={`w-full object-cover ${displayPost.media.length === 1 ? 'max-h-[500px]' : isFirstOfThree ? 'h-full' : 'h-48'}`}
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
+                return (
+                  <div
+                    key={m.id}
+                    className={`relative bg-gray-100 dark:bg-neutral-700 ${isFirstOfThree ? 'row-span-2' : ''}`}
+                  >
+                    {m.type === 'video' ? (
+                      <AutoplayVideo
+                        src={src}
+                        className={`w-full object-cover ${count === 1 ? 'max-h-[500px]' : isFirstOfThree ? 'h-full' : 'h-48'}`}
+                      />
+                    ) : (
+                      <img
+                        src={src}
+                        alt=""
+                        loading="lazy"
+                        crossOrigin="anonymous"
+                        className={`w-full object-cover ${count === 1 ? 'max-h-[500px]' : isFirstOfThree ? 'h-full' : 'h-48'}`}
+                      />
+                    )}
+                    {isLastWithOverlay && (
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                        <span className="text-white text-2xl font-bold">+{extraCount}</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
 
         {/* Stats Row */}
         {(post.likesCount > 0 || post.commentsCount > 0 || post.repostsCount > 0) && (
@@ -457,17 +491,84 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
           </svg>
           Comment
         </button>
-        <button
-          onClick={handleRepost}
-          disabled={reposting}
-          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:bg-green-50 dark:hover:bg-green-950/30 hover:text-green-600 dark:hover:text-green-400 transition-all"
-        >
-          <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-          Repost
-        </button>
+        <div ref={repostMenuRef} className="relative flex-1">
+          <button
+            onClick={() => setShowRepostMenu(!showRepostMenu)}
+            disabled={reposting}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:bg-green-50 dark:hover:bg-green-950/30 hover:text-green-600 dark:hover:text-green-400 transition-all"
+          >
+            <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            {reposting ? 'Reposting...' : 'Repost'}
+          </button>
+          {showRepostMenu && (
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white dark:bg-neutral-800 rounded-xl shadow-lg border border-gray-200 dark:border-neutral-700 overflow-hidden z-50">
+              <button
+                onClick={() => { setShowRepostMenu(false); handleRepost(); }}
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Repost
+              </button>
+              <button
+                onClick={() => { setShowRepostMenu(false); setShowQuoteModal(true); }}
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-colors border-t border-gray-100 dark:border-neutral-700"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Quote Repost
+              </button>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Quote Repost Modal */}
+      {showQuoteModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50" onClick={() => { setShowQuoteModal(false); setQuoteText(''); }}>
+          <div className="bg-white dark:bg-neutral-800 rounded-2xl w-full max-w-lg mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-neutral-700">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-white">Quote Repost</h3>
+              <button onClick={() => { setShowQuoteModal(false); setQuoteText(''); }} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="p-5 space-y-4">
+              <textarea
+                value={quoteText}
+                onChange={e => setQuoteText(e.target.value)}
+                placeholder="Add your thoughts..."
+                rows={3}
+                autoFocus
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-600 bg-gray-50 dark:bg-neutral-700/50 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none outline-none"
+              />
+              <div className="rounded-xl border border-gray-200 dark:border-neutral-700 p-3 bg-gray-50 dark:bg-neutral-900/40">
+                <div className="flex items-center gap-2 mb-1">
+                  <Avatar name={displayPost.author?.name} avatarUrl={displayPost.author?.avatarUrl} size={20} />
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{displayPost.author?.name}</span>
+                </div>
+                {displayPost.content && <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-3">{displayPost.content}</p>}
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 px-5 py-4 border-t border-gray-100 dark:border-neutral-700">
+              <button onClick={() => { setShowQuoteModal(false); setQuoteText(''); }} className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-lg transition-colors">
+                Cancel
+              </button>
+              <button
+                onClick={() => handleRepost(quoteText.trim() || undefined)}
+                disabled={reposting}
+                className="px-5 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {reposting ? 'Posting...' : 'Repost'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Comments Section */}
       {showComments && (
@@ -568,6 +669,7 @@ function AutoplayVideo({ src, className }: { src: string; className: string }) {
       <video
         ref={videoRef}
         src={src}
+        crossOrigin="anonymous"
         muted
         loop
         playsInline
