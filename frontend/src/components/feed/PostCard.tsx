@@ -419,6 +419,14 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
                         loading="lazy"
                         crossOrigin="anonymous"
                         className={`w-full object-cover ${count === 1 ? 'max-h-[500px]' : isFirstOfThree ? 'h-full' : 'h-48'}`}
+                        onError={(e) => {
+                          const el = e.currentTarget;
+                          el.style.display = 'none';
+                          const placeholder = document.createElement('div');
+                          placeholder.className = `w-full flex items-center justify-center bg-gray-100 dark:bg-neutral-700 text-gray-400 ${count === 1 ? 'h-48' : isFirstOfThree ? 'h-full min-h-48' : 'h-48'}`;
+                          placeholder.innerHTML = '<div class="text-center p-4"><svg class="w-8 h-8 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg><span class="text-xs">Image unavailable</span></div>';
+                          el.parentElement?.appendChild(placeholder);
+                        }}
                       />
                     )}
                     {isLastWithOverlay && (
@@ -643,6 +651,7 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
 function AutoplayVideo({ src, className }: { src: string; className: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -664,6 +673,19 @@ function AutoplayVideo({ src, className }: { src: string; className: string }) {
     return () => observer.disconnect();
   }, []);
 
+  if (error) {
+    return (
+      <div className={`${className} flex items-center justify-center bg-gray-100 dark:bg-neutral-700 text-gray-400 dark:text-gray-500`}>
+        <div className="text-center p-4">
+          <svg className="w-8 h-8 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+          <span className="text-xs">Video unavailable</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div ref={containerRef}>
       <video
@@ -676,6 +698,7 @@ function AutoplayVideo({ src, className }: { src: string; className: string }) {
         controls
         preload="metadata"
         className={className}
+        onError={() => setError(true)}
       />
     </div>
   );
