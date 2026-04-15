@@ -8,7 +8,7 @@ import {
 import type { Notification } from '../services/notificationService';
 import { useSocket } from '../context/SocketContext';
 
-export function NotificationBell() {
+export function NotificationBell({ dropUp }: { dropUp?: boolean }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [open, setOpen] = useState(false);
@@ -88,7 +88,7 @@ export function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-neutral-900 rounded-xl border border-gray-100 dark:border-neutral-700/80 shadow-lg z-50 overflow-hidden">
+        <div className={`absolute ${dropUp ? 'bottom-full mb-2 right-1/2 translate-x-1/2' : 'right-0 top-full mt-2'} w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-neutral-900 rounded-xl border border-gray-100 dark:border-neutral-700/80 shadow-lg z-50 overflow-hidden`}>
           <div className="px-4 py-3 border-b border-gray-100 dark:border-neutral-700/80 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-slate-800 dark:text-white">Notifications</h3>
             {unreadCount > 0 && (

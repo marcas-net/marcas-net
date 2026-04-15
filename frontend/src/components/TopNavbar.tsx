@@ -249,7 +249,7 @@ export function TopNavbar() {
           );
         })}
         <div className="flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5">
-          <NotificationBell />
+          <NotificationBell dropUp />
         </div>
       </nav>
 

@@ -3,6 +3,7 @@ import { AuthRequest } from '../middleware/auth';
 import prisma from '../config/database';
 import fs from 'fs';
 import path from 'path';
+import { emitToAll } from '../utils/socket';
 
 const postInclude = (userId?: string, includeMedia = false) => {
   const base: Record<string, any> = {
@@ -185,7 +186,15 @@ export const createPost = async (req: AuthRequest, res: Response) => {
       include: postInclude(req.user.id as string, hasMedia),
     });
 
-    res.status(201).json({ post: mapPost(post, req.user.id as string, getBaseUrl(req)) });
+    const mapped = mapPost(post, req.user.id as string, getBaseUrl(req));
+
+    // Notify connected clients about the new post
+    emitToAll('post:created', {
+      postId: mapped.id,
+      author: { id: user?.id, name: user?.name, avatarUrl: user?.avatarUrl },
+    });
+
+    res.status(201).json({ post: mapped });
   } catch (error) {
     console.error('Create post error:', error);
     res.status(500).json({ error: 'Internal server error' });

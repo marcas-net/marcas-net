@@ -55,29 +55,18 @@ if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 if (!fs.existsSync(documentsDir)) fs.mkdirSync(documentsDir, { recursive: true });
 if (!fs.existsSync(mediaDir)) fs.mkdirSync(mediaDir, { recursive: true });
 
+// Serve uploads BEFORE Helmet so security headers (nosniff, COEP) don't trigger ORB
+app.use('/uploads', cors(), (req, res, next) => {
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+}, express.static(uploadsDir));
+
 // Middleware
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors());
 app.use(morgan('combined'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Static file serving for uploads – explicit CORS + Content-Type for media
-app.use('/uploads', (req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-  const ext = path.extname(req.path).toLowerCase();
-  const mimeTypes: Record<string, string> = {
-    '.mp4': 'video/mp4', '.webm': 'video/webm', '.ogg': 'video/ogg',
-    '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png',
-    '.gif': 'image/gif', '.webp': 'image/webp', '.svg': 'image/svg+xml',
-    '.pdf': 'application/pdf',
-  };
-  if (mimeTypes[ext]) {
-    res.setHeader('Content-Type', mimeTypes[ext]);
-  }
-  next();
-}, express.static(uploadsDir));
 
 // Swagger API Documentation
 const swaggerSpec = swaggerJsdoc({

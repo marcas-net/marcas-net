@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   getPosts, createPost, deletePost,
   type Post, type Comment,
 } from '../services/feedService';
 import { useAuth } from '../context/AuthContext';
+import { useSocket } from '../context/SocketContext';
 import { LeftSidebar } from '../components/feed/LeftSidebar';
 import { RightPanel } from '../components/feed/RightPanel';
 import { CreatePostCard } from '../components/feed/CreatePostCard';
 import { PostCard } from '../components/feed/PostCard';
+import { Avatar } from '../components/ui/Avatar';
 import toast from 'react-hot-toast';
 
 const CATEGORIES = [
@@ -22,21 +24,38 @@ const CATEGORIES = [
 
 export default function Feed() {
   const { user } = useAuth();
+  const { socket } = useSocket();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState('ALL');
+  const [newPostAuthors, setNewPostAuthors] = useState<{ id: string; name: string; avatarUrl?: string }[]>([]);
 
-  const loadPosts = (cat?: string) => {
+  const loadPosts = useCallback((cat?: string) => {
     setLoading(true);
+    setNewPostAuthors([]);
     getPosts(cat)
       .then(setPosts)
       .catch(() => toast.error('Failed to load posts'))
       .finally(() => setLoading(false));
-  };
+  }, []);
 
   useEffect(() => {
     loadPosts(category);
-  }, [category]);
+  }, [category, loadPosts]);
+
+  // Listen for new posts from other users
+  useEffect(() => {
+    if (!socket) return;
+    const handler = (data: { postId: string; author: { id: string; name: string; avatarUrl?: string } }) => {
+      if (data.author.id === user?.id) return; // Skip own posts
+      setNewPostAuthors(prev => {
+        if (prev.some(a => a.id === data.author.id)) return prev;
+        return [data.author, ...prev].slice(0, 8);
+      });
+    };
+    socket.on('post:created', handler);
+    return () => { socket.off('post:created', handler); };
+  }, [socket, user?.id]);
 
   const handleCreate = async (data: {
     content: string;
@@ -124,6 +143,31 @@ export default function Feed() {
             </button>
           ))}
         </div>
+
+        {/* New Posts Indicator */}
+        {newPostAuthors.length > 0 && (
+          <button
+            onClick={() => loadPosts(category)}
+            className="w-full flex items-center gap-3 px-4 py-2.5 bg-white dark:bg-neutral-800 rounded-xl border border-blue-200 dark:border-blue-900/50 shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-800 transition-all group"
+          >
+            <div className="flex -space-x-2">
+              {newPostAuthors.slice(0, 5).map((a) => (
+                <div key={a.id} className="ring-2 ring-white dark:ring-neutral-800 rounded-full">
+                  <Avatar name={a.name} size="xs" src={a.avatarUrl ?? undefined} />
+                </div>
+              ))}
+            </div>
+            <span className="text-sm font-medium text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300">
+              {newPostAuthors.length === 1
+                ? `${newPostAuthors[0].name} posted`
+                : `${newPostAuthors[0].name} and ${newPostAuthors.length - 1} other${newPostAuthors.length > 2 ? 's' : ''} posted`
+              } — tap to refresh
+            </span>
+            <svg className="w-4 h-4 ml-auto text-blue-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+        )}
 
         {/* Posts */}
         {loading ? (
