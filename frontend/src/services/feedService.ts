@@ -104,6 +104,7 @@ export const createPost = async (data: {
   if (data.eventLink) formData.append('eventLink', data.eventLink);
   const res = await api.post('/feed', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 120000, // 2 min for large video uploads
   });
   return res.data.post;
 };

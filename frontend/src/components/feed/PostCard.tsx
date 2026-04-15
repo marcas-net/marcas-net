@@ -54,6 +54,7 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
   const [showRepostMenu, setShowRepostMenu] = useState(false);
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [quoteText, setQuoteText] = useState('');
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(post.content);
   const [savingEdit, setSavingEdit] = useState(false);
@@ -390,22 +391,25 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
           const showMedia = allMedia.slice(0, 4);
           const extraCount = allMedia.length - 4;
           const count = showMedia.length;
+          const backendUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+          const getMediaSrc = (m: typeof allMedia[0]) => m.url.startsWith('http') ? m.url : `${backendUrl}${m.url}`;
           return (
+            <>
             <div className={`mt-3 grid gap-1.5 rounded-xl overflow-hidden ${
               count === 1 ? 'grid-cols-1' :
               count === 2 ? 'grid-cols-2' :
               'grid-cols-2'
             }`}>
               {showMedia.map((m, i) => {
-                const backendUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
-                const src = m.url.startsWith('http') ? m.url : `${backendUrl}${m.url}`;
+                const src = getMediaSrc(m);
                 const isFirstOfThree = count === 3 && i === 0;
                 const isLastWithOverlay = i === 3 && extraCount > 0;
 
                 return (
                   <div
                     key={m.id}
-                    className={`relative bg-gray-100 dark:bg-neutral-700 ${isFirstOfThree ? 'row-span-2' : ''}`}
+                    className={`relative bg-gray-100 dark:bg-neutral-700 cursor-pointer ${isFirstOfThree ? 'row-span-2' : ''}`}
+                    onClick={() => setLightboxIndex(i)}
                   >
                     {m.type === 'video' ? (
                       <AutoplayVideo
@@ -430,7 +434,7 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
                       />
                     )}
                     {isLastWithOverlay && (
-                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center" onClick={(e) => { e.stopPropagation(); setLightboxIndex(i); }}>
                         <span className="text-white text-2xl font-bold">+{extraCount}</span>
                       </div>
                     )}
@@ -438,6 +442,86 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
                 );
               })}
             </div>
+
+            {/* Media Lightbox */}
+            {lightboxIndex !== null && (
+              <div
+                className="fixed inset-0 z-[70] bg-black/90 flex items-center justify-center"
+                onClick={() => setLightboxIndex(null)}
+              >
+                {/* Close button */}
+                <button className="absolute top-4 right-4 z-10 text-white/80 hover:text-white p-2" onClick={() => setLightboxIndex(null)}>
+                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+
+                {/* Counter */}
+                <div className="absolute top-4 left-4 text-white/70 text-sm font-medium">
+                  {lightboxIndex + 1} / {allMedia.length}
+                </div>
+
+                {/* Prev */}
+                {lightboxIndex > 0 && (
+                  <button
+                    className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-10 text-white/70 hover:text-white p-2 bg-black/30 hover:bg-black/50 rounded-full transition-colors"
+                    onClick={(e) => { e.stopPropagation(); setLightboxIndex(lightboxIndex - 1); }}
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                  </button>
+                )}
+
+                {/* Next */}
+                {lightboxIndex < allMedia.length - 1 && (
+                  <button
+                    className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-10 text-white/70 hover:text-white p-2 bg-black/30 hover:bg-black/50 rounded-full transition-colors"
+                    onClick={(e) => { e.stopPropagation(); setLightboxIndex(lightboxIndex + 1); }}
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                  </button>
+                )}
+
+                {/* Content */}
+                <div className="max-w-[90vw] max-h-[85vh] flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+                  {allMedia[lightboxIndex].type === 'video' ? (
+                    <video
+                      src={getMediaSrc(allMedia[lightboxIndex])}
+                      crossOrigin="anonymous"
+                      controls
+                      autoPlay
+                      className="max-w-full max-h-[85vh] rounded-lg"
+                    />
+                  ) : (
+                    <img
+                      src={getMediaSrc(allMedia[lightboxIndex])}
+                      alt=""
+                      crossOrigin="anonymous"
+                      className="max-w-full max-h-[85vh] rounded-lg object-contain"
+                    />
+                  )}
+                </div>
+
+                {/* Thumbnail strip */}
+                {allMedia.length > 1 && (
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 px-3 py-2 bg-black/50 rounded-xl">
+                    {allMedia.map((m, i) => (
+                      <button
+                        key={m.id}
+                        onClick={(e) => { e.stopPropagation(); setLightboxIndex(i); }}
+                        className={`w-12 h-12 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${i === lightboxIndex ? 'border-white scale-110' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                      >
+                        {m.type === 'video' ? (
+                          <div className="w-full h-full bg-neutral-700 flex items-center justify-center">
+                            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" /></svg>
+                          </div>
+                        ) : (
+                          <img src={getMediaSrc(m)} alt="" crossOrigin="anonymous" className="w-full h-full object-cover" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            </>
           );
         })()}
 
