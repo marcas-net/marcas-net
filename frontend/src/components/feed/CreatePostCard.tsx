@@ -262,7 +262,7 @@ export function CreatePostCard({ onSubmit }: CreatePostCardProps) {
               ref={fileInputRef}
               type="file"
               multiple
-              accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime"
+              accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime,video/*"
               onChange={(e) => { addFiles(e.target.files); e.target.value = ''; }}
               className="hidden"
             />

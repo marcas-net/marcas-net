@@ -152,7 +152,7 @@ export const toggleLike = async (postId: string): Promise<{ liked: boolean; like
 
 // ─── Follows ─────────────────────────────────────────────
 
-export const followUser = async (userId: string): Promise<{ following: boolean }> => {
+export const followUser = async (userId: string): Promise<{ following: boolean; isConnected: boolean }> => {
   const res = await api.post(`/feed/social/follow/user/${userId}`);
   return res.data;
 };
@@ -162,7 +162,7 @@ export const followOrg = async (orgId: string): Promise<{ following: boolean }> 
   return res.data;
 };
 
-export const getFollowStatus = async (params: { userId?: string; orgId?: string }): Promise<{ following: boolean }> => {
+export const getFollowStatus = async (params: { userId?: string; orgId?: string }): Promise<{ following: boolean; isConnected: boolean }> => {
   const res = await api.get('/feed/social/follow-status', { params });
   return res.data;
 };

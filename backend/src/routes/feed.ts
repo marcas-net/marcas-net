@@ -20,7 +20,16 @@ const storage = multer.diskStorage({
   destination: mediaDir,
   filename: (_req, file, cb) => {
     const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    cb(null, `${unique}${path.extname(file.originalname)}`);
+    // Use original extension, fallback to MIME-based extension for mobile uploads
+    let ext = path.extname(file.originalname);
+    if (!ext || ext === '.') {
+      const mimeMap: Record<string, string> = {
+        'image/jpeg': '.jpg', 'image/png': '.png', 'image/gif': '.gif', 'image/webp': '.webp',
+        'video/mp4': '.mp4', 'video/webm': '.webm', 'video/quicktime': '.mov', 'video/x-m4v': '.mp4', 'video/3gpp': '.mp4',
+      };
+      ext = mimeMap[file.mimetype] || '.bin';
+    }
+    cb(null, `${unique}${ext}`);
   },
 });
 
@@ -31,7 +40,12 @@ const upload = multer({
     const allowedImage = /\.(jpg|jpeg|png|gif|webp)$/i;
     const allowedVideo = /\.(mp4|webm|mov)$/i;
     const ext = path.extname(file.originalname);
-    if (allowedImage.test(ext) || allowedVideo.test(ext)) {
+    // Check extension OR MIME type (mobile browsers may send files without proper extensions)
+    const allowedMimeTypes = [
+      'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+      'video/mp4', 'video/webm', 'video/quicktime', 'video/x-m4v', 'video/3gpp',
+    ];
+    if (allowedImage.test(ext) || allowedVideo.test(ext) || allowedMimeTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
       cb(new Error('Only images (jpg, png, gif, webp) and videos (mp4, webm, mov) are allowed'));

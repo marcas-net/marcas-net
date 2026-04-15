@@ -61,25 +61,32 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
   const [localPollOptions, setLocalPollOptions] = useState(post.pollOptions || []);
   const [hasVoted, setHasVoted] = useState(post.pollOptions?.some(o => o.votedByMe) ?? false);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
   const commentInputRef = useRef<HTMLInputElement>(null);
   const repostMenuRef = useRef<HTMLDivElement>(null);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
 
   const isOwnPost = displayPost.authorId === userId;
 
   // Close repost menu on outside click
   useEffect(() => {
-    if (!showRepostMenu) return;
+    if (!showRepostMenu && !showMoreMenu) return;
     const handler = (e: MouseEvent) => {
-      if (repostMenuRef.current && !repostMenuRef.current.contains(e.target as Node)) setShowRepostMenu(false);
+      if (showRepostMenu && repostMenuRef.current && !repostMenuRef.current.contains(e.target as Node)) setShowRepostMenu(false);
+      if (showMoreMenu && moreMenuRef.current && !moreMenuRef.current.contains(e.target as Node)) setShowMoreMenu(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [showRepostMenu]);
+  }, [showRepostMenu, showMoreMenu]);
 
   useEffect(() => {
     if (!isOwnPost && displayPost.authorId) {
-      getFollowStatus({ userId: displayPost.authorId }).then(({ following }) => setIsFollowing(following)).catch(() => {});
+      getFollowStatus({ userId: displayPost.authorId }).then(({ following, isConnected: connected }) => {
+        setIsFollowing(following);
+        setIsConnected(connected);
+      }).catch(() => {});
     }
   }, [displayPost.authorId, isOwnPost]);
 
@@ -87,8 +94,9 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
     if (followLoading || isOwnPost) return;
     setFollowLoading(true);
     try {
-      const { following } = await followUser(displayPost.authorId);
+      const { following, isConnected: connected } = await followUser(displayPost.authorId);
       setIsFollowing(following);
+      setIsConnected(connected);
     } catch {
       toast.error('Failed to update follow');
     } finally {
@@ -241,36 +249,87 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
                 onClick={handleFollow}
                 disabled={followLoading}
                 className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-                  isFollowing
+                  isConnected
+                    ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                    : isFollowing
                     ? 'bg-gray-100 dark:bg-neutral-700 text-gray-600 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400'
                     : 'bg-blue-600 text-white hover:bg-blue-700'
                 } disabled:opacity-50`}
               >
-                {followLoading ? '...' : isFollowing ? 'Following' : 'Follow'}
+                {followLoading ? '...' : isConnected ? 'Connected' : isFollowing ? 'Following' : 'Follow'}
               </button>
             )}
-            {canEdit && (
+            {/* 3-dot More Menu */}
+            <div ref={moreMenuRef} className="relative">
               <button
-                onClick={() => { setEditing(!editing); setEditText(post.content); }}
-                className="p-1.5 rounded-lg text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors"
-                title="Edit post"
+                onClick={() => setShowMoreMenu(!showMoreMenu)}
+                className="p-1.5 rounded-lg text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors"
+                title="More options"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
                 </svg>
               </button>
-            )}
-            {post.authorId === userId && (
-              <button
-                onClick={() => onDelete(post.id)}
-                className="p-1.5 rounded-lg text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-                title="Delete post"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
-            )}
+              {showMoreMenu && (
+                <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-neutral-800 rounded-xl border border-gray-200 dark:border-neutral-700 shadow-lg overflow-hidden z-50">
+                  {canEdit && (
+                    <button
+                      onClick={() => { setShowMoreMenu(false); setEditing(!editing); setEditText(post.content); }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Edit post
+                    </button>
+                  )}
+                  {post.authorId === userId && (
+                    <button
+                      onClick={() => { setShowMoreMenu(false); onDelete(post.id); }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Delete post
+                    </button>
+                  )}
+                  {!isOwnPost && isFollowing && (
+                    <button
+                      onClick={() => { setShowMoreMenu(false); handleFollow(); }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6" />
+                      </svg>
+                      Unfollow
+                    </button>
+                  )}
+                  {!isOwnPost && (
+                    <>
+                      <button
+                        onClick={() => { setShowMoreMenu(false); toast('User blocked', { icon: '🚫' }); }}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                        </svg>
+                        Block
+                      </button>
+                      <button
+                        onClick={() => { setShowMoreMenu(false); toast('Post reported. We will review it.', { icon: '🚩' }); }}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                        </svg>
+                        Report
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   getNotifications,
   markNotificationRead,
@@ -14,6 +14,7 @@ export function NotificationBell({ dropUp }: { dropUp?: boolean }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const { socket } = useSocket();
+  const navigate = useNavigate();
 
   const fetchNotifications = async () => {
     try {
@@ -74,7 +75,13 @@ export function NotificationBell({ dropUp }: { dropUp?: boolean }) {
   return (
     <div ref={ref} className="relative">
       <button
-        onClick={() => setOpen(!open)}
+        onClick={() => {
+          if (dropUp) {
+            navigate('/notifications');
+          } else {
+            setOpen(!open);
+          }
+        }}
         className="relative p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-700"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

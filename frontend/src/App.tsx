@@ -18,6 +18,7 @@ import Jobs from './pages/Jobs';
 import Messages from './pages/Messages';
 import Network from './pages/Network';
 import Sourcing from './pages/Sourcing';
+import Notifications from './pages/Notifications';
 import AcceptInvitation from './pages/AcceptInvitation';
 import AuthCallback from './pages/AuthCallback';
 import ForgotPassword from './pages/ForgotPassword';
@@ -71,6 +72,7 @@ function App() {
             <Route path="/messages" element={<Messages />} />
             <Route path="/jobs" element={<Jobs />} />
             <Route path="/network" element={<Network />} />
+            <Route path="/notifications" element={<Notifications />} />
             <Route path="/sourcing" element={<Sourcing />} />
             <Route path="/dashboard/settings" element={<Settings />} />
           </Route>

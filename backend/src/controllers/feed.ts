@@ -156,14 +156,13 @@ export const createPost = async (req: AuthRequest, res: Response) => {
 
     const user = await prisma.user.findUnique({ where: { id: req.user.id as string } });
     const hasMedia = await checkMediaTable();
-    const imageExts = /\.(jpg|jpeg|png|gif|webp)$/i;
 
     let mediaData: any = undefined;
     if (hasMedia && files.length > 0) {
       mediaData = {
         create: files.map((f) => ({
           url: `/uploads/media/${f.filename}`,
-          type: imageExts.test(f.originalname) ? 'image' : 'video',
+          type: f.mimetype.startsWith('image/') ? 'image' : 'video',
           filename: f.originalname,
           size: f.size,
         })),
@@ -457,18 +456,31 @@ export const followUser = async (req: AuthRequest, res: Response) => {
 
     if (existing) {
       await prisma.follow.delete({ where: { id: existing.id } });
-      return res.json({ following: false });
+      return res.json({ following: false, isConnected: false });
     }
 
     await prisma.follow.create({ data: { followerId: req.user.id as string, followingUserId: targetId } });
 
+    // Check if the other person follows back (mutual = connected)
+    const reverseFollow = await prisma.follow.findUnique({
+      where: { followerId_followingUserId: { followerId: targetId, followingUserId: req.user.id as string } },
+    });
+    const isConnected = !!reverseFollow;
+
     const follower = await prisma.user.findUnique({ where: { id: req.user.id as string } });
     await prisma.notification.create({
-      data: { userId: targetId, type: 'FOLLOW', title: 'New Follower',
-        message: `${follower?.name || 'Someone'} started following you`, link: `/profile` },
+      data: {
+        userId: targetId,
+        type: 'FOLLOW',
+        title: isConnected ? 'New Connection' : 'New Follower',
+        message: isConnected
+          ? `You and ${follower?.name || 'Someone'} are now connected!`
+          : `${follower?.name || 'Someone'} started following you`,
+        link: `/profile/${req.user.id}`,
+      },
     });
 
-    res.json({ following: true });
+    res.json({ following: true, isConnected });
   } catch (error) {
     console.error('Follow user error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -504,16 +516,21 @@ export const getFollowStatus = async (req: AuthRequest, res: Response) => {
     const orgId = req.query.orgId as string | undefined;
 
     if (userId) {
-      const follow = await prisma.follow.findUnique({
-        where: { followerId_followingUserId: { followerId: req.user.id as string, followingUserId: userId } },
-      });
-      return res.json({ following: !!follow });
+      const [follow, reverseFollow] = await Promise.all([
+        prisma.follow.findUnique({
+          where: { followerId_followingUserId: { followerId: req.user.id as string, followingUserId: userId } },
+        }),
+        prisma.follow.findUnique({
+          where: { followerId_followingUserId: { followerId: userId, followingUserId: req.user.id as string } },
+        }),
+      ]);
+      return res.json({ following: !!follow, isConnected: !!(follow && reverseFollow) });
     }
     if (orgId) {
       const follow = await prisma.follow.findUnique({
         where: { followerId_followingOrgId: { followerId: req.user.id as string, followingOrgId: orgId } },
       });
-      return res.json({ following: !!follow });
+      return res.json({ following: !!follow, isConnected: false });
     }
     res.status(400).json({ error: 'userId or orgId is required' });
   } catch (error) {
