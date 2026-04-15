@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import {
   getNotifications,
@@ -20,7 +20,7 @@ function timeAgo(dateStr: string) {
   return `${Math.floor(days / 7)}w ago`;
 }
 
-const TYPE_ICONS: Record<string, JSX.Element> = {
+const TYPE_ICONS: Record<string, ReactNode> = {
   LIKE: (
     <div className="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center flex-shrink-0">
       <svg className="w-4.5 h-4.5 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
