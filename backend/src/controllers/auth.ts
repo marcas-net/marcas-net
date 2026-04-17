@@ -71,8 +71,11 @@ export const login = async (req: Request, res: Response) => {
       token,
       user: { id: user.id, email: user.email, name: user.name, role: user.role, avatarUrl: user.avatarUrl },
     });
-  } catch (error) {
-    console.error('Login error:', error);
+  } catch (error: any) {
+    console.error('Login error:', error?.message || error);
+    if (error?.code === 'P1001' || error?.code === 'P1002') {
+      return res.status(503).json({ error: 'Database connection failed. Please try again.' });
+    }
     res.status(500).json({ error: 'Internal server error' });
   }
 };

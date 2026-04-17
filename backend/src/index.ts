@@ -115,8 +115,15 @@ app.use('/api/auth', oauthRoutes);
 app.use('/api/messages', messagingRoutes);
 
 // Health check
-app.get('/api/health', (_req, res) => {
-  res.json({ status: 'OK', message: 'MarcasNet API is running', version: 'v4', timestamp: new Date().toISOString() });
+app.get('/api/health', async (_req, res) => {
+  let dbStatus = 'unknown';
+  try {
+    await prisma.$queryRawUnsafe('SELECT 1');
+    dbStatus = 'connected';
+  } catch (e: any) {
+    dbStatus = `error: ${e?.message || 'unknown'}`;
+  }
+  res.json({ status: 'OK', message: 'MarcasNet API is running', version: 'v4', db: dbStatus, timestamp: new Date().toISOString() });
 });
 
 // ─── Serve frontend in production ────────────────────────
