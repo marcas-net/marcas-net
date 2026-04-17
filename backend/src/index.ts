@@ -118,16 +118,23 @@ app.use('/api/messages', messagingRoutes);
 app.get('/api/health', async (_req, res) => {
   let dbStatus = 'unknown';
   let userCount = -1;
+  let cols: string[] = [];
+  let migrations: any[] = [];
   try {
     const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('DB query timeout (5s)')), 5000));
     await Promise.race([prisma.$queryRawUnsafe('SELECT 1'), timeout]);
     dbStatus = 'connected';
-    // Test ORM query too
     userCount = await prisma.user.count();
+    // Get actual columns in users table
+    const colResult: any[] = await prisma.$queryRawUnsafe(`SELECT column_name FROM information_schema.columns WHERE table_name='users' ORDER BY ordinal_position`);
+    cols = colResult.map((r: any) => r.column_name);
+    // Get migration status
+    const migResult: any[] = await prisma.$queryRawUnsafe(`SELECT migration_name, finished_at, rolled_back_at, logs FROM _prisma_migrations ORDER BY started_at`);
+    migrations = migResult.map((m: any) => ({ name: m.migration_name, ok: !!m.finished_at, rolled_back: !!m.rolled_back_at, logs: m.logs ? String(m.logs).slice(0, 200) : null }));
   } catch (e: any) {
     dbStatus = `error: ${e?.message || 'unknown'}`;
   }
-  res.json({ status: 'OK', message: 'MarcasNet API is running', version: 'v5', db: dbStatus, users: userCount, timestamp: new Date().toISOString() });
+  res.json({ status: 'OK', version: 'v6', db: dbStatus, users: userCount, columns: cols, migrations, timestamp: new Date().toISOString() });
 });
 
 // ─── Serve frontend in production ────────────────────────
