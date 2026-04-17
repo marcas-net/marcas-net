@@ -6,6 +6,8 @@ interface User {
   email: string;
   name: string | null;
   role: string;
+  bio?: string | null;
+  country?: string | null;
   avatarUrl?: string | null;
   organizationId?: string | null;
   organization?: { id: string; name: string; type: string } | null;

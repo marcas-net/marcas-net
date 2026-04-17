@@ -204,3 +204,45 @@ export const getMyApplications = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+export const updateApplicationStatus = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id: jobId, applicationId } = req.params as { id: string; applicationId: string };
+    const { status } = req.body;
+
+    const validStatuses = ['pending', 'reviewed', 'accepted', 'rejected'];
+    if (!status || !validStatuses.includes(status)) {
+      return res.status(400).json({ error: `Status must be one of: ${validStatuses.join(', ')}` });
+    }
+
+    const job = await prisma.job.findUnique({ where: { id: jobId } });
+    if (!job) return res.status(404).json({ error: 'Job not found' });
+
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (user?.organizationId !== job.organizationId && req.user.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    const application = await prisma.jobApplication.update({
+      where: { id: applicationId },
+      data: { status },
+      include: { user: { select: { id: true, name: true, email: true } } },
+    });
+
+    // Notify the applicant
+    await prisma.notification.create({
+      data: {
+        userId: application.userId,
+        type: 'JOB',
+        title: `Application ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+        message: `Your application for "${job.title}" has been ${status}.`,
+        link: '/jobs',
+      },
+    });
+
+    res.json({ application });
+  } catch (error) {
+    console.error('Update application status error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};

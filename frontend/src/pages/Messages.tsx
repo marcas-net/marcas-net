@@ -6,6 +6,7 @@ import {
 } from '../services/messagingService';
 import { listUsers, type UserListItem } from '../services/userService';
 import { useAuth } from '../context/AuthContext';
+import { useSocket } from '../context/SocketContext';
 import { Avatar } from '../components/ui/Avatar';
 import { Card } from '../components/ui/Card';
 import toast from 'react-hot-toast';
@@ -23,6 +24,7 @@ function timeAgo(date: string) {
 
 export default function Messages() {
   const { user } = useAuth();
+  const { socket } = useSocket();
   const [searchParams, setSearchParams] = useSearchParams();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
@@ -74,6 +76,21 @@ export default function Messages() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Real-time message receiving via WebSocket
+  useEffect(() => {
+    if (!socket) return;
+    const handler = (data: { message: Message; conversationId: string }) => {
+      // If this message belongs to the active conversation, add it to the thread
+      if (data.conversationId === activeConversationId) {
+        setMessages((prev) => [...prev, data.message]);
+      }
+      // Refresh conversation list to update last message / ordering
+      loadConversations();
+    };
+    socket.on('message:new', handler);
+    return () => { socket.off('message:new', handler); };
+  }, [socket, activeConversationId]);
 
   const loadConversations = async () => {
     setLoadingConvos(true);

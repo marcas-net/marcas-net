@@ -10,6 +10,7 @@ import {
   getDashboardStats,
   deleteOrg,
   removeMember,
+  getOrgPosts,
 } from '../controllers/organizations';
 import { authenticateToken } from '../middleware/auth';
 import { validate } from '../middleware/validate';
@@ -164,5 +165,6 @@ router.post('/:id/invite', authenticateToken, requireOrgRole('ORG_ADMIN'), invit
 
 router.delete('/:id', authenticateToken, requireOrgRole('ORG_ADMIN'), deleteOrg);
 router.delete('/:id/members/:memberId', authenticateToken, requireOrgRole('ORG_ADMIN'), removeMember);
+router.get('/:id/posts', getOrgPosts);
 
 export default router;

@@ -271,3 +271,77 @@ export const removeMember = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+export const getOrgPosts = async (req: Request<{ id: string }>, res: Response) => {
+  try {
+    const orgId = req.params.id;
+
+    let mediaTableExists = true;
+    try {
+      await prisma.$queryRawUnsafe(`SELECT 1 FROM "post_media" LIMIT 0`);
+    } catch {
+      mediaTableExists = false;
+    }
+
+    const include: any = {
+      author: { select: { id: true, name: true, role: true, avatarUrl: true } },
+      organization: { select: { id: true, name: true, type: true } },
+      comments: {
+        include: { user: { select: { id: true, name: true, avatarUrl: true } } },
+        orderBy: { createdAt: 'asc' as const },
+      },
+      _count: { select: { comments: true, likes: true, reposts: true } },
+      repostOf: {
+        include: {
+          author: { select: { id: true, name: true, role: true, avatarUrl: true } },
+          organization: { select: { id: true, name: true, type: true } },
+          _count: { select: { likes: true, comments: true, reposts: true } },
+        },
+      },
+      pollOptions: { include: { _count: { select: { votes: true } } } },
+    };
+    if (mediaTableExists) {
+      include.media = { select: { id: true, url: true, type: true, filename: true, size: true } };
+      if (include.repostOf?.include) {
+        include.repostOf.include.media = { select: { id: true, url: true, type: true, filename: true, size: true } };
+      }
+    }
+
+    const posts = await prisma.post.findMany({
+      where: { organizationId: orgId },
+      include,
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+
+    const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+    const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost:5000';
+    const baseUrl = `${proto}://${host}`;
+
+    const mapped = posts.map((p: any) => ({
+      ...p,
+      media: (p.media ?? []).map((m: any) => ({
+        ...m,
+        url: m.url?.startsWith('http') ? m.url : `${baseUrl}${m.url}`,
+      })),
+      editedAt: p.editedAt ?? null,
+      likedByMe: false,
+      likesCount: p._count?.likes ?? 0,
+      commentsCount: p._count?.comments ?? 0,
+      repostsCount: p._count?.reposts ?? 0,
+      pollOptions: (p.pollOptions ?? []).map((o: any) => ({
+        id: o.id,
+        text: o.text,
+        votesCount: o._count?.votes ?? 0,
+        votedByMe: false,
+      })),
+      likes: undefined,
+      _count: undefined,
+    }));
+
+    res.json({ posts: mapped });
+  } catch (error) {
+    console.error('Get org posts error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};

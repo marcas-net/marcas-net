@@ -38,3 +38,9 @@ export const markAllAsRead = async (userId: string) => {
     data: { isRead: true },
   });
 };
+
+export const deleteNotification = async (id: string, userId: string) => {
+  return await prisma.notification.deleteMany({
+    where: { id, userId },
+  });
+};

@@ -72,3 +72,8 @@ export const deleteOrganization = async (id: string): Promise<void> => {
 export const removeMember = async (orgId: string, memberId: string): Promise<void> => {
   await api.delete(`/orgs/${orgId}/members/${memberId}`);
 };
+
+export const getOrgPosts = async (orgId: string) => {
+  const res = await api.get(`/orgs/${orgId}/posts`);
+  return res.data.posts;
+};

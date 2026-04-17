@@ -480,10 +480,15 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
                         src={src}
                         alt=""
                         loading="lazy"
-                        crossOrigin="anonymous"
                         className={`w-full object-cover ${count === 1 ? 'max-h-[500px]' : isFirstOfThree ? 'h-full' : 'h-48'}`}
                         onError={(e) => {
                           const el = e.currentTarget;
+                          // Retry once without cache
+                          if (!el.dataset.retried) {
+                            el.dataset.retried = '1';
+                            el.src = src + (src.includes('?') ? '&' : '?') + 'r=1';
+                            return;
+                          }
                           el.style.display = 'none';
                           const placeholder = document.createElement('div');
                           placeholder.className = `w-full flex items-center justify-center bg-gray-100 dark:bg-neutral-700 text-gray-400 ${count === 1 ? 'h-48' : isFirstOfThree ? 'h-full min-h-48' : 'h-48'}`;
@@ -543,7 +548,6 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
                   {allMedia[lightboxIndex].type === 'video' ? (
                     <video
                       src={getMediaSrc(allMedia[lightboxIndex])}
-                      crossOrigin="anonymous"
                       controls
                       autoPlay
                       className="max-w-full max-h-[85vh] rounded-lg"
@@ -552,7 +556,6 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
                     <img
                       src={getMediaSrc(allMedia[lightboxIndex])}
                       alt=""
-                      crossOrigin="anonymous"
                       className="max-w-full max-h-[85vh] rounded-lg object-contain"
                     />
                   )}
@@ -572,7 +575,7 @@ export function PostCard({ post, userId, onDelete, onLikeToggle, onCommentAdded,
                             <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" /></svg>
                           </div>
                         ) : (
-                          <img src={getMediaSrc(m)} alt="" crossOrigin="anonymous" className="w-full h-full object-cover" />
+                          <img src={getMediaSrc(m)} alt="" className="w-full h-full object-cover" />
                         )}
                       </button>
                     ))}
@@ -834,7 +837,6 @@ function AutoplayVideo({ src, className }: { src: string; className: string }) {
       <video
         ref={videoRef}
         src={src}
-        crossOrigin="anonymous"
         muted
         loop
         playsInline

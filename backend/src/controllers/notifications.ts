@@ -5,6 +5,7 @@ import {
   getUnreadCount,
   markAsRead,
   markAllAsRead,
+  deleteNotification,
 } from '../models/notification';
 
 export const getNotifications = async (req: AuthRequest, res: Response) => {
@@ -36,6 +37,16 @@ export const readAllNotifications = async (req: AuthRequest, res: Response) => {
     res.json({ message: 'All notifications marked as read' });
   } catch (error) {
     console.error('Read all notifications error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const removeNotification = async (req: AuthRequest, res: Response) => {
+  try {
+    await deleteNotification(req.params['id'] as string, req.user.id);
+    res.json({ message: 'Notification deleted' });
+  } catch (error) {
+    console.error('Delete notification error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

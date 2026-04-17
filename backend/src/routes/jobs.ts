@@ -1,5 +1,5 @@
 import express from 'express';
-import { getJobs, getJobById, createJob, closeJob, applyToJob, getJobApplications, getMyApplications } from '../controllers/jobs';
+import { getJobs, getJobById, createJob, closeJob, applyToJob, getJobApplications, getMyApplications, updateApplicationStatus } from '../controllers/jobs';
 import { authenticateToken } from '../middleware/auth';
 
 const router = express.Router();
@@ -11,5 +11,6 @@ router.post('/', authenticateToken, createJob);
 router.post('/:id/apply', authenticateToken, applyToJob);
 router.get('/:id/applications', authenticateToken, getJobApplications);
 router.patch('/:id/close', authenticateToken, closeJob);
+router.patch('/:id/applications/:applicationId/status', authenticateToken, updateApplicationStatus);
 
 export default router;

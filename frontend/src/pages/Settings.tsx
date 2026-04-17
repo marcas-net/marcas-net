@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { updateProfile, changePassword } from '../services/userService';
+import { updateProfile, changePassword, uploadAvatar } from '../services/userService';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
+import { Avatar } from '../components/ui/Avatar';
 import toast from 'react-hot-toast';
 
 export default function Settings() {
@@ -13,7 +14,12 @@ export default function Settings() {
   // Profile form
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
+  const [bio, setBio] = useState(user?.bio || '');
+  const [country, setCountry] = useState(user?.country || '');
   const [profileLoading, setProfileLoading] = useState(false);
+  const [avatarLoading, setAvatarLoading] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState(user?.avatarUrl || '');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Password form
   const [currentPassword, setCurrentPassword] = useState('');
@@ -21,17 +27,43 @@ export default function Settings() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordLoading, setPasswordLoading] = useState(false);
 
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      return toast.error('Image must be under 5MB');
+    }
+    setAvatarLoading(true);
+    try {
+      const { avatarUrl } = await uploadAvatar(file);
+      setAvatarPreview(avatarUrl);
+      const stored = localStorage.getItem('user');
+      if (stored) {
+        const u = JSON.parse(stored);
+        u.avatarUrl = avatarUrl;
+        localStorage.setItem('user', JSON.stringify(u));
+      }
+      toast.success('Avatar updated');
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Failed to upload avatar');
+    } finally {
+      setAvatarLoading(false);
+    }
+  };
+
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setProfileLoading(true);
     try {
-      await updateProfile({ name, email });
+      await updateProfile({ name, email, bio, country });
       // Update local storage
       const stored = localStorage.getItem('user');
       if (stored) {
         const u = JSON.parse(stored);
         u.name = name;
         u.email = email;
+        u.bio = bio;
+        u.country = country;
         localStorage.setItem('user', JSON.stringify(u));
       }
       toast.success('Profile updated');
@@ -76,6 +108,19 @@ export default function Settings() {
       {/* Profile */}
       <Card>
         <p className="text-xs text-slate-400 uppercase tracking-wide font-medium mb-4">Profile Information</p>
+
+        {/* Avatar */}
+        <div className="flex items-center gap-4 mb-5">
+          <Avatar name={name || email} size="lg" src={avatarPreview || undefined} />
+          <div>
+            <input type="file" ref={fileInputRef} accept="image/*" className="hidden" onChange={handleAvatarChange} />
+            <Button type="button" size="sm" variant="outline" loading={avatarLoading} onClick={() => fileInputRef.current?.click()}>
+              Change Photo
+            </Button>
+            <p className="text-xs text-slate-400 mt-1">JPG, PNG, GIF or WebP. Max 5MB.</p>
+          </div>
+        </div>
+
         <form onSubmit={handleProfileUpdate} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
@@ -84,6 +129,14 @@ export default function Settings() {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} placeholder="you@example.com" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bio</label>
+            <textarea value={bio} onChange={(e) => setBio(e.target.value)} className={inputClass} placeholder="Tell us about yourself..." rows={3} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Country</label>
+            <input type="text" value={country} onChange={(e) => setCountry(e.target.value)} className={inputClass} placeholder="e.g. United States" />
           </div>
           <div className="flex justify-end">
             <Button type="submit" loading={profileLoading} size="sm">Save Changes</Button>

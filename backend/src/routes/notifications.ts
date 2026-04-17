@@ -3,6 +3,7 @@ import {
   getNotifications,
   readNotification,
   readAllNotifications,
+  removeNotification,
 } from '../controllers/notifications';
 import { authenticateToken } from '../middleware/auth';
 
@@ -48,5 +49,6 @@ router.patch('/:id/read', authenticateToken, readNotification);
  *       200: { description: All notifications marked as read }
  */
 router.patch('/read-all', authenticateToken, readAllNotifications);
+router.delete('/:id', authenticateToken, removeNotification);
 
 export default router;

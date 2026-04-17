@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getOrganization, joinOrganization, type Organization } from '../services/orgService';
+import { getOrganization, joinOrganization, getOrgPosts, type Organization } from '../services/orgService';
 import { getOrgDocuments, deleteDocument, type Document } from '../services/documentService';
 import { useAuth } from '../context/AuthContext';
 import { Badge } from '../components/ui/Badge';
@@ -8,10 +8,12 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Avatar } from '../components/ui/Avatar';
 import { orgTypeVariant } from '../styles/design-system';
+import { PostCard } from '../components/feed/PostCard';
 import UploadDocumentForm from '../components/UploadDocumentForm';
 import toast from 'react-hot-toast';
+import type { Post, Comment } from '../services/feedService';
 
-type Tab = 'overview' | 'documents';
+type Tab = 'overview' | 'posts' | 'documents';
 
 export default function OrganizationDetail() {
   const { id } = useParams<{ id: string }>();
@@ -24,6 +26,8 @@ export default function OrganizationDetail() {
   const [docs, setDocs] = useState<Document[]>([]);
   const [docsLoading, setDocsLoading] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
+  const [orgPosts, setOrgPosts] = useState<Post[]>([]);
+  const [postsLoading, setPostsLoading] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -44,7 +48,17 @@ export default function OrganizationDetail() {
 
   useEffect(() => {
     if (tab === 'documents') loadDocs();
+    if (tab === 'posts') loadPosts();
   }, [tab]);
+
+  const loadPosts = () => {
+    if (!id) return;
+    setPostsLoading(true);
+    getOrgPosts(id)
+      .then(setOrgPosts)
+      .catch(() => toast.error('Failed to load posts'))
+      .finally(() => setPostsLoading(false));
+  };
 
   const handleJoin = async () => {
     if (!id) return;
@@ -140,7 +154,7 @@ export default function OrganizationDetail() {
 
       {/* Tabs */}
       <div className="flex border-b border-gray-200 dark:border-neutral-700/80">
-        {(['overview', 'documents'] as Tab[]).map((t) => (
+        {(['overview', 'posts', 'documents'] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -202,6 +216,41 @@ export default function OrganizationDetail() {
               </Link>
             )}
           </Card>
+        </div>
+      )}
+
+      {tab === 'posts' && (
+        <div className="space-y-4">
+          {postsLoading ? (
+            <div className="flex justify-center py-12">
+              <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : orgPosts.length === 0 ? (
+            <div className="text-center py-16 text-slate-400">
+              <svg className="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+              </svg>
+              <p className="text-sm">No posts from this organization yet</p>
+            </div>
+          ) : (
+            orgPosts.map((p) => (
+              <PostCard
+                key={p.id}
+                post={p}
+                userId={user?.id}
+                onDelete={() => setOrgPosts((prev) => prev.filter((x) => x.id !== p.id))}
+                onLikeToggle={(postId, liked, count) => {
+                  setOrgPosts((prev) => prev.map((x) => x.id === postId ? { ...x, likedByMe: liked, likesCount: count } : x));
+                }}
+                onCommentAdded={(postId, comment) => {
+                  setOrgPosts((prev) => prev.map((x) => x.id === postId ? { ...x, comments: [...x.comments, comment], commentsCount: x.commentsCount + 1 } : x));
+                }}
+                onCommentDeleted={(postId, commentId) => {
+                  setOrgPosts((prev) => prev.map((x) => x.id === postId ? { ...x, comments: x.comments.filter((c: Comment) => c.id !== commentId), commentsCount: x.commentsCount - 1 } : x));
+                }}
+              />
+            ))
+          )}
         </div>
       )}
 

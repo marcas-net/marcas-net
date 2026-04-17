@@ -35,13 +35,22 @@ export const listUsers = async (): Promise<UserListItem[]> => {
   return res.data.users;
 };
 
-export const updateProfile = async (data: { name?: string; email?: string; bio?: string }) => {
+export const updateProfile = async (data: { name?: string; email?: string; bio?: string; country?: string }) => {
   const res = await api.put('/users/profile', data);
   return res.data;
 };
 
 export const changePassword = async (data: { currentPassword: string; newPassword: string }) => {
   const res = await api.put('/users/password', data);
+  return res.data;
+};
+
+export const uploadAvatar = async (file: File): Promise<{ avatarUrl: string }> => {
+  const formData = new FormData();
+  formData.append('avatar', file);
+  const res = await api.post('/users/avatar', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
   return res.data;
 };
 

@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../config/database';
+import { emitToUser } from '../utils/socket';
 
 export const getConversations = async (req: AuthRequest, res: Response) => {
   try {
@@ -112,6 +113,9 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
       where: { id: conversation.id },
       data: { updatedAt: new Date() },
     });
+
+    // Real-time delivery via WebSocket
+    emitToUser(receiverId, 'message:new', { message, conversationId: conversation.id });
 
     res.status(201).json({ message, conversationId: conversation.id });
   } catch (error) {

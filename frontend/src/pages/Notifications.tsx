@@ -4,6 +4,7 @@ import {
   getNotifications,
   markNotificationRead,
   markAllNotificationsRead,
+  deleteNotification,
 } from '../services/notificationService';
 import type { Notification } from '../services/notificationService';
 import { useSocket } from '../context/SocketContext';
@@ -102,6 +103,11 @@ export default function Notifications() {
 
   const handleDelete = async (id: string) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
+    try {
+      await deleteNotification(id);
+    } catch {
+      // already removed from UI
+    }
   };
 
   if (loading) {

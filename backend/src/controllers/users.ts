@@ -3,6 +3,7 @@ import { findUserById, updateUser, updateUserPassword, findPublicUserById, findA
 import { hashPassword, comparePassword } from '../utils/auth';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../config/database';
+import path from 'path';
 
 export const getProfile = async (req: AuthRequest, res: Response) => {
   try {
@@ -17,6 +18,8 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
         email: user.email,
         name: user.name,
         bio: user.bio,
+        country: user.country,
+        avatarUrl: user.avatarUrl,
         role: user.role,
         createdAt: user.createdAt,
       },
@@ -51,20 +54,21 @@ export const listUsers = async (req: Request, res: Response) => {
 
 export const updateProfile = async (req: AuthRequest, res: Response) => {
   try {
-    const { name, email, bio } = req.body;
-    if (!name && !email && bio === undefined) {
-      return res.status(400).json({ error: 'At least name, email, or bio is required' });
+    const { name, email, bio, country } = req.body;
+    if (!name && !email && bio === undefined && country === undefined) {
+      return res.status(400).json({ error: 'At least name, email, bio, or country is required' });
     }
 
     const user = await updateUser(req.user.id, {
       ...(name !== undefined ? { name } : {}),
       ...(email !== undefined ? { email } : {}),
       ...(bio !== undefined ? { bio } : {}),
+      ...(country !== undefined ? { country } : {}),
     });
 
     res.json({
       message: 'Profile updated',
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      user: { id: user.id, email: user.email, name: user.name, role: user.role, bio: user.bio, country: user.country },
     });
   } catch (error: any) {
     if (error.code === 'P2002') {
@@ -101,6 +105,25 @@ export const changePassword = async (req: AuthRequest, res: Response) => {
     res.json({ message: 'Password changed successfully' });
   } catch (error) {
     console.error('Change password error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const uploadAvatar = async (req: AuthRequest, res: Response) => {
+  try {
+    const file = req.file;
+    if (!file) return res.status(400).json({ error: 'No file uploaded' });
+
+    const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+    const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost:5000';
+    const baseUrl = `${proto}://${host}`;
+    const avatarUrl = `${baseUrl}/uploads/media/${file.filename}`;
+
+    await prisma.user.update({ where: { id: req.user.id }, data: { avatarUrl } });
+
+    res.json({ message: 'Avatar updated', avatarUrl });
+  } catch (error) {
+    console.error('Upload avatar error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
