@@ -117,14 +117,17 @@ app.use('/api/messages', messagingRoutes);
 // Health check
 app.get('/api/health', async (_req, res) => {
   let dbStatus = 'unknown';
+  let userCount = -1;
   try {
     const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('DB query timeout (5s)')), 5000));
     await Promise.race([prisma.$queryRawUnsafe('SELECT 1'), timeout]);
     dbStatus = 'connected';
+    // Test ORM query too
+    userCount = await prisma.user.count();
   } catch (e: any) {
     dbStatus = `error: ${e?.message || 'unknown'}`;
   }
-  res.json({ status: 'OK', message: 'MarcasNet API is running', version: 'v4', db: dbStatus, timestamp: new Date().toISOString() });
+  res.json({ status: 'OK', message: 'MarcasNet API is running', version: 'v5', db: dbStatus, users: userCount, timestamp: new Date().toISOString() });
 });
 
 // ─── Serve frontend in production ────────────────────────
