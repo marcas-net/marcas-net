@@ -74,6 +74,7 @@ function App() {
             <Route path="/network" element={<Network />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/orgs/sourcing" element={<Sourcing />} />
+            <Route path="/sourcing" element={<Sourcing />} />
             <Route path="/dashboard/settings" element={<Settings />} />
           </Route>
 

@@ -5,7 +5,6 @@ import {
 } from '../services/feedService';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
-import { LeftSidebar } from '../components/feed/LeftSidebar';
 import { RightPanel } from '../components/feed/RightPanel';
 import { CreatePostCard } from '../components/feed/CreatePostCard';
 import { PostCard } from '../components/feed/PostCard';
@@ -114,14 +113,7 @@ export default function Feed() {
   };
 
   return (
-    <div className="max-w-[1128px] mx-auto grid grid-cols-1 lg:grid-cols-[240px_1fr_300px] gap-5">
-      {/* ─── Left Sidebar (hidden on mobile/tablet) ─── */}
-      <div className="hidden lg:block">
-        <div className="sticky top-[68px]">
-          <LeftSidebar />
-        </div>
-      </div>
-
+    <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-5">
       {/* ─── Center Feed ─── */}
       <div className="space-y-3 min-w-0">
         {/* Create Post */}
