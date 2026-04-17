@@ -118,7 +118,8 @@ app.use('/api/messages', messagingRoutes);
 app.get('/api/health', async (_req, res) => {
   let dbStatus = 'unknown';
   try {
-    await prisma.$queryRawUnsafe('SELECT 1');
+    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('DB query timeout (5s)')), 5000));
+    await Promise.race([prisma.$queryRawUnsafe('SELECT 1'), timeout]);
     dbStatus = 'connected';
   } catch (e: any) {
     dbStatus = `error: ${e?.message || 'unknown'}`;
