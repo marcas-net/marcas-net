@@ -107,6 +107,15 @@ enum FormFieldType {
   CHECKBOX
 }
 
+enum FeedAction {
+  VIEW
+  CLICK
+  LIKE
+  COMMENT
+  HIDE
+  SHARE
+}
+
 // ─── Identity & access ──────────────────────────────────
 
 model User {
@@ -121,6 +130,7 @@ model User {
   provider       String?
   providerId     String?
   avatarUrl      String?
+  coverImageUrl  String?
   organizationId String?
   organization   Organization?  @relation(fields: [organizationId], references: [id])
   memberships    Membership[]
@@ -142,6 +152,7 @@ model User {
   jobsPosted     Job[]          @relation("jobPoster")
   jobApplications JobApplication[]
   pollVotes      PollVote[]
+  feedEvents     FeedEvent[]
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
@@ -294,6 +305,7 @@ model Post {
   media          PostMedia[]
   comments       Comment[]
   likes          Like[]
+  feedEvents     FeedEvent[]
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
@@ -591,4 +603,20 @@ model PollVote {
 
   @@unique([userId, optionId])
   @@map("poll_votes")
+}
+
+// ─── Feed Events (ranking signals) ──────────────────────
+
+model FeedEvent {
+  id        String     @id @default(cuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id])
+  postId    String
+  post      Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  action    FeedAction
+  createdAt DateTime   @default(now())
+
+  @@index([userId, createdAt])
+  @@index([postId])
+  @@map("feed_events")
 }

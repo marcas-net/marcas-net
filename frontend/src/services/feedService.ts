@@ -56,10 +56,23 @@ export interface Post {
   updatedAt: string;
 }
 
+export interface NetworkPerson {
+  id: string;
+  name: string;
+  avatarUrl: string | null;
+  role: string;
+  bio: string | null;
+  country: string | null;
+  organization: { id: string; name: string; type: string } | null;
+  followersCount: number;
+  mutualConnections?: number;
+  mutualAvatars?: { id: string; name: string; avatarUrl: string | null }[];
+}
+
 export interface NetworkData {
-  following: Array<{ id: string; name: string; avatarUrl: string | null; role: string }>;
-  followers: Array<{ id: string; name: string; avatarUrl: string | null; role: string }>;
-  suggestions: Array<{ id: string; name: string; avatarUrl: string | null; role: string }>;
+  following: NetworkPerson[];
+  followers: NetworkPerson[];
+  suggestions: NetworkPerson[];
 }
 
 // ─── Posts ───────────────────────────────────────────────
@@ -68,6 +81,22 @@ export const getPosts = async (category?: string): Promise<Post[]> => {
   const params = category && category !== 'ALL' ? { category } : {};
   const res = await api.get('/feed', { params });
   return res.data.posts;
+};
+
+export const getRankedFeed = async (page = 1, limit = 20, searches?: string[]): Promise<{
+  posts: Post[];
+  page: number;
+  hasMore: boolean;
+  total: number;
+}> => {
+  const params: Record<string, string> = { page: String(page), limit: String(limit) };
+  if (searches?.length) params.searches = searches.join(',');
+  const res = await api.get('/feed/ranked', { params });
+  return res.data;
+};
+
+export const logFeedEvent = async (postId: string, action: 'VIEW' | 'CLICK' | 'LIKE' | 'COMMENT' | 'HIDE' | 'SHARE'): Promise<void> => {
+  await api.post('/feed/event', { postId, action }).catch(() => {});
 };
 
 export const getPostById = async (id: string): Promise<Post> => {

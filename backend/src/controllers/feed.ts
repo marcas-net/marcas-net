@@ -4,6 +4,7 @@ import prisma from '../config/database';
 import fs from 'fs';
 import path from 'path';
 import { emitToAll } from '../utils/socket';
+import { invalidateFeedCache } from '../modules/feed/feed.controller';
 
 const postInclude = (userId?: string, includeMedia = false) => {
   const base: Record<string, any> = {
@@ -192,6 +193,9 @@ export const createPost = async (req: AuthRequest, res: Response) => {
       postId: mapped.id,
       author: { id: user?.id, name: user?.name, avatarUrl: user?.avatarUrl },
     });
+
+    // Invalidate feed caches for the author
+    invalidateFeedCache(req.user.id as string).catch(() => {});
 
     res.status(201).json({ post: mapped });
   } catch (error) {
@@ -400,11 +404,13 @@ export const toggleLike = async (req: AuthRequest, res: Response) => {
     if (existing) {
       await prisma.like.delete({ where: { id: existing.id } });
       const count = await prisma.like.count({ where: { postId } });
+      invalidateFeedCache(userId).catch(() => {});
       return res.json({ liked: false, likesCount: count });
     }
 
     await prisma.like.create({ data: { userId, postId } });
     const count = await prisma.like.count({ where: { postId } });
+    invalidateFeedCache(userId).catch(() => {});
 
     if (post.authorId !== userId) {
       const liker = await prisma.user.findUnique({ where: { id: userId } });
@@ -437,10 +443,12 @@ export const followUser = async (req: AuthRequest, res: Response) => {
 
     if (existing) {
       await prisma.follow.delete({ where: { id: existing.id } });
+      invalidateFeedCache(req.user.id as string).catch(() => {});
       return res.json({ following: false, isConnected: false });
     }
 
     await prisma.follow.create({ data: { followerId: req.user.id as string, followingUserId: targetId } });
+    invalidateFeedCache(req.user.id as string).catch(() => {});
 
     // Check if the other person follows back (mutual = connected)
     const reverseFollow = await prisma.follow.findUnique({
@@ -549,29 +557,73 @@ export const getMyNetwork = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user.id as string;
 
-    const [following, followers, suggestions] = await Promise.all([
+    const userSelect = {
+      id: true, name: true, role: true, avatarUrl: true, bio: true, country: true,
+      organization: { select: { id: true, name: true, type: true } },
+      _count: { select: { followsReceived: true } },
+    };
+
+    const [following, followers, suggestions, myFollows] = await Promise.all([
       prisma.follow.findMany({
         where: { followerId: userId, followingUserId: { not: null } },
-        include: { followingUser: { select: { id: true, name: true, role: true, avatarUrl: true, bio: true } } },
+        include: { followingUser: { select: userSelect } },
         take: 50,
       }),
       prisma.follow.findMany({
         where: { followingUserId: userId },
-        include: { follower: { select: { id: true, name: true, role: true, avatarUrl: true, bio: true } } },
+        include: { follower: { select: userSelect } },
         take: 50,
       }),
       prisma.user.findMany({
         where: { id: { not: userId }, followsReceived: { none: { followerId: userId } } },
-        select: { id: true, name: true, role: true, avatarUrl: true, bio: true },
+        select: userSelect,
         take: 20,
         orderBy: { createdAt: 'desc' },
       }),
+      prisma.follow.findMany({
+        where: { followerId: userId, followingUserId: { not: null } },
+        select: { followingUserId: true },
+      }),
     ]);
 
+    // Build a set of user IDs I follow for mutual connection calculation
+    const myFollowingIds = new Set(myFollows.map(f => f.followingUserId).filter(Boolean) as string[]);
+
+    // For suggestions, compute mutual connections count
+    const enrichSuggestion = async (person: any) => {
+      const theirFollowers = await prisma.follow.findMany({
+        where: { followingUserId: person.id, followerId: { in: [...myFollowingIds] } },
+        select: {
+          follower: { select: { id: true, name: true, avatarUrl: true } },
+        },
+        take: 3,
+      });
+
+      return {
+        ...person,
+        followersCount: person._count?.followsReceived ?? 0,
+        mutualConnections: theirFollowers.length,
+        mutualAvatars: theirFollowers.map((f: any) => ({
+          id: f.follower.id,
+          name: f.follower.name,
+          avatarUrl: f.follower.avatarUrl,
+        })),
+        _count: undefined,
+      };
+    };
+
+    const enrichPerson = (person: any) => ({
+      ...person,
+      followersCount: person._count?.followsReceived ?? 0,
+      _count: undefined,
+    });
+
+    const enrichedSuggestions = await Promise.all(suggestions.map(enrichSuggestion));
+
     res.json({
-      following: following.map((f) => f.followingUser),
-      followers: followers.map((f) => f.follower),
-      suggestions,
+      following: following.map((f) => enrichPerson(f.followingUser)),
+      followers: followers.map((f) => enrichPerson(f.follower)),
+      suggestions: enrichedSuggestions,
     });
   } catch (error) {
     console.error('Get my network error:', error);

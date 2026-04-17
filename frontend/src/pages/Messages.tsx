@@ -164,7 +164,7 @@ export default function Messages() {
       const allUsers = await listUsers();
       setUsers(allUsers.filter((u) =>
         u.id !== user?.id &&
-        (u.name?.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase()))
+        (u.name?.toLowerCase().includes(search.toLowerCase()))
       ));
     } catch {
       // ignore
@@ -215,10 +215,9 @@ export default function Messages() {
                       onClick={() => handleNewMessage(u.id)}
                       className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg text-left hover:bg-white dark:hover:bg-neutral-700 transition-colors"
                     >
-                      <Avatar name={u.name ?? u.email} size="sm" />
+                      <Avatar name={u.name ?? 'User'} size="sm" />
                       <div className="min-w-0">
-                        <p className="text-xs font-medium text-slate-900 dark:text-white truncate">{u.name ?? u.email}</p>
-                        <p className="text-[10px] text-slate-400 truncate">{u.email}</p>
+                        <p className="text-xs font-medium text-slate-900 dark:text-white truncate">{u.name ?? 'User'}</p>
                       </div>
                     </button>
                   ))}

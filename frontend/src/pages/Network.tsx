@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getMyNetwork, followUser, type NetworkData } from '../services/feedService';
+import { getMyNetwork, followUser, type NetworkData, type NetworkPerson } from '../services/feedService';
 import { Avatar } from '../components/ui/Avatar';
 import { Card } from '../components/ui/Card';
 import toast from 'react-hot-toast';
@@ -14,6 +14,8 @@ const ROLE_LABELS: Record<string, string> = {
   REGULATOR: 'Regulator',
   PROFESSIONAL: 'Consultant',
 };
+
+const VERIFIED_ROLES = ['REGULATOR', 'LAB', 'UNIVERSITY', 'ADMIN'];
 
 type Tab = 'following' | 'followers' | 'suggestions';
 
@@ -84,15 +86,17 @@ export default function Network() {
 
       {/* Content */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-3">
           {[1, 2, 3, 4].map((i) => (
             <Card key={i}>
-              <div className="p-5 animate-pulse flex items-center gap-3">
-                <div className="w-12 h-12 bg-gray-200 dark:bg-neutral-700 rounded-full" />
+              <div className="p-4 animate-pulse flex items-center gap-4">
+                <div className="w-14 h-14 bg-gray-200 dark:bg-neutral-700 rounded-full flex-shrink-0" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-3 bg-gray-200 dark:bg-neutral-700 rounded w-2/3" />
-                  <div className="h-2.5 bg-gray-200 dark:bg-neutral-700 rounded w-1/3" />
+                  <div className="h-3.5 bg-gray-200 dark:bg-neutral-700 rounded w-40" />
+                  <div className="h-3 bg-gray-200 dark:bg-neutral-700 rounded w-28" />
+                  <div className="h-2.5 bg-gray-200 dark:bg-neutral-700 rounded w-24" />
                 </div>
+                <div className="w-20 h-8 bg-gray-200 dark:bg-neutral-700 rounded-full flex-shrink-0" />
               </div>
             </Card>
           ))}
@@ -108,42 +112,103 @@ export default function Network() {
           </div>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {people?.map((person) => {
-            const isFollowing = followingIds.has(person.id);
-            return (
-              <Card key={person.id} hover>
-                <div className="p-4 flex items-center gap-3">
-                  <Link to={`/profile/${person.id}`} className="flex-shrink-0">
-                    <Avatar name={person.name} size="lg" src={person.avatarUrl ?? undefined} />
-                  </Link>
-                  <div className="flex-1 min-w-0">
-                    <Link
-                      to={`/profile/${person.id}`}
-                      className="text-sm font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 truncate block transition-colors"
-                    >
-                      {person.name}
-                    </Link>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                      {ROLE_LABELS[person.role] ?? person.role}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleFollow(person.id)}
-                    className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all flex-shrink-0 ${
-                      isFollowing
-                        ? 'border border-gray-300 dark:border-neutral-600 text-gray-600 dark:text-gray-400 hover:border-red-300 hover:text-red-500'
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
-                    }`}
-                  >
-                    {isFollowing ? 'Following' : 'Follow'}
-                  </button>
-                </div>
-              </Card>
-            );
-          })}
+        <div className="space-y-3">
+          {people?.map((person) => (
+            <NetworkCard
+              key={person.id}
+              person={person}
+              isFollowing={followingIds.has(person.id)}
+              onFollow={handleFollow}
+            />
+          ))}
         </div>
       )}
     </div>
+  );
+}
+
+// ─── Network Person Card ────────────────────────────────
+
+function NetworkCard({
+  person,
+  isFollowing,
+  onFollow,
+}: {
+  person: NetworkPerson;
+  isFollowing: boolean;
+  onFollow: (id: string) => void;
+}) {
+  const isVerified = VERIFIED_ROLES.includes(person.role);
+
+  return (
+    <Card hover>
+      <div className="p-4 flex items-start gap-4">
+        {/* Avatar */}
+        <Link to={`/profile/${person.id}`} className="flex-shrink-0">
+          <Avatar name={person.name ?? 'User'} size="lg" src={person.avatarUrl ?? undefined} />
+        </Link>
+
+        {/* User Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <Link
+              to={`/profile/${person.id}`}
+              className="text-sm font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 truncate transition-colors"
+            >
+              {person.name ?? 'User'}
+            </Link>
+            {isVerified && (
+              <svg className="w-4 h-4 text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                <path fillRule="evenodd" d="M8.603 3.799A4.49 4.49 0 0112 2.25c1.357 0 2.573.6 3.397 1.549a4.49 4.49 0 013.498 1.307 4.491 4.491 0 011.307 3.497A4.49 4.49 0 0121.75 12a4.49 4.49 0 01-1.549 3.397 4.491 4.491 0 01-1.307 3.497 4.491 4.491 0 01-3.497 1.307A4.49 4.49 0 0112 21.75a4.49 4.49 0 01-3.397-1.549 4.49 4.49 0 01-3.498-1.306 4.491 4.491 0 01-1.307-3.498A4.49 4.49 0 012.25 12c0-1.357.6-2.573 1.549-3.397a4.49 4.49 0 011.307-3.497 4.49 4.49 0 013.497-1.307zm7.007 6.387a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />
+              </svg>
+            )}
+          </div>
+
+          <p className="text-xs text-gray-600 dark:text-gray-400 truncate mt-0.5">
+            {ROLE_LABELS[person.role] ?? person.role}
+          </p>
+
+          {person.organization && (
+            <p className="text-xs text-gray-500 dark:text-gray-500 truncate">
+              {person.organization.name}
+            </p>
+          )}
+
+          {person.country && (
+            <p className="text-xs text-gray-400 dark:text-gray-500 truncate mt-0.5">
+              {person.country}
+            </p>
+          )}
+
+          {/* Mutual connections */}
+          {(person.mutualConnections ?? 0) > 0 && (
+            <div className="flex items-center gap-2 mt-2">
+              <div className="flex -space-x-1.5">
+                {(person.mutualAvatars ?? []).slice(0, 3).map((ma) => (
+                  <div key={ma.id} className="ring-2 ring-white dark:ring-neutral-800 rounded-full">
+                    <Avatar name={ma.name ?? 'User'} size="xs" src={ma.avatarUrl ?? undefined} />
+                  </div>
+                ))}
+              </div>
+              <span className="text-xs text-gray-400 dark:text-gray-500">
+                {person.mutualConnections} mutual connection{person.mutualConnections !== 1 ? 's' : ''}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Follow Button */}
+        <button
+          onClick={() => onFollow(person.id)}
+          className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all flex-shrink-0 mt-1 ${
+            isFollowing
+              ? 'border border-gray-300 dark:border-neutral-600 text-gray-600 dark:text-gray-400 hover:border-red-300 hover:text-red-500'
+              : 'bg-blue-600 text-white hover:bg-blue-700'
+          }`}
+        >
+          {isFollowing ? 'Following' : 'Follow'}
+        </button>
+      </div>
+    </Card>
   );
 }

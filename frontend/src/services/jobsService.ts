@@ -25,7 +25,7 @@ export interface JobApplication {
   status: string;
   createdAt: string;
   job?: Job;
-  user?: { id: string; name: string; email: string; avatarUrl: string | null; role: string };
+  user?: { id: string; name: string; avatarUrl: string | null; role: string };
 }
 
 export const getJobs = async (type?: string): Promise<Job[]> => {

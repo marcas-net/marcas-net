@@ -157,7 +157,7 @@ export const getJobApplications = async (req: AuthRequest, res: Response) => {
 
     const applications = await prisma.jobApplication.findMany({
       where: { jobId },
-      include: { user: { select: { id: true, name: true, email: true, avatarUrl: true, role: true } } },
+      include: { user: { select: { id: true, name: true, avatarUrl: true, role: true } } },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -226,7 +226,7 @@ export const updateApplicationStatus = async (req: AuthRequest, res: Response) =
     const application = await prisma.jobApplication.update({
       where: { id: applicationId },
       data: { status },
-      include: { user: { select: { id: true, name: true, email: true } } },
+      include: { user: { select: { id: true, name: true, avatarUrl: true } } },
     });
 
     // Notify the applicant

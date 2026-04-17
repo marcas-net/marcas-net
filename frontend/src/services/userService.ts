@@ -4,10 +4,10 @@ import type { Post } from './feedService';
 export interface PublicUser {
   id: string;
   name: string | null;
-  email: string;
   bio: string | null;
   role: string;
   avatarUrl?: string | null;
+  coverImageUrl?: string | null;
   organizationId: string | null;
   organization: { id: string; name: string; type: string } | null;
   documents: { id: string; title: string; fileType: string | null; createdAt: string }[];
@@ -18,9 +18,9 @@ export interface PublicUser {
 export interface UserListItem {
   id: string;
   name: string | null;
-  email: string;
   bio: string | null;
   role: string;
+  avatarUrl?: string | null;
   organization: { id: string; name: string; type: string } | null;
   createdAt: string;
 }
@@ -49,6 +49,15 @@ export const uploadAvatar = async (file: File): Promise<{ avatarUrl: string }> =
   const formData = new FormData();
   formData.append('avatar', file);
   const res = await api.post('/users/avatar', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return res.data;
+};
+
+export const uploadCoverImage = async (file: File): Promise<{ coverImageUrl: string }> => {
+  const formData = new FormData();
+  formData.append('cover', file);
+  const res = await api.post('/users/cover', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
   return res.data;

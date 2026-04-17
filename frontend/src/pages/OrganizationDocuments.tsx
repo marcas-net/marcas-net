@@ -106,7 +106,7 @@ export default function OrganizationDocuments() {
           >
             <option value="">All uploaders</option>
             {uploaders.map((u) => (
-              <option key={u.id} value={u.id}>{u.name ?? u.email}</option>
+              <option key={u.id} value={u.id}>{u.name ?? 'User'}</option>
             ))}
           </select>
 

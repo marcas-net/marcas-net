@@ -21,6 +21,7 @@ process.on('unhandledRejection', (reason) => {
 
 import { validateEnv } from './config/env';
 import { initSocketServer } from './utils/socket';
+import { initRedis } from './config/redis';
 import logger from './utils/logger';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
@@ -46,6 +47,9 @@ const PORT = process.env.PORT || 5000;
 
 // Initialize Socket.IO
 initSocketServer(httpServer);
+
+// Initialize Redis (optional, for feed caching)
+initRedis();
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, '../uploads');

@@ -193,9 +193,9 @@ export default function OrganizationDetail() {
               <div className="space-y-2">
                 {org.members.slice(0, 5).map((m) => (
                   <div key={m.id} className="flex items-center gap-3">
-                    <Avatar name={m.name ?? m.email} size="xs" />
+                    <Avatar name={m.name ?? 'User'} size="xs" />
                     <div>
-                      <p className="text-sm text-slate-800 dark:text-slate-200 font-medium leading-none">{m.name ?? m.email}</p>
+                      <p className="text-sm text-slate-800 dark:text-slate-200 font-medium leading-none">{m.name ?? 'User'}</p>
                       <p className="text-xs text-slate-400">{m.role}</p>
                     </div>
                   </div>

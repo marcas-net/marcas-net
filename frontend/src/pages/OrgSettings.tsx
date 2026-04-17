@@ -138,17 +138,17 @@ export default function OrgSettings() {
           {members.map((m) => (
             <div key={m.id} className="flex items-center justify-between py-2.5 border-b border-gray-50 dark:border-neutral-700/80 last:border-0">
               <div className="flex items-center gap-3">
-                <Avatar name={m.name ?? m.email} size="sm" />
+                <Avatar name={m.name ?? 'User'} size="sm" />
                 <div>
-                  <p className="text-sm font-medium text-gray-800 dark:text-white">{m.name || m.email}</p>
-                  <p className="text-xs text-gray-400">{m.email}</p>
+                  <p className="text-sm font-medium text-gray-800 dark:text-white">{m.name || 'User'}</p>
+                  <p className="text-xs text-gray-400">{m.role}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant="gray">{m.role}</Badge>
                 {isAdmin && m.id !== user?.id && (
                   <button
-                    onClick={() => handleRemoveMember(m.id, m.name || m.email)}
+                    onClick={() => handleRemoveMember(m.id, m.name || 'User')}
                     className="text-xs text-red-500 hover:text-red-600 font-medium"
                   >
                     Remove

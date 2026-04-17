@@ -20,6 +20,7 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
         bio: user.bio,
         country: user.country,
         avatarUrl: user.avatarUrl,
+        coverImageUrl: (user as any).coverImageUrl ?? null,
         role: user.role,
         createdAt: user.createdAt,
       },
@@ -124,6 +125,25 @@ export const uploadAvatar = async (req: AuthRequest, res: Response) => {
     res.json({ message: 'Avatar updated', avatarUrl });
   } catch (error) {
     console.error('Upload avatar error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const uploadCoverImage = async (req: AuthRequest, res: Response) => {
+  try {
+    const file = req.file;
+    if (!file) return res.status(400).json({ error: 'No file uploaded' });
+
+    const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+    const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost:5000';
+    const baseUrl = `${proto}://${host}`;
+    const coverImageUrl = `${baseUrl}/uploads/media/${file.filename}`;
+
+    await prisma.user.update({ where: { id: req.user.id }, data: { coverImageUrl } });
+
+    res.json({ message: 'Cover image updated', coverImageUrl });
+  } catch (error) {
+    console.error('Upload cover image error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

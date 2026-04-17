@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { getUserById, getUserPosts, type PublicUser } from '../services/userService';
+import { getUserById, getUserPosts, uploadAvatar, uploadCoverImage, type PublicUser } from '../services/userService';
 import { followUser, getFollowStatus, getFollowCounts, type Post, type Comment } from '../services/feedService';
 import { useAuth } from '../context/AuthContext';
 import { Avatar } from '../components/ui/Avatar';
@@ -90,21 +90,84 @@ export default function UserProfile() {
     year: 'numeric', month: 'long', day: 'numeric',
   });
   const isMe = me?.id === id;
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const { avatarUrl } = await uploadAvatar(file);
+      setUser(prev => prev ? { ...prev, avatarUrl } : prev);
+      toast.success('Profile picture updated');
+    } catch {
+      toast.error('Failed to upload avatar');
+    }
+  };
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const { coverImageUrl } = await uploadCoverImage(file);
+      setUser(prev => prev ? { ...prev, coverImageUrl } : prev);
+      toast.success('Cover image updated');
+    } catch {
+      toast.error('Failed to upload cover image');
+    }
+  };
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Profile Header */}
       <Card padding="none">
-        <div className="bg-gradient-to-r from-blue-600 to-emerald-500 h-24 rounded-t-2xl" />
+        <div className="relative">
+          {user.coverImageUrl ? (
+            <img src={user.coverImageUrl} alt="Cover" className="h-24 w-full object-cover rounded-t-2xl" />
+          ) : (
+            <div className="bg-gradient-to-r from-blue-600 to-emerald-500 h-24 rounded-t-2xl" />
+          )}
+          {isMe && (
+            <>
+              <button
+                onClick={() => coverInputRef.current?.click()}
+                className="absolute top-2 right-2 p-1.5 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors"
+                title="Change cover image"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </button>
+              <input ref={coverInputRef} type="file" accept="image/*" onChange={handleCoverUpload} className="hidden" />
+            </>
+          )}
+        </div>
         <div className="px-6 pb-6 -mt-8">
           <div className="flex flex-col sm:flex-row items-start gap-5">
-            <Avatar name={user.name ?? user.email} size="xl" src={user.avatarUrl ?? undefined} className="ring-4 ring-white dark:ring-neutral-800" />
+            <div className="relative">
+              <Avatar name={user.name ?? 'User'} size="xl" src={user.avatarUrl ?? undefined} className="ring-4 ring-white dark:ring-neutral-800" />
+              {isMe && (
+                <>
+                  <button
+                    onClick={() => avatarInputRef.current?.click()}
+                    className="absolute bottom-0 right-0 p-1 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors ring-2 ring-white dark:ring-neutral-800"
+                    title="Change profile picture"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </button>
+                  <input ref={avatarInputRef} type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+                </>
+              )}
+            </div>
             <div className="flex-1 mt-2 sm:mt-8">
               <div className="flex flex-wrap items-center gap-2 mb-1">
                 <h1 className="text-xl font-bold text-slate-900 dark:text-white">{user.name ?? 'Unnamed'}</h1>
                 <Badge variant={roleVariant[user.role] ?? 'blue'}>{ROLE_LABELS[user.role] ?? user.role}</Badge>
               </div>
-              <p className="text-slate-500 dark:text-slate-400 text-sm">{user.email}</p>
               {user.organization && (
                 <Link to={`/orgs/${user.organization.id}`} className="text-sm text-blue-600 hover:text-blue-700 font-medium mt-1 inline-block">
                   {user.organization.name} · {user.organization.type.charAt(0) + user.organization.type.slice(1).toLowerCase()}

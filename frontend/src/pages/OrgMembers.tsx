@@ -99,7 +99,7 @@ export default function OrgMembers() {
           ) : (
             <ul className="divide-y divide-gray-50 dark:divide-neutral-700/80">
               {members.map((member) => {
-                const initials = (member.name ?? member.email)
+                const initials = (member.name ?? 'User')
                   .split(' ')
                   .map((w) => w[0])
                   .join('')
@@ -119,7 +119,7 @@ export default function OrgMembers() {
                       <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                         {member.name ?? '—'}
                       </p>
-                      <p className="text-xs text-gray-400 truncate">{member.email}</p>
+                      <p className="text-xs text-gray-400 truncate">{member.role}</p>
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
                       <Badge variant={roleVariant[member.role] ?? 'blue'}>

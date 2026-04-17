@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
-  getPosts, createPost, deletePost,
+  getPosts, getRankedFeed, logFeedEvent, createPost, deletePost,
   type Post, type Comment,
 } from '../services/feedService';
 import { useAuth } from '../context/AuthContext';
@@ -27,16 +27,46 @@ export default function Feed() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState('ALL');
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [newPostAuthors, setNewPostAuthors] = useState<{ id: string; name: string; avatarUrl?: string }[]>([]);
 
   const loadPosts = useCallback((cat?: string) => {
     setLoading(true);
     setNewPostAuthors([]);
-    getPosts(cat)
+    setPage(1);
+
+    // Use ranked feed for "ALL", fallback to category-filtered
+    const fetchPromise = (!cat || cat === 'ALL')
+      ? getRankedFeed(1, 20).then(result => {
+          setHasMore(result.hasMore);
+          return result.posts;
+        })
+      : getPosts(cat).then(posts => {
+          setHasMore(false);
+          return posts;
+        });
+
+    fetchPromise
       .then(setPosts)
       .catch(() => toast.error('Failed to load posts'))
       .finally(() => setLoading(false));
   }, []);
+
+  const loadMorePosts = useCallback(() => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    const nextPage = page + 1;
+    getRankedFeed(nextPage, 20)
+      .then(result => {
+        setPosts(prev => [...prev, ...result.posts]);
+        setHasMore(result.hasMore);
+        setPage(nextPage);
+      })
+      .catch(() => toast.error('Failed to load more posts'))
+      .finally(() => setLoadingMore(false));
+  }, [page, hasMore, loadingMore]);
 
   useEffect(() => {
     loadPosts(category);
@@ -92,6 +122,7 @@ export default function Feed() {
     setPosts((prev) =>
       prev.map((p) => p.id === postId ? { ...p, likedByMe: liked, likesCount: count } : p)
     );
+    logFeedEvent(postId, liked ? 'LIKE' : 'CLICK');
   };
 
   const handleCommentAdded = (postId: string, comment: Comment) => {
@@ -101,6 +132,7 @@ export default function Feed() {
         : p
       )
     );
+    logFeedEvent(postId, 'COMMENT');
   };
 
   const handleCommentDeleted = (postId: string, commentId: string) => {
@@ -207,6 +239,17 @@ export default function Feed() {
                 }
               />
             ))}
+            {hasMore && (
+              <div className="flex justify-center py-4">
+                <button
+                  onClick={loadMorePosts}
+                  disabled={loadingMore}
+                  className="px-6 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-xl hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50"
+                >
+                  {loadingMore ? 'Loading...' : 'Load More'}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -2,7 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import { getProfile, updateProfile, changePassword, getUserById, listUsers, getUserPosts, uploadAvatar } from '../controllers/users';
+import { getProfile, updateProfile, changePassword, getUserById, listUsers, getUserPosts, uploadAvatar, uploadCoverImage } from '../controllers/users';
 import { authenticateToken } from '../middleware/auth';
 
 const router = express.Router();
@@ -43,5 +43,6 @@ router.get('/:id/posts', getUserPosts);
 router.put('/profile', authenticateToken, updateProfile);
 router.put('/password', authenticateToken, changePassword);
 router.post('/avatar', authenticateToken, avatarUpload.single('avatar'), uploadAvatar);
+router.post('/cover', authenticateToken, avatarUpload.single('cover'), uploadCoverImage);
 
 export default router;

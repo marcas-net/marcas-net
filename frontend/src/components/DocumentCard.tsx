@@ -81,7 +81,7 @@ export function DocumentCard({ document: doc, onDelete, canDelete }: Props) {
           <span>·</span>
           <span>{formatDate(doc.createdAt)}</span>
           <span>·</span>
-          <span>by {doc.uploadedBy.name ?? doc.uploadedBy.email}</span>
+          <span>by {doc.uploadedBy.name ?? 'Unknown'}</span>
         </div>
       </div>
 

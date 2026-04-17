@@ -8,6 +8,7 @@ import {
   toggleLike, repostPost, votePoll, getMyNetwork,
   followUser, followOrg, getFollowStatus, getFollowCounts,
 } from '../controllers/feed';
+import { getRankedFeed, logEvent } from '../modules/feed/feed.controller';
 import { authenticateToken } from '../middleware/auth';
 
 const router = express.Router();
@@ -52,6 +53,10 @@ const upload = multer({
     }
   },
 });
+
+// Ranked feed + event logging
+router.get('/ranked', authenticateToken, getRankedFeed);
+router.post('/event', authenticateToken, logEvent);
 
 // Posts
 router.get('/', authenticateToken, getPosts);

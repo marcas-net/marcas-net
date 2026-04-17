@@ -7,14 +7,13 @@ export interface Organization {
   country?: string;
   description?: string;
   _count?: { members: number };
-  members?: { id: string; name: string | null; email: string; role: string }[];
+  members?: { id: string; name: string | null; role: string }[];
   createdAt: string;
 }
 
 export interface OrgMember {
   id: string;
   name: string | null;
-  email: string;
   role: string;
   createdAt: string;
 }

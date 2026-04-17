@@ -40,10 +40,9 @@ export const globalSearch = async (req: AuthRequest, res: Response) => {
         where: {
           OR: [
             { name: { contains: q, mode: 'insensitive' } },
-            { email: { contains: q, mode: 'insensitive' } },
           ],
         },
-        select: { id: true, name: true, email: true, role: true },
+        select: { id: true, name: true, role: true, avatarUrl: true },
         take: 5,
       }),
       prisma.post.findMany({

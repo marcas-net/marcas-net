@@ -3,7 +3,6 @@ import api from './api';
 export interface DocumentUploader {
   id: string;
   name: string | null;
-  email: string;
 }
 
 export interface Document {

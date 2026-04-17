@@ -59,7 +59,7 @@ export function ActivityFeed() {
               icon: '🔔',
               color: 'bg-gray-50 text-gray-500',
             };
-            const displayName = item.user.name ?? item.user.email.split('@')[0];
+            const displayName = item.user.name ?? 'User';
 
             return (
               <li key={item.id} className="flex gap-3 items-start px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors">
