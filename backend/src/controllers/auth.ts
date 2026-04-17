@@ -76,8 +76,7 @@ export const login = async (req: Request, res: Response) => {
     if (error?.code === 'P1001' || error?.code === 'P1002') {
       return res.status(503).json({ error: 'Database connection failed. Please try again.' });
     }
-    // TEMP: include error detail for debugging (remove after fix)
-    res.status(500).json({ error: 'Internal server error', detail: error?.message, code: error?.code });
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 
