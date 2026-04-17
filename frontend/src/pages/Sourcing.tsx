@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   getProducts, getProduct, getOrgProducts, createProduct, createBatch,
@@ -110,6 +111,16 @@ export default function Sourcing() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
+      {/* Breadcrumb */}
+      <div className="mb-4">
+        <Link to="/orgs" className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Organizations
+        </Link>
+      </div>
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>

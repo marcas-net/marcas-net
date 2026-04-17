@@ -64,30 +64,11 @@ function toAbsoluteUrl(url: string, baseUrl: string): string {
   return `${baseUrl}${url}`;
 }
 
-// Cache missing media paths for 5 minutes to avoid repeated fs.existsSync calls
-const missingMediaCache = new Map<string, number>();
-const CACHE_TTL = 5 * 60 * 1000;
-
-function mediaFileExists(url: string): boolean {
-  if (!url || url.startsWith('http')) return true;
-  const now = Date.now();
-  const cached = missingMediaCache.get(url);
-  if (cached && now - cached < CACHE_TTL) return false; // known missing
-  const filePath = path.join(__dirname, '../..', url);
-  const exists = fs.existsSync(filePath);
-  if (!exists) missingMediaCache.set(url, now);
-  return exists;
-}
-
 function mapPost(p: any, userId?: string, baseUrl?: string) {
   const media = (p.media ?? []).map((m: any) => ({
     ...m,
     url: baseUrl ? toAbsoluteUrl(m.url, baseUrl) : m.url,
-  })).filter((m: any) => {
-    // Filter out media whose files no longer exist on disk
-    const rawUrl = (p.media ?? []).find((orig: any) => orig.id === m.id)?.url;
-    return mediaFileExists(rawUrl ?? m.url);
-  });
+  }));
   return {
     ...p,
     media,

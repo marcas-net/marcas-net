@@ -42,7 +42,7 @@ const NAV_ITEMS = [
     ),
   },
   {
-    to: '/sourcing',
+    to: '/orgs/sourcing',
     label: 'Sourcing',
     icon: (
       <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">

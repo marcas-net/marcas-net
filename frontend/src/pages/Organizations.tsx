@@ -35,14 +35,24 @@ export default function Organizations() {
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Organizations</h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Find and connect with organizations on MarcasNet</p>
         </div>
-        <Link to="/orgs/create">
-          <Button size="md">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            New Organization
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link to="/orgs/sourcing">
+            <Button variant="outline" size="md">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+              Sourcing
+            </Button>
+          </Link>
+          <Link to="/orgs/create">
+            <Button size="md">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              New Organization
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Search */}
