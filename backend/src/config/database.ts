@@ -5,49 +5,59 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const connectionString = process.env.DATABASE_URL!;
+let connectionString = process.env.DATABASE_URL!;
 
-// Parse SSL requirements: Railway DATABASE_URL may include ?sslmode=...
-// We need to set ssl on the Pool config for the pg driver to work
-const url = new URL(connectionString);
-const sslMode = url.searchParams.get('sslmode');
+// Railway PostgreSQL uses ?sslmode=require in DATABASE_URL.
+// The pg driver needs ssl set as a Pool config option, not a URL param.
+// Strip sslmode from URL and handle it programmatically.
+let sslConfig: boolean | { rejectUnauthorized: boolean } | undefined;
 
-// Remove sslmode from connection string since we handle it via Pool config
-url.searchParams.delete('sslmode');
-const cleanConnectionString = url.toString();
+try {
+  const parsed = new URL(connectionString);
+  const sslMode = parsed.searchParams.get('sslmode');
+  if (sslMode) {
+    parsed.searchParams.delete('sslmode');
+    connectionString = parsed.toString();
+    // Any sslmode other than 'disable' means we need SSL
+    if (sslMode !== 'disable') {
+      sslConfig = { rejectUnauthorized: false };
+    }
+  }
+} catch {
+  // If URL parsing fails, just use the string as-is
+}
 
-// Determine SSL config
-let ssl: any = false;
-if (sslMode === 'require' || sslMode === 'no-verify' || sslMode === 'prefer') {
-  ssl = { rejectUnauthorized: false };
-} else if (sslMode === 'verify-full' || sslMode === 'verify-ca') {
-  ssl = true;
-} else if (!sslMode) {
-  // No explicit sslmode — enable SSL for cloud environments
+// If no sslmode was in the URL, check environment hints
+if (sslConfig === undefined) {
   const isCloud = process.env.NODE_ENV === 'production'
     || !!process.env.RAILWAY_ENVIRONMENT
     || !!process.env.RAILWAY_PROJECT_ID
-    || connectionString.includes('railway');
+    || !!process.env.RAILWAY_STATIC_URL;
   if (isCloud) {
-    ssl = { rejectUnauthorized: false };
+    sslConfig = { rejectUnauthorized: false };
   }
 }
 
+console.log(`[DB] Connecting... SSL: ${sslConfig ? 'enabled' : 'disabled'}`);
+
 const pool = new Pool({
-  connectionString: cleanConnectionString,
-  ssl,
+  connectionString,
+  ...(sslConfig ? { ssl: sslConfig } : {}),
   max: 10,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 10000,
 });
 
 pool.on('error', (err) => {
-  console.error('PostgreSQL pool error:', err.message);
+  console.error('[DB] Pool error:', err.message);
 });
 
-// Use 'as any' to bypass @types/pg version mismatch between project and adapter
-const adapter = new PrismaPg(pool as any);
+pool.on('connect', () => {
+  console.log('[DB] Pool connected successfully');
+});
 
+// Cast to any to work around @types/pg version mismatch
+const adapter = new PrismaPg(pool as any);
 const prisma = new PrismaClient({ adapter });
 
 export default prisma;
