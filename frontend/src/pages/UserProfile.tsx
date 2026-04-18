@@ -32,6 +32,8 @@ export default function UserProfile() {
   const [activeTab, setActiveTab] = useState<'posts' | 'media'>('posts');
   const [posts, setPosts] = useState<Post[]>([]);
   const [postsLoading, setPostsLoading] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -90,8 +92,6 @@ export default function UserProfile() {
     year: 'numeric', month: 'long', day: 'numeric',
   });
   const isMe = me?.id === id;
-  const avatarInputRef = useRef<HTMLInputElement>(null);
-  const coverInputRef = useRef<HTMLInputElement>(null);
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
