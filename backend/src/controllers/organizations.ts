@@ -212,6 +212,63 @@ export const getDashboardStats = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const getOrgStats = async (req: Request, res: Response) => {
+  try {
+    const orgId = req.params['id'] as string;
+    const org = await findOrganizationById(orgId);
+    if (!org) return res.status(404).json({ error: 'Organization not found' });
+
+    const now = new Date();
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const [
+      membersCount,
+      productsCount,
+      activeBatches,
+      pendingRequests,
+      totalRequests,
+      documentsCount,
+      followersCount,
+      recentMembers,
+      recentProducts,
+      recentRequests,
+    ] = await Promise.all([
+      prisma.user.count({ where: { organizationId: orgId } }),
+      prisma.product.count({ where: { organizationId: orgId } }),
+      prisma.batch.count({
+        where: { product: { organizationId: orgId }, status: 'ACTIVE' },
+      }),
+      prisma.sourcingRequest.count({
+        where: { organizationId: orgId, status: 'PENDING' },
+      }),
+      prisma.sourcingRequest.count({ where: { organizationId: orgId } }),
+      prisma.document.count({ where: { organizationId: orgId } }),
+      prisma.follow.count({ where: { followingOrgId: orgId } }),
+      prisma.user.count({ where: { organizationId: orgId, createdAt: { gte: oneWeekAgo } } }),
+      prisma.product.count({ where: { organizationId: orgId, createdAt: { gte: oneWeekAgo } } }),
+      prisma.sourcingRequest.count({ where: { organizationId: orgId, createdAt: { gte: oneWeekAgo } } }),
+    ]);
+
+    res.json({
+      stats: {
+        membersCount,
+        productsCount,
+        activeBatches,
+        pendingRequests,
+        totalRequests,
+        documentsCount,
+        followersCount,
+        recentMembers,
+        recentProducts,
+        recentRequests,
+      },
+    });
+  } catch (error) {
+    console.error('Get org stats error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 export const deleteOrg = async (req: AuthRequest, res: Response) => {
   try {
     const orgId = req.params['id'] as string;

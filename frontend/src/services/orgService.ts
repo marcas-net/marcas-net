@@ -76,3 +76,21 @@ export const getOrgPosts = async (orgId: string) => {
   const res = await api.get(`/orgs/${orgId}/posts`);
   return res.data.posts;
 };
+
+export interface OrgStats {
+  membersCount: number;
+  productsCount: number;
+  activeBatches: number;
+  pendingRequests: number;
+  totalRequests: number;
+  documentsCount: number;
+  followersCount: number;
+  recentMembers: number;
+  recentProducts: number;
+  recentRequests: number;
+}
+
+export const getOrgStats = async (orgId: string): Promise<OrgStats> => {
+  const res = await api.get(`/orgs/${orgId}/stats`);
+  return res.data.stats;
+};

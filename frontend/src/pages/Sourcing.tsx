@@ -112,14 +112,12 @@ export default function Sourcing() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
       {/* Breadcrumb */}
-      <div className="mb-4">
-        <Link to="/orgs" className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          Organizations
-        </Link>
-      </div>
+      <Link to="/orgs" className="text-sm text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 inline-flex items-center gap-1.5 transition-colors mb-4">
+        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+        Organizations
+      </Link>
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
@@ -157,24 +155,23 @@ export default function Sourcing() {
         )}
       </div>
 
-      {/* Tab bar */}
-      <div className="flex items-center gap-1 border-b border-gray-200 dark:border-neutral-700 mb-6">
-        {tabs.map(t => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            className={`px-4 py-2.5 text-sm font-medium transition-all relative ${
-              tab === t.key
-                ? 'text-gray-900 dark:text-white'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-            }`}
-          >
-            {t.label}
-            {tab === t.key && (
-              <div className="absolute bottom-0 left-2 right-2 h-[2px] bg-gradient-to-r from-blue-600 to-emerald-500 rounded-t-full" />
-            )}
-          </button>
-        ))}
+      {/* Tab bar — horizontal scroll on mobile */}
+      <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 mb-6">
+        <div className="flex border-b border-gray-200 dark:border-neutral-700/80 min-w-max">
+          {tabs.map(t => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`px-5 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                tab === t.key
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Content */}
@@ -274,19 +271,42 @@ function BrowseProducts({
   onSearch: (s: string) => void;
   onSelect: (p: Product) => void;
 }) {
+  const [sort, setSort] = useState<'name' | 'price' | 'newest'>('newest');
+
+  const sorted = [...products].sort((a, b) => {
+    if (sort === 'name') return a.name.localeCompare(b.name);
+    if (sort === 'price') return (Number(a.price) || 0) - (Number(b.price) || 0);
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
   return (
     <div>
-      <div className="mb-5">
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => onSearch(e.target.value)}
-          placeholder="Search products, categories, or organizations..."
-          className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
-        />
+      {/* Search + Sort toolbar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-5">
+        <div className="relative flex-1">
+          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => onSearch(e.target.value)}
+            placeholder="Search products, categories, or organizations..."
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+          />
+        </div>
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value as 'name' | 'price' | 'newest')}
+          className="px-3 py-2.5 rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500/30 sm:w-40"
+        >
+          <option value="newest">Newest first</option>
+          <option value="name">Name A–Z</option>
+          <option value="price">Price low–high</option>
+        </select>
       </div>
 
-      {products.length === 0 ? (
+      {sorted.length === 0 ? (
         <div className="text-center py-16 text-gray-400 dark:text-gray-500">
           <svg className="w-12 h-12 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -295,42 +315,42 @@ function BrowseProducts({
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {products.map(product => (
+          {sorted.map(product => (
             <button
               key={product.id}
               onClick={() => onSelect(product)}
-              className="text-left bg-white dark:bg-neutral-800 rounded-xl border border-gray-100 dark:border-neutral-700 p-5 hover:shadow-md dark:hover:shadow-black/30 hover:border-blue-200 dark:hover:border-blue-800 transition-all group"
+              className="text-left bg-white dark:bg-neutral-800 rounded-xl border border-gray-100 dark:border-neutral-700 p-5 hover:shadow-md dark:hover:shadow-black/30 hover:border-blue-200 dark:hover:border-blue-800 transition-all group flex flex-col"
             >
-              <div className="flex items-start justify-between mb-3">
+              <div className="flex items-start justify-between mb-2">
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-gray-900 dark:text-white text-sm truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                     {product.name}
                   </h3>
-                  {product.category && (
-                    <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-1.5 py-0.5 rounded-md mt-1 inline-block">
-                      {product.category}
-                    </span>
-                  )}
                 </div>
                 {product.isCertified && (
-                  <svg className="w-4 h-4 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 text-emerald-500 flex-shrink-0 ml-2" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
                 )}
               </div>
-              {product.description && (
-                <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-3">{product.description}</p>
+              {product.category && (
+                <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-1.5 py-0.5 rounded-md mb-2 inline-block self-start">
+                  {product.category}
+                </span>
               )}
-              <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
+              {product.description && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-auto">{product.description}</p>
+              )}
+              <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500 mt-3 pt-3 border-t border-gray-50 dark:border-neutral-700/60">
                 <span className="truncate">{product.organization.name}</span>
                 {product.price != null && (
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">
+                  <span className="font-semibold text-gray-700 dark:text-gray-300 flex-shrink-0 ml-2">
                     {product.currency ?? '€'}{Number(product.price).toFixed(2)}/{product.unit ?? 'unit'}
                   </span>
                 )}
               </div>
               {product.origin && (
-                <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">Origin: {product.origin}</p>
+                <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1.5">Origin: {product.origin}</p>
               )}
             </button>
           ))}
@@ -353,22 +373,25 @@ function MyRequests({ requests }: { requests: SourcingRequest[] }) {
   }
 
   return (
-    <div className="space-y-3">
-      {requests.map(req => (
-        <div key={req.id} className="bg-white dark:bg-neutral-800 rounded-xl border border-gray-100 dark:border-neutral-700 p-5">
-          <div className="flex items-start justify-between mb-2">
-            <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white text-sm">{req.product.name}</h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                From {req.organization.name}
-              </p>
+    <div>
+      <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">{requests.length} request{requests.length !== 1 ? 's' : ''}</p>
+      <div className="space-y-3">
+        {requests.map(req => (
+          <div key={req.id} className="bg-white dark:bg-neutral-800 rounded-xl border border-gray-100 dark:border-neutral-700 p-5 hover:border-gray-200 dark:hover:border-neutral-600 transition-colors">
+            <div className="flex items-start justify-between gap-3 mb-2">
+              <div className="min-w-0 flex-1">
+                <h3 className="font-semibold text-gray-900 dark:text-white text-sm truncate">{req.product.name}</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  From {req.organization.name}
+                </p>
+              </div>
+              <StatusBadge status={req.status} />
             </div>
-            <StatusBadge status={req.status} />
-          </div>
-          <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mt-2">
-            <span>Qty: <span className="font-semibold text-gray-700 dark:text-gray-300">{Number(req.quantity)} {req.unit ?? req.product.unit ?? ''}</span></span>
-            <span>{new Date(req.createdAt).toLocaleDateString()}</span>
-          </div>
+            <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mt-3 pt-3 border-t border-gray-50 dark:border-neutral-700/60">
+              <span>Qty: <span className="font-semibold text-gray-700 dark:text-gray-300">{Number(req.quantity)} {req.unit ?? req.product.unit ?? ''}</span></span>
+              <span className="text-gray-300 dark:text-neutral-600">·</span>
+              <span>{new Date(req.createdAt).toLocaleDateString()}</span>
+            </div>
           {req.message && (
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-2 italic">"{req.message}"</p>
           )}
@@ -391,6 +414,7 @@ function MyRequests({ requests }: { requests: SourcingRequest[] }) {
           )}
         </div>
       ))}
+      </div>
     </div>
   );
 }
