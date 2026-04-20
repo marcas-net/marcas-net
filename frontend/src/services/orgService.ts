@@ -90,6 +90,10 @@ export interface OrgStats {
   recentMembers: number;
   recentProducts: number;
   recentRequests: number;
+  activeOffers: number;
+  confirmedOrders: number;
+  onHoldBatches: number;
+  totalStockQty: number;
 }
 
 export const getOrgStats = async (orgId: string): Promise<OrgStats> => {

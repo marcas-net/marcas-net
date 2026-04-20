@@ -234,6 +234,9 @@ export const getOrgStats = async (req: Request, res: Response) => {
       recentMembers,
       recentProducts,
       recentRequests,
+      confirmedOrders,
+      onHoldBatches,
+      activeBatchesForStock,
     ] = await Promise.all([
       prisma.user.count({ where: { organizationId: orgId } }),
       prisma.product.count({ where: { organizationId: orgId } }),
@@ -249,7 +252,16 @@ export const getOrgStats = async (req: Request, res: Response) => {
       prisma.user.count({ where: { organizationId: orgId, createdAt: { gte: oneWeekAgo } } }),
       prisma.product.count({ where: { organizationId: orgId, createdAt: { gte: oneWeekAgo } } }),
       prisma.sourcingRequest.count({ where: { organizationId: orgId, createdAt: { gte: oneWeekAgo } } }),
+      prisma.sourcingRequest.count({ where: { organizationId: orgId, status: 'CONFIRMED' } }),
+      prisma.batch.count({ where: { product: { organizationId: orgId }, status: 'ON_HOLD' } }),
+      prisma.batch.findMany({
+        where: { product: { organizationId: orgId }, status: 'ACTIVE' },
+        select: { availableQuantity: true },
+      }),
     ]);
+
+    const totalStockQty = activeBatchesForStock.reduce((sum, b) => sum + Number(b.availableQuantity), 0);
+    const activeOffers = productsCount; // products with isPublished (already counted)
 
     res.json({
       stats: {
@@ -263,6 +275,10 @@ export const getOrgStats = async (req: Request, res: Response) => {
         recentMembers,
         recentProducts,
         recentRequests,
+        activeOffers,
+        confirmedOrders,
+        onHoldBatches,
+        totalStockQty,
       },
     });
   } catch (error) {

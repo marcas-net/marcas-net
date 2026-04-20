@@ -316,9 +316,9 @@ function BrowseProducts({
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {sorted.map(product => (
-            <button
+            <Link
               key={product.id}
-              onClick={() => onSelect(product)}
+              to={`/products/${product.id}`}
               className="text-left bg-white dark:bg-neutral-800 rounded-xl border border-gray-100 dark:border-neutral-700 p-5 hover:shadow-md dark:hover:shadow-black/30 hover:border-blue-200 dark:hover:border-blue-800 transition-all group flex flex-col"
             >
               <div className="flex items-start justify-between mb-2">
@@ -352,7 +352,7 @@ function BrowseProducts({
               {product.origin && (
                 <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1.5">Origin: {product.origin}</p>
               )}
-            </button>
+            </Link>
           ))}
         </div>
       )}

@@ -399,26 +399,48 @@ model Message {
 // ─── Sourcing (decentralized, no marketplace) ───────────
 
 model Product {
-  id             String            @id @default(cuid())
-  name           String
-  description    String?
-  category       String?
-  unit           String?
-  origin         String?
-  moq            Decimal?          // minimum order quantity
-  price          Decimal?          // indicative price per unit
-  currency       String?           @default("EUR")
-  leadTimeDays   Int?
-  isCertified    Boolean           @default(false)
-  isPublished    Boolean           @default(true)
-  organizationId String
-  organization   Organization      @relation(fields: [organizationId], references: [id])
-  batches        Batch[]
-  requests       SourcingRequest[]
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
+  id               String            @id @default(cuid())
+  name             String
+  description      String?
+  category         String?
+  unit             String?
+  origin           String?
+  moq              Decimal?          // minimum order quantity
+  price            Decimal?          // indicative price per unit
+  currency         String?           @default("EUR")
+  leadTimeDays     Int?
+  isCertified      Boolean           @default(false)
+  isPublished      Boolean           @default(true)
+  shelfLifeMonths  Int?
+  certifications   String[]
+  specifications   Json?
+  highlights       String[]
+  deliveryTerms    String?
+  shippingPorts    String?
+  packagingOptions String[]
+  organizationId   String
+  organization     Organization      @relation(fields: [organizationId], references: [id])
+  images           ProductImage[]
+  batches          Batch[]
+  requests         SourcingRequest[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 
   @@map("products")
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  url       String
+  type      String   // "image"
+  filename  String
+  size      Int
+  order     Int      @default(0)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@map("product_images")
 }
 
 model SourcingRequest {

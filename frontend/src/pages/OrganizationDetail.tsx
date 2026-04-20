@@ -331,8 +331,8 @@ export default function OrganizationDetail() {
             <Card>
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs text-slate-400 uppercase tracking-wide font-medium">Sourcing Activity</p>
-                <Link to="/sourcing" className="text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors">
-                  Go to Sourcing →
+                <Link to={`/orgs/${id}/sourcing`} className="text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors">
+                  Manage Sourcing →
                 </Link>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -347,6 +347,11 @@ export default function OrganizationDetail() {
                     <p className="text-xs text-slate-400 mt-0.5">{item.label}</p>
                   </div>
                 ))}
+              </div>
+              <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                <Link to={`/orgs/${id}/catalog`} className="text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors">
+                  View Public Catalog →
+                </Link>
               </div>
             </Card>
           )}

@@ -1,6 +1,165 @@
 import { Request, Response } from 'express';
+import fs from 'fs';
+import path from 'path';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../config/database';
+
+// ─── Product Images ─────────────────────────────────────
+
+export const uploadProductImages = async (req: AuthRequest, res: Response) => {
+  try {
+    const productId = req.params.id as string;
+    const product = await prisma.product.findUnique({ where: { id: productId } });
+    if (!product) return res.status(404).json({ error: 'Product not found' });
+
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (user?.organizationId !== product.organizationId && req.user.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    const files = req.files as Express.Multer.File[];
+    if (!files || files.length === 0) {
+      return res.status(400).json({ error: 'No images provided' });
+    }
+
+    const existingCount = await prisma.productImage.count({ where: { productId } });
+
+    const images = await Promise.all(
+      files.map((file, idx) =>
+        prisma.productImage.create({
+          data: {
+            url: `/uploads/media/${file.filename}`,
+            type: 'image',
+            filename: file.originalname,
+            size: file.size,
+            order: existingCount + idx,
+            productId,
+          },
+        })
+      )
+    );
+
+    res.status(201).json({ images });
+  } catch (error) {
+    console.error('Upload product images error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const deleteProductImage = async (req: AuthRequest, res: Response) => {
+  try {
+    const productId = req.params.id as string;
+    const imageId = req.params.imageId as string;
+    const image = await prisma.productImage.findFirst({
+      where: { id: imageId, productId },
+      include: { product: { select: { organizationId: true } } },
+    });
+    if (!image) return res.status(404).json({ error: 'Image not found' });
+
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (user?.organizationId !== image.product.organizationId && req.user.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    // Delete file from disk
+    const filePath = path.join(__dirname, '../../uploads/media', path.basename(image.url));
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+
+    await prisma.productImage.delete({ where: { id: imageId } });
+    res.json({ message: 'Image deleted' });
+  } catch (error) {
+    console.error('Delete product image error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// ─── Org Sourcing Activity ──────────────────────────────
+
+export const getOrgSourcingActivity = async (req: Request, res: Response) => {
+  try {
+    const orgId = req.params.orgId as string;
+
+    const [requests, batches, recalls] = await Promise.all([
+      prisma.sourcingRequest.findMany({
+        where: { organizationId: orgId },
+        select: {
+          id: true, status: true, quantity: true, createdAt: true, updatedAt: true,
+          product: { select: { name: true } },
+          requester: { select: { name: true } },
+        },
+        orderBy: { updatedAt: 'desc' },
+        take: 10,
+      }),
+      prisma.batch.findMany({
+        where: { product: { organizationId: orgId } },
+        select: {
+          id: true, batchCode: true, status: true, totalQuantity: true, createdAt: true,
+          product: { select: { name: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+      }),
+      prisma.recall.findMany({
+        where: { organizationId: orgId },
+        select: {
+          id: true, type: true, issue: true, createdAt: true,
+          batch: { select: { batchCode: true, product: { select: { name: true } } } },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+      }),
+    ]);
+
+    // Merge and sort
+    const activity = [
+      ...requests.map(r => ({
+        id: r.id, type: 'request' as const, title: `${r.requester.name ?? 'Buyer'} requested ${r.product.name}`,
+        detail: `${r.quantity} units · ${r.status}`, date: r.updatedAt.toISOString(),
+      })),
+      ...batches.map(b => ({
+        id: b.id, type: 'batch' as const, title: `Batch ${b.batchCode} created for ${b.product.name}`,
+        detail: `${b.totalQuantity} units · ${b.status}`, date: b.createdAt.toISOString(),
+      })),
+      ...recalls.map(r => ({
+        id: r.id, type: 'recall' as const, title: `${r.type}: ${r.batch.product.name} (${r.batch.batchCode})`,
+        detail: r.issue, date: r.createdAt.toISOString(),
+      })),
+    ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 15);
+
+    res.json({ activity });
+  } catch (error) {
+    console.error('Get org sourcing activity error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// ─── Org Allocations ────────────────────────────────────
+
+export const getOrgAllocations = async (req: AuthRequest, res: Response) => {
+  try {
+    const orgId = req.params.orgId as string;
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (user?.organizationId !== orgId && req.user.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    const allocations = await prisma.batchAllocation.findMany({
+      where: { batch: { product: { organizationId: orgId } } },
+      include: {
+        batch: { select: { id: true, batchCode: true, product: { select: { id: true, name: true } } } },
+        request: {
+          select: { id: true, quantity: true, status: true, requester: { select: { id: true, name: true } } },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.json({ allocations });
+  } catch (error) {
+    console.error('Get org allocations error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
 
 // ─── Products ───────────────────────────────────────────
 
@@ -10,6 +169,7 @@ export const getProducts = async (_req: Request, res: Response) => {
       where: { isPublished: true },
       include: {
         organization: { select: { id: true, name: true, type: true, country: true } },
+        images: { orderBy: { order: 'asc' }, take: 1 },
         _count: { select: { batches: true, requests: true } },
       },
       orderBy: { createdAt: 'desc' },
@@ -26,7 +186,8 @@ export const getProduct = async (req: Request, res: Response) => {
     const product = await prisma.product.findUnique({
       where: { id: req.params.id as string },
       include: {
-        organization: { select: { id: true, name: true, type: true, country: true } },
+        organization: { select: { id: true, name: true, type: true, country: true, logoUrl: true, isVerified: true } },
+        images: { orderBy: { order: 'asc' } },
         batches: {
           where: { status: 'ACTIVE', availableQuantity: { gt: 0 } },
           select: { id: true, batchCode: true, availableQuantity: true, expiryDate: true, productionDate: true },
@@ -50,6 +211,7 @@ export const getOrgProducts = async (req: Request, res: Response) => {
       where: { organizationId: orgId },
       include: {
         organization: { select: { id: true, name: true, type: true } },
+        images: { orderBy: { order: 'asc' }, take: 1 },
         batches: {
           select: { id: true, batchCode: true, availableQuantity: true, totalQuantity: true, status: true, expiryDate: true },
           orderBy: { createdAt: 'desc' },
@@ -67,7 +229,8 @@ export const getOrgProducts = async (req: Request, res: Response) => {
 
 export const createProduct = async (req: AuthRequest, res: Response) => {
   try {
-    const { name, description, category, unit, origin, moq, price, currency, leadTimeDays, isCertified } = req.body;
+    const { name, description, category, unit, origin, moq, price, currency, leadTimeDays, isCertified,
+            shelfLifeMonths, certifications, specifications, highlights, deliveryTerms, shippingPorts, packagingOptions } = req.body;
     if (!name) return res.status(400).json({ error: 'Product name is required' });
 
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
@@ -87,10 +250,18 @@ export const createProduct = async (req: AuthRequest, res: Response) => {
         currency: currency ?? 'EUR',
         leadTimeDays: leadTimeDays ?? null,
         isCertified: isCertified ?? false,
+        shelfLifeMonths: shelfLifeMonths ?? null,
+        certifications: certifications ?? [],
+        specifications: specifications ?? undefined,
+        highlights: highlights ?? [],
+        deliveryTerms: deliveryTerms ?? null,
+        shippingPorts: shippingPorts ?? null,
+        packagingOptions: packagingOptions ?? [],
         organizationId: user.organizationId,
       },
       include: {
         organization: { select: { id: true, name: true, type: true } },
+        images: { orderBy: { order: 'asc' } },
       },
     });
     res.status(201).json({ product });
@@ -110,7 +281,8 @@ export const updateProduct = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: 'Not authorized' });
     }
 
-    const { name, description, category, unit, origin, moq, price, currency, leadTimeDays, isCertified, isPublished } = req.body;
+    const { name, description, category, unit, origin, moq, price, currency, leadTimeDays, isCertified, isPublished,
+            shelfLifeMonths, certifications, specifications, highlights, deliveryTerms, shippingPorts, packagingOptions } = req.body;
     const updated = await prisma.product.update({
       where: { id: req.params.id as string },
       data: {
@@ -125,8 +297,15 @@ export const updateProduct = async (req: AuthRequest, res: Response) => {
         ...(leadTimeDays !== undefined && { leadTimeDays }),
         ...(isCertified !== undefined && { isCertified }),
         ...(isPublished !== undefined && { isPublished }),
+        ...(shelfLifeMonths !== undefined && { shelfLifeMonths }),
+        ...(certifications !== undefined && { certifications }),
+        ...(specifications !== undefined && { specifications }),
+        ...(highlights !== undefined && { highlights }),
+        ...(deliveryTerms !== undefined && { deliveryTerms }),
+        ...(shippingPorts !== undefined && { shippingPorts }),
+        ...(packagingOptions !== undefined && { packagingOptions }),
       },
-      include: { organization: { select: { id: true, name: true, type: true } } },
+      include: { organization: { select: { id: true, name: true, type: true } }, images: { orderBy: { order: 'asc' } } },
     });
     res.json({ product: updated });
   } catch (error) {

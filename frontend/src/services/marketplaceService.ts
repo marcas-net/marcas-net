@@ -2,6 +2,17 @@ import api from './api';
 
 // ─── Types ──────────────────────────────────────────────
 
+export interface ProductImage {
+  id: string;
+  url: string;
+  type: string;
+  filename: string;
+  size: number;
+  order: number;
+  productId: string;
+  createdAt: string;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -15,8 +26,16 @@ export interface Product {
   leadTimeDays: number | null;
   isCertified: boolean;
   isPublished: boolean;
+  shelfLifeMonths: number | null;
+  certifications: string[];
+  specifications: Record<string, string> | null;
+  highlights: string[];
+  deliveryTerms: string | null;
+  shippingPorts: string | null;
+  packagingOptions: string[];
   organizationId: string;
-  organization: { id: string; name: string; type: string; country?: string | null };
+  organization: { id: string; name: string; type: string; country?: string | null; logoUrl?: string | null; isVerified?: boolean };
+  images?: ProductImage[];
   batches?: BatchSummary[];
   _count: { batches: number; requests: number };
   createdAt: string;
@@ -120,6 +139,13 @@ export const createProduct = async (data: {
   currency?: string;
   leadTimeDays?: number;
   isCertified?: boolean;
+  shelfLifeMonths?: number;
+  certifications?: string[];
+  specifications?: Record<string, string>;
+  highlights?: string[];
+  deliveryTerms?: string;
+  shippingPorts?: string;
+  packagingOptions?: string[];
 }): Promise<Product> => {
   const res = await api.post('/marketplace/products', data);
   return res.data.product;
@@ -195,4 +221,51 @@ export const createRecall = async (data: {
 export const getOrgRecalls = async (orgId: string): Promise<Recall[]> => {
   const res = await api.get(`/marketplace/recalls/org/${orgId}`);
   return res.data.recalls;
+};
+
+// ─── Product Images ─────────────────────────────────────
+
+export const uploadProductImages = async (productId: string, files: File[]): Promise<ProductImage[]> => {
+  const formData = new FormData();
+  files.forEach(f => formData.append('images', f));
+  const res = await api.post(`/marketplace/products/${productId}/images`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return res.data.images;
+};
+
+export const deleteProductImage = async (productId: string, imageId: string): Promise<void> => {
+  await api.delete(`/marketplace/products/${productId}/images/${imageId}`);
+};
+
+// ─── Allocations ────────────────────────────────────────
+
+export interface Allocation {
+  id: string;
+  batchId: string;
+  requestId: string;
+  allocatedQuantity: number;
+  batch: { id: string; batchCode: string; product: { id: string; name: string } };
+  request: { id: string; quantity: number; status: string; requester: { id: string; name: string } };
+  createdAt: string;
+}
+
+export const getOrgAllocations = async (orgId: string): Promise<Allocation[]> => {
+  const res = await api.get(`/marketplace/allocations/org/${orgId}`);
+  return res.data.allocations;
+};
+
+// ─── Activity ───────────────────────────────────────────
+
+export interface ActivityItem {
+  id: string;
+  type: 'request' | 'batch' | 'recall';
+  title: string;
+  detail: string;
+  date: string;
+}
+
+export const getOrgSourcingActivity = async (orgId: string): Promise<ActivityItem[]> => {
+  const res = await api.get(`/marketplace/activity/org/${orgId}`);
+  return res.data.activity;
 };
