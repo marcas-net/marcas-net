@@ -26,6 +26,9 @@ import AcceptInvitation from './pages/AcceptInvitation';
 import AuthCallback from './pages/AuthCallback';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import Marketplace from './pages/Marketplace';
+import Forms from './pages/Forms';
+import AdminDashboard from './pages/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { DashboardLayout } from './layouts/DashboardLayout';
@@ -82,6 +85,9 @@ function App() {
             <Route path="/orgs/sourcing" element={<Sourcing />} />
             <Route path="/sourcing" element={<Sourcing />} />
             <Route path="/dashboard/settings" element={<Settings />} />
+            <Route path="/marketplace" element={<Marketplace />} />
+            <Route path="/forms" element={<Forms />} />
+            <Route path="/admin" element={<AdminDashboard />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

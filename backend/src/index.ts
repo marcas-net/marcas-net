@@ -37,6 +37,7 @@ import feedRoutes from './routes/feed';
 import jobRoutes from './routes/jobs';
 import oauthRoutes from './routes/oauth';
 import messagingRoutes from './routes/messaging';
+import formRoutes from './routes/forms';
 import prisma from './config/database';
 
 validateEnv();
@@ -113,6 +114,7 @@ app.use('/api/feed', feedRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/auth', oauthRoutes);
 app.use('/api/messages', messagingRoutes);
+app.use('/api/forms', formRoutes);
 
 // Health check
 app.get('/api/health', async (_req, res) => {

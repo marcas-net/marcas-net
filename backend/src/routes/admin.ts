@@ -1,5 +1,5 @@
 import express from 'express';
-import { getAdminAuditLogs } from '../controllers/admin';
+import { getAdminAuditLogs, getPlatformStats, getAdminUsers, getAdminOrganizations, updateUserRole, verifyOrganization } from '../controllers/admin';
 import { authenticateToken } from '../middleware/auth';
 import { requireRole } from '../middleware/permissions';
 
@@ -36,5 +36,10 @@ const router = express.Router();
  *       403: { description: Admin access required }
  */
 router.get('/audit-logs', authenticateToken, requireRole('ADMIN'), getAdminAuditLogs);
+router.get('/stats', authenticateToken, requireRole('ADMIN'), getPlatformStats);
+router.get('/users', authenticateToken, requireRole('ADMIN'), getAdminUsers);
+router.get('/organizations', authenticateToken, requireRole('ADMIN'), getAdminOrganizations);
+router.put('/users/:id/role', authenticateToken, requireRole('ADMIN'), updateUserRole);
+router.put('/organizations/:id/verify', authenticateToken, requireRole('ADMIN'), verifyOrganization);
 
 export default router;
