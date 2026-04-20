@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { getOrgProducts, type Product } from '../services/marketplaceService';
 import { getOrganization, type Organization } from '../services/orgService';
 import toast from 'react-hot-toast';
@@ -19,7 +18,6 @@ function getCategoryFromProduct(p: Product): string {
 
 export default function OrgSourcingCatalog() {
   const { id: orgId } = useParams<{ id: string }>();
-  const { user } = useAuth();
 
   const [org, setOrg] = useState<Organization | null>(null);
   const [products, setProducts] = useState<Product[]>([]);

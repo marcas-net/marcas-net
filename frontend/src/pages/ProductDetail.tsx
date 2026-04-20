@@ -3,9 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   getProduct, getProducts, getProductBatches, createSourcingRequest,
-  type Product, type Batch, type ProductImage,
+  type Product, type Batch,
 } from '../services/marketplaceService';
-import { Avatar } from '../components/ui/Avatar';
 import toast from 'react-hot-toast';
 
 // ─── Main Component ─────────────────────────────────────
@@ -69,7 +68,7 @@ export default function ProductDetail() {
   };
 
   // Check if user is member of the product's org
-  const isOwnProduct = user?.memberships?.some((m: { organizationId: string }) => m.organizationId === product?.organizationId);
+  const isOwnProduct = user?.organizationId === product?.organizationId;
 
   if (loading) {
     return (

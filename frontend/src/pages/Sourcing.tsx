@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
-  getProducts, getProduct, getOrgProducts, createProduct, createBatch,
+  getProducts, getOrgProducts, createProduct, createBatch,
   createSourcingRequest, getMySourcingRequests, getOrgSourcingRequests,
   updateSourcingStatus, getOrgRecalls, createRecall,
   type Product, type SourcingRequest, type Recall,
@@ -186,15 +186,6 @@ export default function Sourcing() {
               products={filteredProducts}
               search={search}
               onSearch={setSearch}
-              onSelect={async (p) => {
-                try {
-                  const full = await getProduct(p.id);
-                  setSelectedProduct(full);
-                  setShowRequestModal(true);
-                } catch {
-                  toast.error('Failed to load product');
-                }
-              }}
             />
           )}
           {tab === 'my-requests' && (
@@ -264,12 +255,11 @@ export default function Sourcing() {
 // ─── Browse Products ────────────────────────────────────
 
 function BrowseProducts({
-  products, search, onSearch, onSelect,
+  products, search, onSearch,
 }: {
   products: Product[];
   search: string;
   onSearch: (s: string) => void;
-  onSelect: (p: Product) => void;
 }) {
   const [sort, setSort] = useState<'name' | 'price' | 'newest'>('newest');
 

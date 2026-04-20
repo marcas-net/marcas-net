@@ -103,9 +103,9 @@ export default function OrgSourcingDashboard() {
 
   useEffect(() => { load(); }, [load]);
 
-  // Check if user is a member
-  const userOrg = user?.memberships?.find((m: { organizationId: string }) => m.organizationId === orgId);
-  const isAdmin = userOrg?.role === 'ADMIN' || userOrg?.role === 'OWNER';
+  // Check if user is a member of this org
+  const isMember = user?.organizationId === orgId;
+  const isAdmin = isMember && (user?.role === 'ADMIN' || user?.role === 'OWNER');
 
   if (loading) {
     return (
@@ -115,7 +115,7 @@ export default function OrgSourcingDashboard() {
     );
   }
 
-  if (!userOrg) {
+  if (!isMember) {
     return (
       <div className="max-w-2xl mx-auto mt-20 text-center">
         <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Access Denied</h2>
@@ -191,7 +191,7 @@ export default function OrgSourcingDashboard() {
       {/* Tab Content */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         {tab === 'requests' && <RequestsTable requests={filteredRequests} onUpdate={load} isAdmin={isAdmin} />}
-        {tab === 'products' && <ProductsGrid products={filteredProducts} orgId={orgId!} />}
+        {tab === 'products' && <ProductsGrid products={filteredProducts} />}
         {tab === 'batches' && <BatchesTable batches={filteredBatches} />}
         {tab === 'allocations' && <AllocationsTable allocations={allocations} />}
         {tab === 'recalls' && <RecallsTable recalls={recalls} products={products} onRecall={() => setShowAddRecall(true)} />}
@@ -205,7 +205,7 @@ export default function OrgSourcingDashboard() {
       </div>
 
       {/* Modals */}
-      {showAddProduct && <AddProductModal orgId={orgId!} onClose={() => setShowAddProduct(false)} onCreated={load} />}
+      {showAddProduct && <AddProductModal onClose={() => setShowAddProduct(false)} onCreated={load} />}
       {showAddBatch && batchProduct && <AddBatchModal product={batchProduct} products={products} onSelectProduct={setBatchProduct} onClose={() => setShowAddBatch(false)} onCreated={load} />}
       {showAddRecall && <AddRecallModal batches={batches} onClose={() => setShowAddRecall(false)} onCreated={load} />}
     </div>
@@ -280,7 +280,7 @@ function RequestsTable({ requests, onUpdate, isAdmin }: { requests: SourcingRequ
             <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
               <td className="px-4 py-3">
                 <div className="flex items-center gap-2">
-                  <Avatar name={r.requester.name} src={r.requester.avatarUrl} size="xs" />
+                  <Avatar name={r.requester.name} src={r.requester.avatarUrl ?? undefined} size="xs" />
                   <span className="font-medium text-gray-900 dark:text-white">{r.requester.name}</span>
                 </div>
               </td>
@@ -330,7 +330,7 @@ function RequestsTable({ requests, onUpdate, isAdmin }: { requests: SourcingRequ
 
 // ─── Products Grid ──────────────────────────────────────
 
-function ProductsGrid({ products, orgId }: { products: Product[]; orgId: string }) {
+function ProductsGrid({ products }: { products: Product[] }) {
   if (products.length === 0) return <EmptyState message="No products yet" />;
 
   return (
@@ -569,7 +569,7 @@ function RecentActivity({ requests }: { requests: SourcingRequest[] }) {
         <div className="space-y-3">
           {recent.map(r => (
             <div key={r.id} className="flex items-start gap-2">
-              <Avatar name={r.requester.name} src={r.requester.avatarUrl} size="xs" />
+              <Avatar name={r.requester.name} src={r.requester.avatarUrl ?? undefined} size="xs" />
               <div className="flex-1 min-w-0">
                 <div className="text-xs text-gray-900 dark:text-white">
                   <span className="font-medium">{r.requester.name}</span> requested <span className="font-medium">{r.product.name}</span>
@@ -589,7 +589,7 @@ function RecentActivity({ requests }: { requests: SourcingRequest[] }) {
 
 // ─── Modals ─────────────────────────────────────────────
 
-function AddProductModal({ orgId, onClose, onCreated }: { orgId: string; onClose: () => void; onCreated: () => void }) {
+function AddProductModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
   const [form, setForm] = useState({
     name: '', description: '', category: '', unit: 'kg', origin: '', moq: '', price: '', currency: 'EUR',
     leadTimeDays: '', isCertified: false, shelfLifeMonths: '', certifications: '', deliveryTerms: '', shippingPorts: '', packagingOptions: '',
