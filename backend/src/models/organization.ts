@@ -6,6 +6,7 @@ export const createOrganization = async (data: {
   type: OrgType;
   country?: string;
   description?: string;
+  logoUrl?: string;
 }) => {
   return await prisma.organization.create({ data });
 };
@@ -18,6 +19,8 @@ export const findAllOrganizations = async () => {
       type: true,
       country: true,
       description: true,
+      logoUrl: true,
+      isVerified: true,
       createdAt: true,
       _count: { select: { members: true } },
     },
@@ -38,7 +41,7 @@ export const findOrganizationById = async (id: string) => {
 
 export const updateOrganization = async (
   id: string,
-  data: { name?: string; type?: OrgType; country?: string; description?: string }
+  data: { name?: string; type?: OrgType; country?: string; description?: string; logoUrl?: string; isVerified?: boolean }
 ) => {
   return await prisma.organization.update({ where: { id }, data });
 };

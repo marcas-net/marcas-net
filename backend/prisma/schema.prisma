@@ -178,6 +178,8 @@ model Organization {
   type        OrgType
   country     String?
   description String?
+  logoUrl     String?
+  isVerified  Boolean      @default(false)
   members     User[]
   memberships Membership[]
   documents   Document[]

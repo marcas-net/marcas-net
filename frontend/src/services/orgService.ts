@@ -6,6 +6,8 @@ export interface Organization {
   type: string;
   country?: string;
   description?: string;
+  logoUrl?: string | null;
+  isVerified?: boolean;
   _count?: { members: number };
   members?: { id: string; name: string | null; role: string }[];
   createdAt: string;
@@ -58,7 +60,7 @@ export const inviteMember = async (
 
 export const updateOrganization = async (
   id: string,
-  data: { name?: string; type?: string; country?: string; description?: string }
+  data: { name?: string; type?: string; country?: string; description?: string; logoUrl?: string; isVerified?: boolean }
 ): Promise<Organization> => {
   const res = await api.put(`/orgs/${id}`, data);
   return res.data.organization;

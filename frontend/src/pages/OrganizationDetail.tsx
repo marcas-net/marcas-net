@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getOrganization, joinOrganization, getOrgPosts, getOrgStats, type Organization, type OrgStats } from '../services/orgService';
-import { getOrgDocuments, deleteDocument, type Document } from '../services/documentService';
+import { getOrgProducts, type Product } from '../services/marketplaceService';
 import { useAuth } from '../context/AuthContext';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
@@ -9,11 +9,10 @@ import { Card, StatCard } from '../components/ui/Card';
 import { Avatar } from '../components/ui/Avatar';
 import { orgTypeVariant } from '../styles/design-system';
 import { PostCard } from '../components/feed/PostCard';
-import UploadDocumentForm from '../components/UploadDocumentForm';
 import toast from 'react-hot-toast';
 import type { Post, Comment } from '../services/feedService';
 
-type Tab = 'overview' | 'posts' | 'documents';
+type Tab = 'overview' | 'posts' | 'sourcing';
 
 export default function OrganizationDetail() {
   const { id } = useParams<{ id: string }>();
@@ -24,11 +23,10 @@ export default function OrganizationDetail() {
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
   const [tab, setTab] = useState<Tab>('overview');
-  const [docs, setDocs] = useState<Document[]>([]);
-  const [docsLoading, setDocsLoading] = useState(false);
-  const [showUpload, setShowUpload] = useState(false);
   const [orgPosts, setOrgPosts] = useState<Post[]>([]);
   const [postsLoading, setPostsLoading] = useState(false);
+  const [orgProducts, setOrgProducts] = useState<Product[]>([]);
+  const [productsLoading, setProductsLoading] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -45,28 +43,28 @@ export default function OrganizationDetail() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  const loadDocs = () => {
-    if (!id) return;
-    setDocsLoading(true);
-    getOrgDocuments(id)
-      .then(setDocs)
-      .catch(() => toast.error('Failed to load documents'))
-      .finally(() => setDocsLoading(false));
-  };
-
-  useEffect(() => {
-    if (tab === 'documents') loadDocs();
-    if (tab === 'posts') loadPosts();
-  }, [tab]);
-
-  const loadPosts = () => {
+  const loadPosts = useCallback(() => {
     if (!id) return;
     setPostsLoading(true);
     getOrgPosts(id)
       .then(setOrgPosts)
       .catch(() => toast.error('Failed to load posts'))
       .finally(() => setPostsLoading(false));
-  };
+  }, [id]);
+
+  const loadProducts = useCallback(() => {
+    if (!id) return;
+    setProductsLoading(true);
+    getOrgProducts(id)
+      .then(setOrgProducts)
+      .catch(() => toast.error('Failed to load products'))
+      .finally(() => setProductsLoading(false));
+  }, [id]);
+
+  useEffect(() => {
+    if (tab === 'posts') loadPosts();
+    if (tab === 'sourcing') loadProducts();
+  }, [tab, loadPosts, loadProducts]);
 
   const handleJoin = async () => {
     if (!id) return;
@@ -83,20 +81,10 @@ export default function OrganizationDetail() {
     }
   };
 
-  const handleDeleteDoc = async (docId: string) => {
-    if (!confirm('Delete this document?')) return;
-    try {
-      await deleteDocument(docId);
-      toast.success('Document deleted');
-      setDocs((prev) => prev.filter((d) => d.id !== docId));
-    } catch {
-      toast.error('Failed to delete document');
-    }
-  };
-
   const isMember = user?.organizationId === id;
   const canManage = isMember && (user?.role === 'ADMIN' || user?.role === 'ORG_ADMIN');
   const joinDate = org ? new Date(org.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : '';
+  const industryLabel = org ? org.type.charAt(0) + org.type.slice(1).toLowerCase() : '';
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
@@ -118,48 +106,82 @@ export default function OrganizationDetail() {
         Organizations
       </Link>
 
-      {/* Hero Card */}
+      {/* ─── Public Identity Card ─── */}
       <Card padding="none">
         <div className="p-6">
           <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-            {/* Org icon + info */}
-            <div className="flex items-start gap-4 flex-1 min-w-0">
-              <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center flex-shrink-0">
-                <svg className="w-7 h-7 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
+            {/* 1. Logo / Avatar */}
+            <div className="flex-shrink-0">
+              {org.logoUrl ? (
+                <img
+                  src={org.logoUrl}
+                  alt={`${org.name} logo`}
+                  className="w-16 h-16 rounded-2xl object-cover border border-gray-100 dark:border-neutral-700"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center">
+                  <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    {org.name.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Identity info */}
+            <div className="flex-1 min-w-0">
+              {/* 2. Name + 5. Verification badge */}
+              <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                <h1 className="text-xl font-bold text-slate-900 dark:text-white truncate">{org.name}</h1>
+                {org.isVerified && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    Verified
+                  </span>
+                )}
+                {isMember && <Badge variant="green">Member</Badge>}
               </div>
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                  <h1 className="text-xl font-bold text-slate-900 dark:text-white truncate">{org.name}</h1>
-                  <Badge variant={orgTypeVariant[org.type] ?? 'gray'}>
-                    {org.type.charAt(0) + org.type.slice(1).toLowerCase()}
+
+              {/* 3. Industry + 4. Location + meta */}
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500 dark:text-slate-400">
+                {/* Industry (org type) */}
+                <span className="inline-flex items-center gap-1">
+                  <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                  <Badge variant={orgTypeVariant[org.type] ?? 'gray'} >
+                    {industryLabel}
                   </Badge>
-                  {isMember && <Badge variant="green">Member</Badge>}
-                </div>
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-400">
-                  {org.country && (
-                    <span className="inline-flex items-center gap-1">
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      {org.country}
-                    </span>
-                  )}
-                  {stats && (
-                    <span className="inline-flex items-center gap-1">
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      {stats.membersCount} member{stats.membersCount !== 1 ? 's' : ''}
-                    </span>
-                  )}
-                  {stats && stats.followersCount > 0 && (
-                    <span>{stats.followersCount} follower{stats.followersCount !== 1 ? 's' : ''}</span>
-                  )}
-                  <span>Est. {joinDate}</span>
-                </div>
+                </span>
+
+                {/* Location */}
+                {org.country && (
+                  <span className="inline-flex items-center gap-1">
+                    <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    {org.country}
+                  </span>
+                )}
+
+                {/* Member count */}
+                {stats && (
+                  <span className="inline-flex items-center gap-1">
+                    <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    {stats.membersCount} member{stats.membersCount !== 1 ? 's' : ''}
+                  </span>
+                )}
+
+                {stats && stats.followersCount > 0 && (
+                  <span>{stats.followersCount} follower{stats.followersCount !== 1 ? 's' : ''}</span>
+                )}
+
+                <span className="text-slate-300 dark:text-neutral-600">·</span>
+                <span>Est. {joinDate}</span>
               </div>
             </div>
 
@@ -183,14 +205,14 @@ export default function OrganizationDetail() {
             </div>
           </div>
 
-          {/* Description — indented with the text, not the icon */}
+          {/* Description */}
           {org.description && (
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-4 leading-relaxed sm:pl-[72px]">{org.description}</p>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-4 leading-relaxed sm:pl-20">{org.description}</p>
           )}
         </div>
       </Card>
 
-      {/* KPI Cards — visible for members */}
+      {/* ─── KPI Cards — visible for members ─── */}
       {isMember && stats && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <StatCard
@@ -222,26 +244,30 @@ export default function OrganizationDetail() {
         </div>
       )}
 
-      {/* Tabs — horizontal scroll on mobile */}
+      {/* ─── Tabs ─── */}
       <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
         <div className="flex border-b border-gray-200 dark:border-neutral-700/80 min-w-max">
-          {(['overview', 'posts', 'documents'] as Tab[]).map((t) => (
+          {([
+            { key: 'overview' as Tab, label: 'Overview' },
+            { key: 'posts' as Tab, label: 'Posts' },
+            { key: 'sourcing' as Tab, label: 'Sourcing' },
+          ]).map((t) => (
             <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`px-5 py-3 text-sm font-medium border-b-2 transition-colors capitalize whitespace-nowrap ${
-                tab === t
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`px-5 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                tab === t.key
                   ? 'border-blue-600 text-blue-600'
                   : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
               }`}
             >
-              {t}
+              {t.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Tab: Overview */}
+      {/* ═══ Tab: Overview ═══ */}
       {tab === 'overview' && (
         <div className="space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -253,8 +279,9 @@ export default function OrganizationDetail() {
               <div className="space-y-3">
                 {[
                   { label: 'Name', value: org.name },
-                  { label: 'Type', value: org.type.charAt(0) + org.type.slice(1).toLowerCase() },
-                  { label: 'Country', value: org.country ?? '—' },
+                  { label: 'Industry', value: industryLabel },
+                  { label: 'Location', value: org.country ?? '—' },
+                  { label: 'Verified', value: org.isVerified ? 'Yes' : 'No' },
                   { label: 'Created', value: joinDate },
                   ...(stats ? [{ label: 'Total Requests', value: String(stats.totalRequests) }] : []),
                 ].map((row) => (
@@ -326,7 +353,7 @@ export default function OrganizationDetail() {
         </div>
       )}
 
-      {/* Tab: Posts */}
+      {/* ═══ Tab: Posts ═══ */}
       {tab === 'posts' && (
         <div className="space-y-4">
           {postsLoading ? (
@@ -365,75 +392,82 @@ export default function OrganizationDetail() {
         </div>
       )}
 
-      {/* Tab: Documents */}
-      {tab === 'documents' && (
+      {/* ═══ Tab: Sourcing ═══ */}
+      {tab === 'sourcing' && (
         <div className="space-y-4">
+          {/* Header */}
           <div className="flex items-center justify-between">
-            <p className="text-sm text-slate-500">{docs.length} document{docs.length !== 1 ? 's' : ''}</p>
+            <p className="text-sm text-slate-500">{orgProducts.length} product{orgProducts.length !== 1 ? 's' : ''} listed</p>
             {isMember && (
-              <Button size="sm" onClick={() => setShowUpload(!showUpload)} variant={showUpload ? 'outline' : 'primary'}>
-                {showUpload ? 'Cancel' : '+ Upload Document'}
-              </Button>
+              <Link to="/sourcing">
+                <Button size="sm" variant="primary">Go to Sourcing Dashboard</Button>
+              </Link>
             )}
           </div>
 
-          {showUpload && (
-            <Card>
-              <UploadDocumentForm
-                orgId={id!}
-                onSuccess={() => { setShowUpload(false); loadDocs(); }}
-              />
-            </Card>
-          )}
-
-          {docsLoading ? (
+          {productsLoading ? (
             <div className="flex justify-center py-12">
               <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
             </div>
-          ) : docs.length === 0 ? (
+          ) : orgProducts.length === 0 ? (
             <div className="text-center py-16 text-slate-400">
               <svg className="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
               </svg>
-              <p className="text-sm">No documents yet</p>
+              <p className="text-sm">No products listed yet</p>
             </div>
           ) : (
-            <div className="bg-white dark:bg-neutral-800 rounded-2xl border border-gray-100 dark:border-neutral-700/80 shadow-sm overflow-hidden">
-              {/* Table header — desktop only */}
-              <div className="hidden sm:grid grid-cols-[1fr_auto] gap-4 px-5 py-2.5 border-b border-gray-100 dark:border-neutral-700/80">
-                <p className="text-[11px] text-slate-400 uppercase tracking-wide font-medium">Document</p>
-                <p className="text-[11px] text-slate-400 uppercase tracking-wide font-medium">Actions</p>
-              </div>
-              {docs.map((doc, idx) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {orgProducts.map((product) => (
                 <div
-                  key={doc.id}
-                  className={`flex items-center gap-4 px-5 py-3.5 ${
-                    idx !== docs.length - 1 ? 'border-b border-gray-50 dark:border-neutral-700/60' : ''
-                  } hover:bg-gray-50/50 dark:hover:bg-neutral-700/20 transition-colors`}
+                  key={product.id}
+                  className="bg-white dark:bg-neutral-800 rounded-xl border border-gray-100 dark:border-neutral-700 p-5 hover:shadow-md dark:hover:shadow-black/30 hover:border-blue-200 dark:hover:border-blue-800 transition-all flex flex-col"
                 >
-                  <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center flex-shrink-0">
-                    <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-semibold text-slate-800 dark:text-slate-200 truncate">{doc.title}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      {doc.description && <p className="text-xs text-slate-400 truncate">{doc.description}</p>}
-                      {doc.description && <span className="text-[10px] text-slate-300 dark:text-slate-600">·</span>}
-                      <span className="text-[10px] text-slate-400 flex-shrink-0">
-                        {new Date(doc.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer">
-                      <Button size="sm" variant="outline">View</Button>
-                    </a>
-                    {(canManage || doc.uploadedBy?.id === user?.id) && (
-                      <Button size="sm" variant="danger" onClick={() => handleDeleteDoc(doc.id)}>Delete</Button>
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="font-semibold text-gray-900 dark:text-white text-sm truncate flex-1 min-w-0">
+                      {product.name}
+                    </h3>
+                    {product.isCertified && (
+                      <svg className="w-4 h-4 text-emerald-500 flex-shrink-0 ml-2" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
                     )}
                   </div>
+                  {product.category && (
+                    <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-1.5 py-0.5 rounded-md mb-2 inline-block self-start">
+                      {product.category}
+                    </span>
+                  )}
+                  {product.description && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-auto">{product.description}</p>
+                  )}
+                  <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500 mt-3 pt-3 border-t border-gray-50 dark:border-neutral-700/60">
+                    <span>{product._count.requests} request{product._count.requests !== 1 ? 's' : ''}</span>
+                    {product.price != null && (
+                      <span className="font-semibold text-gray-700 dark:text-gray-300">
+                        {product.currency ?? '€'}{Number(product.price).toFixed(2)}/{product.unit ?? 'unit'}
+                      </span>
+                    )}
+                  </div>
+                  {product.batches && product.batches.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {product.batches.slice(0, 3).map((b) => (
+                        <span
+                          key={b.id}
+                          className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                            b.status === 'ACTIVE'
+                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                              : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
+                          }`}
+                        >
+                          {b.batchCode}
+                        </span>
+                      ))}
+                      {product.batches.length > 3 && (
+                        <span className="text-[9px] text-slate-400">+{product.batches.length - 3} more</span>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

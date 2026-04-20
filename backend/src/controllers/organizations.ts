@@ -131,8 +131,8 @@ export const inviteMember = async (req: AuthRequest, res: Response) => {
 
 export const createOrg = async (req: AuthRequest, res: Response) => {
   try {
-    const { name, type, country, description } = req.body;
-    const org = await createOrganization({ name, type: type as OrgType, country, description });
+    const { name, type, country, description, logoUrl } = req.body;
+    const org = await createOrganization({ name, type: type as OrgType, country, description, logoUrl });
     res.status(201).json({ message: 'Organization created', organization: org });
   } catch (error) {
     console.error('Create organization error:', error);
@@ -142,12 +142,14 @@ export const createOrg = async (req: AuthRequest, res: Response) => {
 
 export const updateOrg = async (req: AuthRequest, res: Response) => {
   try {
-    const { name, type, country, description } = req.body;
+    const { name, type, country, description, logoUrl, isVerified } = req.body;
     const org = await updateOrganization(req.params['id'] as string, {
       name,
       type: type as OrgType | undefined,
       country,
       description,
+      logoUrl,
+      isVerified,
     });
     res.json({ message: 'Organization updated', organization: org });
   } catch (error) {
