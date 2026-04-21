@@ -20,6 +20,7 @@ import Network from './pages/Network';
 import Sourcing from './pages/Sourcing';
 import OrgSourcingDashboard from './pages/OrgSourcingDashboard';
 import OrgSourcingCatalog from './pages/OrgSourcingCatalog';
+import OrgAdminDashboard from './pages/OrgAdminDashboard';
 import ProductDetail from './pages/ProductDetail';
 import Notifications from './pages/Notifications';
 import AcceptInvitation from './pages/AcceptInvitation';
@@ -74,6 +75,7 @@ function App() {
             <Route path="/orgs/:id/members" element={<OrgMembers />} />
             <Route path="/orgs/:id/settings" element={<OrgSettings />} />
             <Route path="/orgs/:id/sourcing" element={<OrgSourcingDashboard />} />
+            <Route path="/orgs/:id/admin" element={<OrgAdminDashboard />} />
             <Route path="/orgs/:id/catalog" element={<OrgSourcingCatalog />} />
             <Route path="/products/:id" element={<ProductDetail />} />
             <Route path="/profile" element={<Profile />} />

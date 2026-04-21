@@ -98,6 +98,22 @@ enum BatchStatus {
   EXPIRED
 }
 
+enum LotStatus {
+  OPEN
+  LOADING
+  IN_TRANSIT
+  DELIVERED
+  WITHDRAWN
+}
+
+enum LoadStatus {
+  PLANNING
+  READY
+  IN_TRANSIT
+  DELIVERED
+  RECALLED
+}
+
 enum FormFieldType {
   TEXT
   NUMBER
@@ -180,6 +196,8 @@ model Organization {
   description String?
   logoUrl     String?
   isVerified  Boolean      @default(false)
+  verifiedAt  DateTime?
+  verifiedBy  String?
   members     User[]
   memberships Membership[]
   documents   Document[]
@@ -189,6 +207,7 @@ model Organization {
   jobs        Job[]
   followedBy  Follow[]
   sourcingRequests SourcingRequest[]
+  lots             Lot[]
   formTemplates FormTemplate[]
   formEntries FormEntry[]
   recalls     Recall[]
@@ -458,6 +477,7 @@ model SourcingRequest {
   status         SourcingStatus  @default(PENDING)
   supplierNotes  String?
   allocations    BatchAllocation[]
+  lot            Lot?
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 
@@ -495,6 +515,42 @@ model BatchAllocation {
   createdAt         DateTime        @default(now())
 
   @@map("batch_allocations")
+}
+
+// ─── Lots & Loads (supply chain layer) ──────────────────
+
+model Lot {
+  id             String      @id @default(cuid())
+  lotCode        String      @unique
+  requestId      String      @unique
+  request        SourcingRequest @relation(fields: [requestId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  buyerOrgId     String?
+  totalQuantity  Decimal
+  status         LotStatus   @default(OPEN)
+  notes          String?
+  loads          Load[]
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@map("lots")
+}
+
+model Load {
+  id          String     @id @default(cuid())
+  loadCode    String     @unique
+  lotId       String
+  lot         Lot        @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  destination String
+  quantity    Decimal
+  status      LoadStatus @default(PLANNING)
+  eta         DateTime?
+  notes       String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("loads")
 }
 
 // ─── Smart Forms ────────────────────────────────────────

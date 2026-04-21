@@ -6,7 +6,7 @@ import {
   getProductBatches, updateSourcingStatus, createProduct, createBatch, createRecall,
   type Product, type SourcingRequest, type Recall, type Batch, type BatchAllocation,
 } from '../services/marketplaceService';
-import { getOrgStats, type OrgStats } from '../services/orgService';
+import { getOrgStats, getOrgLots, createLot, updateLotStatus, getOrgLoads, updateLoadStatus, type OrgStats, type Lot, type Load } from '../services/orgService';
 import { Avatar } from '../components/ui/Avatar';
 import toast from 'react-hot-toast';
 
@@ -40,11 +40,13 @@ function StatusBadge({ status }: { status: string }) {
 
 // ─── Tabs ───────────────────────────────────────────────
 
-type Tab = 'requests' | 'products' | 'batches' | 'allocations' | 'recalls';
+type Tab = 'requests' | 'products' | 'batches' | 'allocations' | 'recalls' | 'lots' | 'loads';
 const TABS: { key: Tab; label: string; icon: string }[] = [
   { key: 'requests', label: 'Requests', icon: '📋' },
   { key: 'products', label: 'Products', icon: '📦' },
   { key: 'batches', label: 'Batches', icon: '🏷️' },
+  { key: 'lots', label: 'Lots', icon: '📦' },
+  { key: 'loads', label: 'Loads', icon: '🚚' },
   { key: 'allocations', label: 'Allocations', icon: '📊' },
   { key: 'recalls', label: 'Recalls', icon: '⚠️' },
 ];
@@ -63,6 +65,11 @@ export default function OrgSourcingDashboard() {
   const [batches, setBatches] = useState<(Batch & { productName: string })[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [lots, setLots] = useState<Lot[]>([]);
+  const [loads, setLoads] = useState<Load[]>([]);
+  const [lotsLoading, setLotsLoading] = useState(false);
+  const [loadsLoading, setLoadsLoading] = useState(false);
+  const [createLotTarget, setCreateLotTarget] = useState<SourcingRequest | null>(null);
 
   // Modal states
   const [showAddProduct, setShowAddProduct] = useState(false);
@@ -102,6 +109,17 @@ export default function OrgSourcingDashboard() {
   }, [orgId]);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    if (tab === 'lots' && lots.length === 0 && orgId) {
+      setLotsLoading(true);
+      getOrgLots(orgId).then(setLots).catch(() => toast.error('Failed to load lots')).finally(() => setLotsLoading(false));
+    }
+    if (tab === 'loads' && loads.length === 0 && orgId) {
+      setLoadsLoading(true);
+      getOrgLoads(orgId).then(setLoads).catch(() => toast.error('Failed to load loads')).finally(() => setLoadsLoading(false));
+    }
+  }, [tab, orgId, lots.length, loads.length]);
 
   // Check if user is a member of this org
   const isMember = user?.organizationId === orgId;
@@ -190,11 +208,37 @@ export default function OrgSourcingDashboard() {
 
       {/* Tab Content */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-        {tab === 'requests' && <RequestsTable requests={filteredRequests} onUpdate={load} isAdmin={isAdmin} />}
+        {tab === 'requests' && <RequestsTable requests={filteredRequests} onUpdate={load} isAdmin={isAdmin} onCreateLot={r => setCreateLotTarget(r)} />}
         {tab === 'products' && <ProductsGrid products={filteredProducts} />}
         {tab === 'batches' && <BatchesTable batches={filteredBatches} />}
         {tab === 'allocations' && <AllocationsTable allocations={allocations} />}
         {tab === 'recalls' && <RecallsTable recalls={recalls} products={products} onRecall={() => setShowAddRecall(true)} />}
+        {tab === 'lots' && (
+          lotsLoading ? (
+            <div className="flex items-center justify-center py-16"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500" /></div>
+          ) : (
+            <LotsTable lots={lots} onStatusChange={async (lotId, status) => {
+              if (!orgId) return;
+              await updateLotStatus(orgId, lotId, status);
+              toast.success('Status updated');
+              const updated = await getOrgLots(orgId);
+              setLots(updated);
+            }} />
+          )
+        )}
+        {tab === 'loads' && (
+          loadsLoading ? (
+            <div className="flex items-center justify-center py-16"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500" /></div>
+          ) : (
+            <LoadsTable loads={loads} onStatusChange={async (loadId, status) => {
+              if (!orgId) return;
+              await updateLoadStatus(orgId, loadId, status);
+              toast.success('Status updated');
+              const updated = await getOrgLoads(orgId);
+              setLoads(updated);
+            }} />
+          )
+        )}
       </div>
 
       {/* Bottom Panels */}
@@ -208,6 +252,19 @@ export default function OrgSourcingDashboard() {
       {showAddProduct && <AddProductModal onClose={() => setShowAddProduct(false)} onCreated={load} />}
       {showAddBatch && batchProduct && <AddBatchModal product={batchProduct} products={products} onSelectProduct={setBatchProduct} onClose={() => setShowAddBatch(false)} onCreated={load} />}
       {showAddRecall && <AddRecallModal batches={batches} onClose={() => setShowAddRecall(false)} onCreated={load} />}
+      {createLotTarget && orgId && (
+        <QuickCreateLotModal
+          request={createLotTarget}
+          orgId={orgId}
+          onClose={() => setCreateLotTarget(null)}
+          onDone={() => {
+            setCreateLotTarget(null);
+            setLotsLoading(true);
+            getOrgLots(orgId).then(setLots).finally(() => setLotsLoading(false));
+            setTab('lots');
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -247,7 +304,7 @@ function KPICards({ stats }: { stats: OrgStats }) {
 
 // ─── Requests Table ─────────────────────────────────────
 
-function RequestsTable({ requests, onUpdate, isAdmin }: { requests: SourcingRequest[]; onUpdate: () => void; isAdmin: boolean }) {
+function RequestsTable({ requests, onUpdate, isAdmin, onCreateLot }: { requests: SourcingRequest[]; onUpdate: () => void; isAdmin: boolean; onCreateLot?: (r: SourcingRequest) => void }) {
   const [updating, setUpdating] = useState<string | null>(null);
 
   const handleStatus = async (id: string, status: string) => {
@@ -310,6 +367,12 @@ function RequestsTable({ requests, onUpdate, isAdmin }: { requests: SourcingRequ
                       disabled={updating === r.id}
                       className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium hover:bg-blue-200 disabled:opacity-50"
                     >Confirm & Allocate</button>
+                  )}
+                  {r.status === 'CONFIRMED' && onCreateLot && (
+                    <button
+                      onClick={() => onCreateLot(r)}
+                      className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded text-xs font-medium hover:bg-emerald-200"
+                    >+ Lot</button>
                   )}
                   {(r.status === 'CONFIRMED' || r.status === 'IN_FULFILMENT') && (
                     <button
@@ -820,4 +883,120 @@ function timeAgo(date: string): string {
   if (s < 3600) return `${Math.floor(s / 60)}m ago`;
   if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
   return `${Math.floor(s / 86400)}d ago`;
+}
+
+// ─── Lots Table ─────────────────────────────────────────
+
+const LOT_STATUSES = ['OPEN', 'LOADING', 'IN_TRANSIT', 'DELIVERED', 'WITHDRAWN'];
+const LOAD_STATUSES = ['PLANNING', 'READY', 'IN_TRANSIT', 'DELIVERED', 'RECALLED'];
+
+function LotsTable({ lots, onStatusChange }: { lots: Lot[]; onStatusChange: (lotId: string, status: string) => void }) {
+  if (lots.length === 0) return <EmptyState message="No lots yet — create a lot from a confirmed request" />;
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+            <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs">Lot Code</th>
+            <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs">Product</th>
+            <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs">Qty</th>
+            <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs">Loads</th>
+            <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs">Status</th>
+            <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs">Created</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">
+          {lots.map(lot => (
+            <tr key={lot.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+              <td className="px-4 py-3 font-mono text-xs font-semibold text-gray-900 dark:text-white">{lot.lotCode}</td>
+              <td className="px-4 py-3 text-xs text-gray-700 dark:text-gray-300">{lot.request?.product.name ?? '—'}</td>
+              <td className="px-4 py-3 text-xs text-gray-700 dark:text-gray-300">{lot.totalQuantity}</td>
+              <td className="px-4 py-3 text-xs text-gray-500">{lot._count?.loads ?? lot.loads?.length ?? 0}</td>
+              <td className="px-4 py-3">
+                <select value={lot.status} onChange={e => onStatusChange(lot.id, e.target.value)} className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                  {LOT_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </td>
+              <td className="px-4 py-3 text-xs text-gray-400">{new Date(lot.createdAt).toLocaleDateString()}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ─── Loads Table ────────────────────────────────────────
+
+function LoadsTable({ loads, onStatusChange }: { loads: Load[]; onStatusChange: (loadId: string, status: string) => void }) {
+  if (loads.length === 0) return <EmptyState message="No loads yet" />;
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+            <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs">Load Code</th>
+            <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs">Destination</th>
+            <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs">Qty</th>
+            <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs">ETA</th>
+            <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs">Status</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">
+          {loads.map(l => (
+            <tr key={l.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+              <td className="px-4 py-3 font-mono text-xs font-semibold text-gray-900 dark:text-white">{l.loadCode}</td>
+              <td className="px-4 py-3 text-xs text-gray-700 dark:text-gray-300">{l.destination}</td>
+              <td className="px-4 py-3 text-xs text-gray-700 dark:text-gray-300">{l.quantity}</td>
+              <td className="px-4 py-3 text-xs text-gray-400">{l.eta ? new Date(l.eta).toLocaleDateString() : '—'}</td>
+              <td className="px-4 py-3">
+                <select value={l.status} onChange={e => onStatusChange(l.id, e.target.value)} className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                  {LOAD_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ─── Quick Create Lot Modal ──────────────────────────────
+
+function QuickCreateLotModal({ request, orgId, onClose, onDone }: { request: SourcingRequest; orgId: string; onClose: () => void; onDone: () => void }) {
+  const [notes, setNotes] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const handle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await createLot(orgId, { requestId: request.id, notes: notes || undefined });
+      toast.success('Lot created');
+      onDone();
+    } catch { toast.error('Failed to create lot'); }
+    setSaving(false);
+  };
+
+  return (
+    <ModalWrapper title="Create Lot" onClose={onClose}>
+      <form onSubmit={handle} className="space-y-3">
+        <div className="p-3 bg-gray-50 dark:bg-gray-900/30 rounded-lg text-sm space-y-1">
+          <p><span className="text-gray-500">Product:</span> <span className="font-medium">{request.product.name}</span></p>
+          <p><span className="text-gray-500">Quantity:</span> <span className="font-medium">{request.quantity} {request.unit ?? ''}</span></p>
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Notes</label>
+          <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+        </div>
+        <div className="flex justify-end gap-2">
+          <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">Cancel</button>
+          <button type="submit" disabled={saving} className="px-4 py-2 text-sm bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg font-medium disabled:opacity-50">
+            {saving ? 'Creating...' : 'Create Lot'}
+          </button>
+        </div>
+      </form>
+    </ModalWrapper>
+  );
 }

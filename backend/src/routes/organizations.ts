@@ -13,6 +13,14 @@ import {
   getOrgPosts,
   getOrgStats,
 } from '../controllers/organizations';
+import {
+  getOrgAdminDashboard,
+  getOrgLots, createLot, updateLotStatus,
+  getOrgLoads, createLoad, updateLoadStatus,
+  getOrgFollowers,
+  verifyOrg,
+  reviewSourcingRequest,
+} from '../controllers/orgAdmin';
 import { authenticateToken } from '../middleware/auth';
 import { validate } from '../middleware/validate';
 import { createOrgSchema, updateOrgSchema } from '../schemas/organization';
@@ -168,5 +176,25 @@ router.delete('/:id', authenticateToken, requireOrgRole('ORG_ADMIN'), deleteOrg)
 router.delete('/:id/members/:memberId', authenticateToken, requireOrgRole('ORG_ADMIN'), removeMember);
 router.get('/:id/posts', getOrgPosts);
 router.get('/:id/stats', getOrgStats);
+
+// ─── Org Admin Operations ────────────────────────────────
+router.get('/:id/admin/dashboard', authenticateToken, getOrgAdminDashboard);
+router.get('/:id/followers', getOrgFollowers);
+
+// Lots
+router.get('/:id/lots', authenticateToken, getOrgLots);
+router.post('/:id/lots', authenticateToken, createLot);
+router.put('/:id/lots/:lotId', authenticateToken, updateLotStatus);
+
+// Loads
+router.get('/:id/loads', authenticateToken, getOrgLoads);
+router.post('/:id/loads', authenticateToken, createLoad);
+router.put('/:id/loads/:loadId', authenticateToken, updateLoadStatus);
+
+// Request review (ORG_ADMIN)
+router.post('/:id/requests/:requestId/review', authenticateToken, reviewSourcingRequest);
+
+// Verify org (ADMIN only)
+router.post('/:id/verify', authenticateToken, requireRole('ADMIN'), verifyOrg);
 
 export default router;

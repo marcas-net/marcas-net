@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getOrganization, joinOrganization, getOrgPosts, getOrgStats, type Organization, type OrgStats } from '../services/orgService';
+import { getOrganization, joinOrganization, getOrgPosts, getOrgStats, getOrgFollowers, type Organization, type OrgStats } from '../services/orgService';
 import { getOrgProducts, type Product } from '../services/marketplaceService';
 import { useAuth } from '../context/AuthContext';
 import { Badge } from '../components/ui/Badge';
@@ -27,6 +27,9 @@ export default function OrganizationDetail() {
   const [postsLoading, setPostsLoading] = useState(false);
   const [orgProducts, setOrgProducts] = useState<Product[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
+  const [showFollowers, setShowFollowers] = useState(false);
+  const [followers, setFollowers] = useState<{ id: string; name: string | null; avatarUrl: string | null }[]>([]);
+  const [followersLoading, setFollowersLoading] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -177,7 +180,19 @@ export default function OrganizationDetail() {
                 )}
 
                 {stats && stats.followersCount > 0 && (
-                  <span>{stats.followersCount} follower{stats.followersCount !== 1 ? 's' : ''}</span>
+                  <button
+                    onClick={async () => {
+                      setShowFollowers(true);
+                      if (followers.length === 0 && id) {
+                        setFollowersLoading(true);
+                        try { setFollowers(await getOrgFollowers(id)); } catch { /* ignore */ }
+                        setFollowersLoading(false);
+                      }
+                    }}
+                    className="text-blue-600 dark:text-blue-400 hover:underline"
+                  >
+                    {stats.followersCount} follower{stats.followersCount !== 1 ? 's' : ''}
+                  </button>
                 )}
 
                 <span className="text-slate-300 dark:text-neutral-600">·</span>
@@ -193,9 +208,14 @@ export default function OrganizationDetail() {
                 </Button>
               )}
               {canManage && (
-                <Link to={`/orgs/${id}/settings`}>
-                  <Button size="md" variant="outline">Settings</Button>
-                </Link>
+                <>
+                  <Link to={`/orgs/${id}/admin`}>
+                    <Button size="md" variant="outline">⚙ Ops</Button>
+                  </Link>
+                  <Link to={`/orgs/${id}/settings`}>
+                    <Button size="md" variant="outline">Settings</Button>
+                  </Link>
+                </>
               )}
               {isMember && (
                 <Link to="/sourcing">
@@ -245,7 +265,7 @@ export default function OrganizationDetail() {
       )}
 
       {/* ─── Tabs ─── */}
-      <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+      <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 pt-1">
         <div className="flex border-b border-gray-200 dark:border-neutral-700/80 min-w-max">
           {([
             { key: 'overview' as Tab, label: 'Overview' },
@@ -477,6 +497,34 @@ export default function OrganizationDetail() {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ─── Followers Modal ─── */}
+      {showFollowers && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={() => setShowFollowers(false)}>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-sm max-h-[80vh] overflow-y-auto p-6" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Followers</h2>
+              <button onClick={() => setShowFollowers(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl">&times;</button>
+            </div>
+            {followersLoading ? (
+              <div className="flex justify-center py-8">
+                <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : followers.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-6">No followers yet</p>
+            ) : (
+              <div className="space-y-3">
+                {followers.map(f => (
+                  <div key={f.id} className="flex items-center gap-3">
+                    <Avatar src={f.avatarUrl ?? undefined} name={f.name ?? '?'} size="sm" />
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">{f.name ?? 'Unknown'}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
