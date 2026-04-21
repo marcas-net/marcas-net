@@ -41,7 +41,7 @@ export const findOrganizationById = async (id: string) => {
 
 export const updateOrganization = async (
   id: string,
-  data: { name?: string; type?: OrgType; country?: string; description?: string; logoUrl?: string; isVerified?: boolean }
+  data: { name?: string; type?: OrgType; country?: string; description?: string; logoUrl?: string; coverImageUrl?: string; isVerified?: boolean }
 ) => {
   return await prisma.organization.update({ where: { id }, data });
 };

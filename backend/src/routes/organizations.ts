@@ -1,4 +1,6 @@
 import express from 'express';
+import multer from 'multer';
+import path from 'path';
 import {
   getOrganizations,
   getOrganization,
@@ -12,6 +14,7 @@ import {
   removeMember,
   getOrgPosts,
   getOrgStats,
+  uploadOrgCoverImage,
 } from '../controllers/organizations';
 import {
   getOrgAdminDashboard,
@@ -196,5 +199,18 @@ router.post('/:id/requests/:requestId/review', authenticateToken, reviewSourcing
 
 // Verify org (ADMIN only)
 router.post('/:id/verify', authenticateToken, requireRole('ADMIN'), verifyOrg);
+
+// Org cover image upload
+const mediaDir = path.join(__dirname, '../../uploads/media');
+const orgCoverStorage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, mediaDir),
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    cb(null, `org-cover-${unique}${ext}`);
+  },
+});
+const orgCoverUpload = multer({ storage: orgCoverStorage, limits: { fileSize: 5 * 1024 * 1024 } });
+router.post('/:id/cover', authenticateToken, orgCoverUpload.single('cover'), uploadOrgCoverImage);
 
 export default router;

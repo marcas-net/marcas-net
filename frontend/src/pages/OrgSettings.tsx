@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getOrganization, getOrgMembers, updateOrganization, deleteOrganization, removeMember, type Organization, type OrgMember } from '../services/orgService';
+import { getOrganization, getOrgMembers, updateOrganization, deleteOrganization, removeMember, uploadOrgCoverImage, type Organization, type OrgMember } from '../services/orgService';
 import { useAuth } from '../context/AuthContext';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -21,6 +21,7 @@ export default function OrgSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   // Form
   const [name, setName] = useState('');
@@ -75,6 +76,18 @@ export default function OrgSettings() {
     }
   };
 
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !id) return;
+    try {
+      const { coverImageUrl } = await uploadOrgCoverImage(id, file);
+      setOrg(prev => prev ? { ...prev, coverImageUrl } : prev);
+      toast.success('Cover image updated');
+    } catch {
+      toast.error('Failed to upload cover image');
+    }
+  };
+
   const handleRemoveMember = async (memberId: string, memberName: string) => {
     if (!id) return;
     if (!confirm(`Remove ${memberName} from the organization?`)) return;
@@ -98,6 +111,27 @@ export default function OrgSettings() {
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Organization Settings</h1>
         <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Manage {org.name}</p>
       </div>
+
+      {/* Cover Image */}
+      {isAdmin && (
+        <Card>
+          <p className="text-xs text-slate-400 uppercase tracking-wide font-medium mb-4">Cover Image</p>
+          <div className="relative rounded-xl overflow-hidden h-24 mb-3">
+            {org.coverImageUrl ? (
+              <img src={org.coverImageUrl} alt="Cover" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-r from-blue-600 to-emerald-500" />
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            <Button size="sm" variant="outline" onClick={() => coverInputRef.current?.click()}>
+              {org.coverImageUrl ? 'Change Cover' : 'Upload Cover'}
+            </Button>
+            <span className="text-xs text-slate-400">Recommended: 1200×300px, max 5MB</span>
+            <input ref={coverInputRef} type="file" accept="image/*" onChange={handleCoverUpload} className="hidden" />
+          </div>
+        </Card>
+      )}
 
       {/* Details */}
       <Card>

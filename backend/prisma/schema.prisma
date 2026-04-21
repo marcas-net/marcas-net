@@ -147,6 +147,8 @@ model User {
   providerId     String?
   avatarUrl      String?
   coverImageUrl  String?
+  headline       String?
+  skills         String[]  @default([])
   organizationId String?
   organization   Organization?  @relation(fields: [organizationId], references: [id])
   memberships    Membership[]
@@ -194,7 +196,8 @@ model Organization {
   type        OrgType
   country     String?
   description String?
-  logoUrl     String?
+  logoUrl        String?
+  coverImageUrl  String?
   isVerified  Boolean      @default(false)
   verifiedAt  DateTime?
   verifiedBy  String?

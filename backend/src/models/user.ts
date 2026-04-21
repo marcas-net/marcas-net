@@ -27,7 +27,7 @@ export const findUserById = async (id: string) => {
   });
 };
 
-export const updateUser = async (id: string, data: { name?: string; email?: string; bio?: string; country?: string }) => {
+export const updateUser = async (id: string, data: { name?: string; email?: string; bio?: string; country?: string; headline?: string; skills?: string[] }) => {
   return await prisma.user.update({
     where: { id },
     data,
@@ -49,6 +49,8 @@ export const findPublicUserById = async (id: string) => {
       id: true,
       name: true,
       bio: true,
+      headline: true,
+      skills: true,
       role: true,
       avatarUrl: true,
       coverImageUrl: true,

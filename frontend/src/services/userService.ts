@@ -5,6 +5,8 @@ export interface PublicUser {
   id: string;
   name: string | null;
   bio: string | null;
+  headline: string | null;
+  skills: string[];
   role: string;
   avatarUrl?: string | null;
   coverImageUrl?: string | null;
@@ -35,7 +37,7 @@ export const listUsers = async (): Promise<UserListItem[]> => {
   return res.data.users;
 };
 
-export const updateProfile = async (data: { name?: string; email?: string; bio?: string; country?: string }) => {
+export const updateProfile = async (data: { name?: string; email?: string; bio?: string; country?: string; headline?: string; skills?: string[] }) => {
   const res = await api.put('/users/profile', data);
   return res.data;
 };

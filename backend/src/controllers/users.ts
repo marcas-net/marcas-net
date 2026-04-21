@@ -18,6 +18,8 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
         email: user.email,
         name: user.name,
         bio: user.bio,
+        headline: (user as any).headline ?? null,
+        skills: (user as any).skills ?? [],
         country: user.country,
         avatarUrl: user.avatarUrl,
         coverImageUrl: (user as any).coverImageUrl ?? null,
@@ -55,9 +57,9 @@ export const listUsers = async (req: Request, res: Response) => {
 
 export const updateProfile = async (req: AuthRequest, res: Response) => {
   try {
-    const { name, email, bio, country } = req.body;
-    if (!name && !email && bio === undefined && country === undefined) {
-      return res.status(400).json({ error: 'At least name, email, bio, or country is required' });
+    const { name, email, bio, country, headline, skills } = req.body;
+    if (!name && !email && bio === undefined && country === undefined && headline === undefined && skills === undefined) {
+      return res.status(400).json({ error: 'At least one field is required' });
     }
 
     const user = await updateUser(req.user.id, {
@@ -65,11 +67,13 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
       ...(email !== undefined ? { email } : {}),
       ...(bio !== undefined ? { bio } : {}),
       ...(country !== undefined ? { country } : {}),
+      ...(headline !== undefined ? { headline } : {}),
+      ...(skills !== undefined ? { skills } : {}),
     });
 
     res.json({
       message: 'Profile updated',
-      user: { id: user.id, email: user.email, name: user.name, role: user.role, bio: user.bio, country: user.country },
+      user: { id: user.id, email: user.email, name: user.name, role: user.role, bio: user.bio, country: user.country, headline: (user as any).headline ?? null, skills: (user as any).skills ?? [] },
     });
   } catch (error: any) {
     if (error.code === 'P2002') {

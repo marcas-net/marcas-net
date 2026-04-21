@@ -7,6 +7,8 @@ interface User {
   name: string | null;
   role: string;
   bio?: string | null;
+  headline?: string | null;
+  skills?: string[];
   country?: string | null;
   avatarUrl?: string | null;
   organizationId?: string | null;

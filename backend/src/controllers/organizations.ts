@@ -142,13 +142,14 @@ export const createOrg = async (req: AuthRequest, res: Response) => {
 
 export const updateOrg = async (req: AuthRequest, res: Response) => {
   try {
-    const { name, type, country, description, logoUrl, isVerified } = req.body;
+    const { name, type, country, description, logoUrl, coverImageUrl, isVerified } = req.body;
     const org = await updateOrganization(req.params['id'] as string, {
       name,
-      type: type as OrgType | undefined,
+      type: type as OrgType,
       country,
       description,
       logoUrl,
+      coverImageUrl,
       isVerified,
     });
     res.json({ message: 'Organization updated', organization: org });
@@ -417,6 +418,31 @@ export const getOrgPosts = async (req: Request<{ id: string }>, res: Response) =
     res.json({ posts: mapped });
   } catch (error) {
     console.error('Get org posts error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const uploadOrgCoverImage = async (req: AuthRequest, res: Response) => {
+  try {
+    const orgId = req.params['id'] as string;
+    const file = req.file;
+    if (!file) return res.status(400).json({ error: 'No file uploaded' });
+
+    // Only org admin or platform admin
+    if (req.user.organizationId !== orgId && req.user.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+    const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost:5000';
+    const baseUrl = `${proto}://${host}`;
+    const coverImageUrl = `${baseUrl}/uploads/media/${file.filename}`;
+
+    await prisma.organization.update({ where: { id: orgId }, data: { coverImageUrl } });
+
+    res.json({ message: 'Cover image updated', coverImageUrl });
+  } catch (error) {
+    console.error('Upload org cover error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

@@ -16,6 +16,8 @@ export default function Settings() {
   const [email, setEmail] = useState(user?.email || '');
   const [bio, setBio] = useState(user?.bio || '');
   const [country, setCountry] = useState(user?.country || '');
+  const [headline, setHeadline] = useState(user?.headline || '');
+  const [skillsInput, setSkillsInput] = useState((user?.skills ?? []).join(', '));
   const [profileLoading, setProfileLoading] = useState(false);
   const [avatarLoading, setAvatarLoading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState(user?.avatarUrl || '');
@@ -54,8 +56,9 @@ export default function Settings() {
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setProfileLoading(true);
+    const skills = skillsInput.split(',').map(s => s.trim()).filter(Boolean);
     try {
-      await updateProfile({ name, email, bio, country });
+      await updateProfile({ name, email, bio, country, headline, skills });
       // Update local storage
       const stored = localStorage.getItem('user');
       if (stored) {
@@ -64,6 +67,8 @@ export default function Settings() {
         u.email = email;
         u.bio = bio;
         u.country = country;
+        u.headline = headline;
+        u.skills = skills;
         localStorage.setItem('user', JSON.stringify(u));
       }
       toast.success('Profile updated');
@@ -133,6 +138,15 @@ export default function Settings() {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bio</label>
             <textarea value={bio} onChange={(e) => setBio(e.target.value)} className={inputClass} placeholder="Tell us about yourself..." rows={3} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Professional Headline</label>
+            <input type="text" value={headline} onChange={(e) => setHeadline(e.target.value)} className={inputClass} placeholder="e.g. Food Safety Specialist · ISO 22000 Lead Auditor" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Skills & Certifications</label>
+            <input type="text" value={skillsInput} onChange={(e) => setSkillsInput(e.target.value)} className={inputClass} placeholder="HACCP, ISO 22000, BRC, FSSC 22000, Food Safety..." />
+            <p className="text-xs text-slate-400 mt-1">Comma-separated list of skills and certifications</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Country</label>

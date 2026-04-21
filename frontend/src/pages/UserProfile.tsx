@@ -168,6 +168,9 @@ export default function UserProfile() {
                 <h1 className="text-xl font-bold text-slate-900 dark:text-white">{user.name ?? 'Unnamed'}</h1>
                 <Badge variant={roleVariant[user.role] ?? 'blue'}>{ROLE_LABELS[user.role] ?? user.role}</Badge>
               </div>
+              {user.headline && (
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-0.5">{user.headline}</p>
+              )}
               {user.organization && (
                 <Link to={`/orgs/${user.organization.id}`} className="text-sm text-blue-600 hover:text-blue-700 font-medium mt-1 inline-block">
                   {user.organization.name} · {user.organization.type.charAt(0) + user.organization.type.slice(1).toLowerCase()}
@@ -209,6 +212,23 @@ export default function UserProfile() {
         <Card>
           <p className="text-xs text-slate-400 uppercase tracking-wide font-medium mb-3">About</p>
           <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{user.bio}</p>
+        </Card>
+      )}
+
+      {/* Skills */}
+      {user.skills && user.skills.length > 0 && (
+        <Card>
+          <p className="text-xs text-slate-400 uppercase tracking-wide font-medium mb-3">Skills & Expertise</p>
+          <div className="flex flex-wrap gap-2">
+            {user.skills.map((skill) => (
+              <span
+                key={skill}
+                className="px-3 py-1 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800/50"
+              >
+                {skill}
+              </span>
+            ))}
+          </div>
         </Card>
       )}
 

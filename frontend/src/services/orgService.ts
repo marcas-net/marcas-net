@@ -7,6 +7,7 @@ export interface Organization {
   country?: string;
   description?: string;
   logoUrl?: string | null;
+  coverImageUrl?: string | null;
   isVerified?: boolean;
   _count?: { members: number };
   members?: { id: string; name: string | null; role: string }[];
@@ -209,4 +210,13 @@ export const getOrgFollowers = async (orgId: string): Promise<{ id: string; name
 export const reviewSourcingRequest = async (orgId: string, requestId: string, action: string, supplierNotes?: string) => {
   const res = await api.post(`/orgs/${orgId}/requests/${requestId}/review`, { action, supplierNotes });
   return res.data.request;
+};
+
+export const uploadOrgCoverImage = async (orgId: string, file: File): Promise<{ coverImageUrl: string }> => {
+  const formData = new FormData();
+  formData.append('cover', file);
+  const res = await api.post(`/orgs/${orgId}/cover`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return res.data;
 };

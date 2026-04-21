@@ -1,7 +1,8 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getOrganization, joinOrganization, getOrgPosts, getOrgStats, getOrgFollowers, type Organization, type OrgStats } from '../services/orgService';
+import { getOrganization, joinOrganization, getOrgPosts, getOrgStats, getOrgFollowers, uploadOrgCoverImage, type Organization, type OrgStats } from '../services/orgService';
 import { getOrgProducts, type Product } from '../services/marketplaceService';
+import { followOrg, getFollowStatus } from '../services/feedService';
 import { useAuth } from '../context/AuthContext';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
@@ -31,6 +32,10 @@ export default function OrganizationDetail() {
   const [followers, setFollowers] = useState<{ id: string; name: string | null; avatarUrl: string | null }[]>([]);
   const [followersLoading, setFollowersLoading] = useState(false);
   const [showMembers, setShowMembers] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+  const [followerCount, setFollowerCount] = useState(0);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -38,14 +43,17 @@ export default function OrganizationDetail() {
     Promise.all([
       getOrganization(id),
       getOrgStats(id).catch(() => null),
+      user ? getFollowStatus({ orgId: id }).catch(() => ({ following: false, isConnected: false })) : Promise.resolve({ following: false, isConnected: false }),
     ])
-      .then(([orgData, statsData]) => {
+      .then(([orgData, statsData, followData]) => {
         setOrg(orgData);
         setStats(statsData);
+        setIsFollowing(followData.following);
+        setFollowerCount(statsData?.followersCount ?? 0);
       })
       .catch(() => toast.error('Organization not found'))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, user]);
 
   const loadPosts = useCallback(() => {
     if (!id) return;
@@ -85,6 +93,32 @@ export default function OrganizationDetail() {
     }
   };
 
+  const handleFollow = async () => {
+    if (!id || followLoading) return;
+    setFollowLoading(true);
+    try {
+      const { following } = await followOrg(id);
+      setIsFollowing(following);
+      setFollowerCount(prev => following ? prev + 1 : prev - 1);
+    } catch {
+      toast.error('Failed to update follow status');
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !id) return;
+    try {
+      const { coverImageUrl } = await uploadOrgCoverImage(id, file);
+      setOrg(prev => prev ? { ...prev, coverImageUrl } : prev);
+      toast.success('Cover image updated');
+    } catch {
+      toast.error('Failed to upload cover image');
+    }
+  };
+
   const isMember = user?.organizationId === id;
   const canManage = isMember && (user?.role === 'ADMIN' || user?.role === 'ORG_ADMIN');
   const joinDate = org ? new Date(org.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : '';
@@ -112,7 +146,31 @@ export default function OrganizationDetail() {
 
       {/* ─── Public Identity Card ─── */}
       <Card padding="none">
-        <div className="p-6">
+        {/* Cover Image */}
+        <div className="relative rounded-t-2xl overflow-hidden h-28">
+          {org.coverImageUrl ? (
+            <img src={org.coverImageUrl} alt="Cover" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-r from-blue-600 via-blue-500 to-emerald-500" />
+          )}
+          {canManage && (
+            <>
+              <button
+                onClick={() => coverInputRef.current?.click()}
+                className="absolute top-2 right-2 p-1.5 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors"
+                title="Change cover image"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </button>
+              <input ref={coverInputRef} type="file" accept="image/*" onChange={handleCoverUpload} className="hidden" />
+            </>
+          )}
+        </div>
+
+        <div className="px-6 pb-6 -mt-8">
           <div className="flex flex-col sm:flex-row sm:items-start gap-4">
             {/* 1. Logo / Avatar */}
             <div className="flex-shrink-0">
@@ -120,10 +178,10 @@ export default function OrganizationDetail() {
                 <img
                   src={org.logoUrl}
                   alt={`${org.name} logo`}
-                  className="w-16 h-16 rounded-2xl object-cover border border-gray-100 dark:border-neutral-700"
+                  className="w-16 h-16 rounded-2xl object-cover border-4 border-white dark:border-neutral-800 shadow"
                 />
               ) : (
-                <div className="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center border-4 border-white dark:border-neutral-800 shadow">
                   <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                     {org.name.charAt(0).toUpperCase()}
                   </span>
@@ -183,8 +241,7 @@ export default function OrganizationDetail() {
                   </button>
                 )}
 
-                {stats && stats.followersCount > 0 && (
-                  <button
+                <button
                     onClick={async () => {
                       setShowFollowers(true);
                       if (followers.length === 0 && id) {
@@ -195,9 +252,8 @@ export default function OrganizationDetail() {
                     }}
                     className="text-blue-600 dark:text-blue-400 hover:underline"
                   >
-                    {stats.followersCount} follower{stats.followersCount !== 1 ? 's' : ''}
+                    {followerCount} follower{followerCount !== 1 ? 's' : ''}
                   </button>
-                )}
 
                 <span className="text-slate-300 dark:text-neutral-600">·</span>
                 <span>Est. {joinDate}</span>
@@ -205,9 +261,23 @@ export default function OrganizationDetail() {
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-2 flex-shrink-0 sm:mt-1">
+            <div className="flex items-center gap-2 flex-shrink-0 mt-8">
+              {/* Follow / Unfollow — only for non-members */}
+              {!isMember && user && (
+                <button
+                  onClick={handleFollow}
+                  disabled={followLoading}
+                  className={`px-4 py-2 text-sm font-medium rounded-xl transition-colors disabled:opacity-50 ${
+                    isFollowing
+                      ? 'border border-gray-200 dark:border-neutral-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-neutral-800'
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
+                >
+                  {isFollowing ? 'Following' : 'Follow'}
+                </button>
+              )}
               {!isMember && (
-                <Button onClick={handleJoin} loading={joining} size="md">
+                <Button onClick={handleJoin} loading={joining} size="md" variant={isFollowing ? 'outline' : 'primary'}>
                   Join Organization
                 </Button>
               )}
@@ -221,7 +291,7 @@ export default function OrganizationDetail() {
                   </Link>
                 </>
               )}
-              {isMember && (
+              {isMember && !canManage && (
                 <Link to="/sourcing">
                   <Button size="md" variant="outline">Sourcing</Button>
                 </Link>
