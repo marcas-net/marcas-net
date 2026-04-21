@@ -11,14 +11,6 @@ import swaggerUi from 'swagger-ui-express';
 
 dotenv.config();
 
-// Catch any unhandled errors to prevent silent crashes
-process.on('uncaughtException', (err) => {
-  console.error('UNCAUGHT EXCEPTION:', err.message, err.stack);
-});
-process.on('unhandledRejection', (reason) => {
-  console.error('UNHANDLED REJECTION:', reason);
-});
-
 import { validateEnv } from './config/env';
 import { initSocketServer } from './utils/socket';
 import { initRedis } from './config/redis';
