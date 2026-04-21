@@ -31,6 +31,17 @@ export const findAllOrganizations = async () => {
 export const findOrganizationById = async (id: string) => {
   return await prisma.organization.findUnique({
     where: { id },
+    select: {
+      id: true,
+      name: true,
+      type: true,
+      country: true,
+      description: true,
+      logoUrl: true,
+      isVerified: true,
+      createdAt: true,
+      coverImageUrl: true, // This might not exist yet
+    },
     include: {
       members: {
         select: { id: true, name: true, email: true, role: true },
