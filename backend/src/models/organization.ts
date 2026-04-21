@@ -41,8 +41,6 @@ export const findOrganizationById = async (id: string) => {
       isVerified: true,
       createdAt: true,
       coverImageUrl: true, // This might not exist yet
-    },
-    include: {
       members: {
         select: { id: true, name: true, email: true, role: true },
       },
