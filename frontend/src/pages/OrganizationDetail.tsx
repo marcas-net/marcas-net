@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getOrganization, joinOrganization, getOrgPosts, getOrgStats, getOrgFollowers, uploadOrgCoverImage, type Organization, type OrgStats } from '../services/orgService';
+import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { getOrganization, joinOrganization, getOrgPosts, getOrgStats, getOrgFollowers, getOrgMembers, uploadOrgCoverImage, type Organization, type OrgStats, type OrgMember } from '../services/orgService';
 import { getOrgProducts, type Product } from '../services/marketplaceService';
 import { followOrg, getFollowStatus } from '../services/feedService';
 import { useAuth } from '../context/AuthContext';
@@ -12,12 +12,23 @@ import { orgTypeVariant } from '../styles/design-system';
 import { PostCard } from '../components/feed/PostCard';
 import toast from 'react-hot-toast';
 import type { Post, Comment } from '../services/feedService';
+import api from '../services/api';
 
-type Tab = 'overview' | 'posts' | 'sourcing';
+type Tab = 'overview' | 'posts' | 'sourcing' | 'manage';
+
+const MEMBER_ROLE_LABELS: Record<string, string> = {
+  OWNER: 'Owner',
+  ADMIN: 'Admin',
+  MANAGER: 'Manager',
+  MEMBER: 'Member',
+  ORG_ADMIN: 'Admin',
+  USER: 'Member',
+};
 
 export default function OrganizationDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   const [org, setOrg] = useState<Organization | null>(null);
   const [stats, setStats] = useState<OrgStats | null>(null);
@@ -32,10 +43,16 @@ export default function OrganizationDetail() {
   const [followers, setFollowers] = useState<{ id: string; name: string | null; avatarUrl: string | null }[]>([]);
   const [followersLoading, setFollowersLoading] = useState(false);
   const [showMembers, setShowMembers] = useState(false);
+  const [members, setMembers] = useState<OrgMember[]>([]);
+  const [membersLoading, setMembersLoading] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
+  const [pendingRequests, setPendingRequests] = useState<any[]>([]);
+  const [pendingLoading, setPendingLoading] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
+
+  const manageMode = searchParams.get('mode') === 'manage';
 
   useEffect(() => {
     if (!id) return;
@@ -76,6 +93,10 @@ export default function OrganizationDetail() {
   useEffect(() => {
     if (tab === 'posts') loadPosts();
     if (tab === 'sourcing') loadProducts();
+    if (tab === 'manage' && id) {
+      setPendingLoading(true);
+      api.get(`/orgs/${id}/requests?status=PENDING`).then(r => setPendingRequests(r.data.requests ?? [])).catch(() => {}).finally(() => setPendingLoading(false));
+    }
   }, [tab, loadPosts, loadProducts]);
 
   const handleJoin = async () => {
@@ -121,6 +142,7 @@ export default function OrganizationDetail() {
 
   const isMember = user?.organizationId === id;
   const canManage = isMember && (user?.role === 'ADMIN' || user?.role === 'ORG_ADMIN');
+  const isManaging = canManage && manageMode;
   const joinDate = org ? new Date(org.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : '';
   const industryLabel = org ? org.type.charAt(0) + org.type.slice(1).toLowerCase() : '';
 
@@ -231,7 +253,13 @@ export default function OrganizationDetail() {
                 {/* Member count — clickable */}
                 {stats && (
                   <button
-                    onClick={() => setShowMembers(true)}
+                    onClick={() => {
+                      setShowMembers(true);
+                      if (members.length === 0 && id) {
+                        setMembersLoading(true);
+                        getOrgMembers(id).then(setMembers).catch(() => {}).finally(() => setMembersLoading(false));
+                      }
+                    }}
                     className="inline-flex items-center gap-1 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -261,7 +289,20 @@ export default function OrganizationDetail() {
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-2 flex-shrink-0 mt-8">
+            <div className="flex flex-wrap items-center gap-2 flex-shrink-0 mt-8">
+              {/* View / Manage toggle — only for admins */}
+              {canManage && (
+                <div className="flex items-center bg-gray-100 dark:bg-neutral-800 rounded-xl p-1 text-sm font-medium">
+                  <button
+                    onClick={() => setSearchParams({})}
+                    className={`px-3 py-1.5 rounded-lg transition-colors ${!manageMode ? 'bg-white dark:bg-neutral-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'}`}
+                  >View</button>
+                  <button
+                    onClick={() => setSearchParams({ mode: 'manage' })}
+                    className={`px-3 py-1.5 rounded-lg transition-colors ${manageMode ? 'bg-white dark:bg-neutral-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'}`}
+                  >Manage</button>
+                </div>
+              )}
               {/* Follow / Unfollow — only for non-members */}
               {!isMember && user && (
                 <button
@@ -278,18 +319,13 @@ export default function OrganizationDetail() {
               )}
               {!isMember && (
                 <Button onClick={handleJoin} loading={joining} size="md" variant={isFollowing ? 'outline' : 'primary'}>
-                  Join Organization
+                  Join
                 </Button>
               )}
-              {canManage && (
-                <>
-                  <Link to={`/orgs/${id}/admin`}>
-                    <Button size="md" variant="outline">⚙ Ops</Button>
-                  </Link>
-                  <Link to={`/orgs/${id}/settings`}>
-                    <Button size="md" variant="outline">Settings</Button>
-                  </Link>
-                </>
+              {canManage && !manageMode && (
+                <Link to={`/orgs/${id}/settings`}>
+                  <Button size="md" variant="outline">Settings</Button>
+                </Link>
               )}
               {isMember && !canManage && (
                 <Link to="/sourcing">
@@ -302,6 +338,16 @@ export default function OrganizationDetail() {
           {/* Description */}
           {org.description && (
             <p className="text-sm text-slate-600 dark:text-slate-400 mt-4 leading-relaxed sm:pl-20">{org.description}</p>
+          )}
+
+          {/* Manage Mode badge */}
+          {isManaging && (
+            <div className="mt-3 flex items-center gap-2 sm:pl-20">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50 text-xs font-semibold">
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" /></svg>
+                Manage Mode Active
+              </span>
+            </div>
           )}
         </div>
       </Card>
@@ -345,10 +391,15 @@ export default function OrganizationDetail() {
             { key: 'overview' as Tab, label: 'Overview' },
             { key: 'posts' as Tab, label: 'Posts' },
             { key: 'sourcing' as Tab, label: 'Sourcing' },
+            ...(canManage ? [{ key: 'manage' as Tab, label: '⚙ Manage' }] : []),
           ]).map((t) => (
             <button
               key={t.key}
-              onClick={() => setTab(t.key)}
+              onClick={() => {
+                setTab(t.key);
+                if (t.key === 'manage') setSearchParams({ mode: 'manage' });
+                else setSearchParams({});
+              }}
               className={`px-5 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                 tab === t.key
                   ? 'border-blue-600 text-blue-600'
@@ -519,6 +570,115 @@ export default function OrganizationDetail() {
         </div>
       )}
 
+      {/* ═══ Tab: Manage ═══ */}
+      {tab === 'manage' && canManage && (
+        <div className="space-y-5">
+          {/* Quick nav links */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { label: 'Settings', to: `/orgs/${id}/settings`, icon: '⚙' },
+              { label: 'Operations', to: `/orgs/${id}/admin`, icon: '📦' },
+              { label: 'Sourcing', to: '/sourcing', icon: '🔗' },
+              { label: 'Documents', to: '/documents', icon: '📄' },
+            ].map(item => (
+              <Link key={item.label} to={item.to} className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-xl bg-white dark:bg-neutral-800 border border-gray-100 dark:border-neutral-700 hover:border-blue-200 dark:hover:border-blue-800 hover:shadow-sm transition-all">
+                <span className="text-2xl">{item.icon}</span>
+                <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{item.label}</span>
+              </Link>
+            ))}
+          </div>
+
+          {/* Pending sourcing requests */}
+          <Card>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-slate-900 dark:text-white">Pending Requests</h3>
+              {stats && stats.pendingRequests > 0 && (
+                <span className="text-xs font-bold bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 px-2 py-0.5 rounded-full">{stats.pendingRequests} pending</span>
+              )}
+            </div>
+            {pendingLoading ? (
+              <div className="flex justify-center py-8">
+                <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : pendingRequests.length === 0 ? (
+              <p className="text-sm text-slate-400 text-center py-6">No pending requests</p>
+            ) : (
+              <div className="space-y-3">
+                {pendingRequests.map((req: any) => (
+                  <div key={req.id} className="flex items-center justify-between p-3 rounded-xl bg-orange-50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-900/30">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{req.product?.name ?? 'Product'}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{req.quantity} {req.unit} · {req.requester?.name ?? 'Unknown'}</p>
+                    </div>
+                    <Link to={`/sourcing`}>
+                      <Button size="sm" variant="outline">Review</Button>
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+
+          {/* Members management */}
+          <Card>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-slate-900 dark:text-white">Members</h3>
+              <button
+                onClick={() => {
+                  setShowMembers(true);
+                  if (members.length === 0 && id) {
+                    setMembersLoading(true);
+                    getOrgMembers(id).then(setMembers).catch(() => {}).finally(() => setMembersLoading(false));
+                  }
+                }}
+                className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+              >
+                View all →
+              </button>
+            </div>
+            {stats && (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20">
+                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.membersCount}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Total Members</p>
+                </div>
+                <div className="text-center p-3 rounded-xl bg-green-50 dark:bg-green-900/20">
+                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.recentMembers}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">New This Week</p>
+                </div>
+              </div>
+            )}
+            <div className="mt-3 pt-3 border-t border-gray-100 dark:border-neutral-700">
+              <Link to={`/orgs/${id}/settings`} className="text-xs text-blue-600 hover:text-blue-700 font-medium">
+                Manage Members in Settings →
+              </Link>
+            </div>
+          </Card>
+
+          {/* Stock overview */}
+          {stats && (
+            <Card>
+              <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Stock Overview</h3>
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { label: 'Products', value: stats.productsCount, color: 'text-blue-600' },
+                  { label: 'Active Batches', value: stats.activeBatches, color: 'text-green-600' },
+                  { label: 'Total Stock', value: `${stats.totalStockQty ?? 0}`, color: 'text-emerald-600' },
+                  { label: 'On Hold', value: stats.onHoldBatches ?? 0, color: 'text-amber-600' },
+                  { label: 'Confirmed Orders', value: stats.confirmedOrders ?? 0, color: 'text-purple-600' },
+                  { label: 'Documents', value: stats.documentsCount, color: 'text-slate-600' },
+                ].map(item => (
+                  <div key={item.label} className="text-center">
+                    <p className={`text-xl font-bold ${item.color}`}>{item.value}</p>
+                    <p className="text-xs text-slate-400 mt-0.5 leading-tight">{item.label}</p>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+        </div>
+      )}
+
       {/* ─── Followers Modal ─── */}
       {showFollowers && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={() => setShowFollowers(false)}>
@@ -553,20 +713,27 @@ export default function OrganizationDetail() {
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-sm max-h-[80vh] overflow-y-auto p-6" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-                Members {org.members ? `(${org.members.length})` : ''}
+                Members {stats ? `(${stats.membersCount})` : ''}
               </h2>
               <button onClick={() => setShowMembers(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl">&times;</button>
             </div>
-            {!org.members || org.members.length === 0 ? (
+            {membersLoading ? (
+              <div className="flex justify-center py-8">
+                <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : members.length === 0 ? (
               <p className="text-sm text-gray-400 text-center py-6">No members yet</p>
             ) : (
               <div className="space-y-3">
-                {org.members.map(m => (
+                {members.map(m => (
                   <div key={m.id} className="flex items-center gap-3">
-                    <Avatar src={undefined} name={m.name ?? '?'} size="sm" />
+                    <Avatar src={m.avatarUrl ?? undefined} name={m.name ?? '?'} size="sm" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{m.name ?? 'Unknown'}</p>
-                      <p className="text-xs text-gray-400">{m.role === 'ORG_ADMIN' ? 'Admin' : m.role === 'ADMIN' ? 'Platform Admin' : 'Member'}</p>
+                      {m.headline && <p className="text-xs text-gray-400 truncate">{m.headline}</p>}
+                      {canManage && (
+                        <p className="text-xs font-semibold text-blue-600 dark:text-blue-400">{MEMBER_ROLE_LABELS[m.role] ?? m.role}</p>
+                      )}
                     </div>
                   </div>
                 ))}

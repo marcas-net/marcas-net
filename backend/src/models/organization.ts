@@ -56,7 +56,7 @@ export const joinOrganization = async (userId: string, orgId: string) => {
 export const findOrgMembers = async (orgId: string) => {
   return await prisma.user.findMany({
     where: { organizationId: orgId },
-    select: { id: true, name: true, email: true, role: true, createdAt: true },
+    select: { id: true, name: true, role: true, avatarUrl: true, headline: true, createdAt: true },
     orderBy: { createdAt: 'asc' },
   });
 };

@@ -39,15 +39,9 @@ export const getOrganization = async (req: Request, res: Response) => {
   }
 };
 
-export const getOrgMembers = async (req: AuthRequest, res: Response) => {
+export const getOrgMembers = async (req: Request, res: Response) => {
   try {
     const orgId = req.params['id'] as string;
-
-    // Only members of this org can see the member list
-    if (req.user.organizationId !== orgId && req.user.role !== 'ADMIN') {
-      return res.status(403).json({ error: 'Only organization members can view this list' });
-    }
-
     const members = await findOrgMembers(orgId);
     res.json({ members });
   } catch (error) {

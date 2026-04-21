@@ -29,7 +29,7 @@ const Register = () => {
   const [role, setRole] = useState('USER');
   const [country, setCountry] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
-  const [agreed, setAgreed] = useState(false);
+
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
@@ -48,9 +48,6 @@ const Register = () => {
     const actualAge = monthDiff < 0 || (monthDiff === 0 && now.getDate() < dob.getDate()) ? age - 1 : age;
     if (actualAge < 18) {
       return toast.error('You must be at least 18 years old');
-    }
-    if (!agreed) {
-      return toast.error('Please agree to the Terms of Service');
     }
     setLoading(true);
     try {
@@ -169,31 +166,16 @@ const Register = () => {
           }
         />
         <p className="text-xs text-gray-400 dark:text-gray-500 -mt-2">You must be at least 18 years old to create an account.</p>
-        {/* Terms checkbox */}
-        <label className="flex items-start gap-2.5 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={agreed}
-            onChange={(e) => setAgreed(e.target.checked)}
-            className="mt-0.5 w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-          />
-          <span className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-            I agree to the{' '}
-            <span className="text-blue-600 hover:underline cursor-pointer">Terms of Service</span>
-            {' '}and{' '}
-            <span className="text-blue-600 hover:underline cursor-pointer">Privacy Policy</span>
-          </span>
-        </label>
+        <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+          By creating an account, you agree to our{' '}
+          <span className="text-blue-600 cursor-pointer hover:underline">Terms of Service</span>
+          {' '}and{' '}
+          <span className="text-blue-600 cursor-pointer hover:underline">Privacy Policy</span>.
+        </p>
         <Button type="submit" loading={loading} fullWidth size="lg" className="mt-2">
           Create Account →
         </Button>
       </form>
-      <p className="text-xs text-gray-400 mt-5 text-center leading-relaxed">
-        By creating an account, you agree to our{' '}
-        <span className="text-blue-600 cursor-pointer hover:underline">Terms of Service</span>
-        {' '}and{' '}
-        <span className="text-blue-600 cursor-pointer hover:underline">Privacy Policy</span>.
-      </p>
     </AuthLayout>
   );
 };

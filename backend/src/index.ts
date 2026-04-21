@@ -61,10 +61,12 @@ if (!fs.existsSync(documentsDir)) fs.mkdirSync(documentsDir, { recursive: true }
 if (!fs.existsSync(mediaDir)) fs.mkdirSync(mediaDir, { recursive: true });
 
 // Serve uploads BEFORE Helmet so security headers (nosniff, COEP) don't trigger ORB
-app.use('/uploads', cors(), (req, res, next) => {
+app.use('/uploads', cors({ origin: '*', methods: ['GET', 'HEAD'] }), (req, res, next) => {
   res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
+  res.setHeader('Access-Control-Allow-Origin', '*');
   next();
-}, express.static(uploadsDir));
+}, express.static(uploadsDir, { dotfiles: 'ignore' }));
 
 // Middleware
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));

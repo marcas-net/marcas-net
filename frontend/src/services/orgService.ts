@@ -18,6 +18,8 @@ export interface OrgMember {
   id: string;
   name: string | null;
   role: string;
+  headline?: string | null;
+  avatarUrl?: string | null;
   createdAt: string;
 }
 

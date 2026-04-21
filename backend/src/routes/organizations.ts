@@ -1,6 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import path from 'path';
+import prisma from '../config/database';
 import {
   getOrganizations,
   getOrganization,
@@ -87,7 +88,7 @@ router.get('/:id', getOrganization);
  *       200: { description: Array of members }
  *       403: { description: Not a member }
  */
-router.get('/:id/members', authenticateToken, getOrgMembers);
+router.get('/:id/members', getOrgMembers);
 
 /**
  * @swagger
@@ -196,6 +197,29 @@ router.put('/:id/loads/:loadId', authenticateToken, updateLoadStatus);
 
 // Request review (ORG_ADMIN)
 router.post('/:id/requests/:requestId/review', authenticateToken, reviewSourcingRequest);
+
+// Get org sourcing requests (filtered by status)
+router.get('/:id/requests', authenticateToken, async (req, res) => {
+  try {
+    const { id: orgId } = req.params;
+    const { status } = req.query;
+    const where: any = { organizationId: orgId };
+    if (status) where.status = String(status);
+    const requests = await prisma.sourcingRequest.findMany({
+      where,
+      include: {
+        product: { select: { id: true, name: true, unit: true } },
+        requester: { select: { id: true, name: true, avatarUrl: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+    res.json({ requests });
+  } catch (e) {
+    console.error('Get org requests error:', e);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 // Verify org (ADMIN only)
 router.post('/:id/verify', authenticateToken, requireRole('ADMIN'), verifyOrg);

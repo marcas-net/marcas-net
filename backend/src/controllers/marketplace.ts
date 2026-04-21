@@ -436,6 +436,21 @@ export const createSourcingRequest = async (req: AuthRequest, res: Response) => 
       });
     }
 
+    // Auto-create a feed post for the sourcing request (REQUEST_OPEN event)
+    try {
+      await prisma.post.create({
+        data: {
+          authorId: req.user.id,
+          organizationId: product.organizationId,
+          content: `📦 New sourcing request: ${quantity} ${unit ?? product.unit ?? 'units'} of ${product.name} requested.`,
+          type: 'POST',
+          category: 'SUPPLY_OFFER',
+        },
+      });
+    } catch {
+      // Non-critical — don't fail request if feed post fails
+    }
+
     res.status(201).json({ request });
   } catch (error) {
     console.error('Create sourcing request error:', error);
