@@ -180,7 +180,17 @@ export default function UserProfile() {
                 <span className="text-sm text-slate-900 dark:text-white font-semibold">{followCounts.followers} <span className="font-normal text-slate-500 dark:text-slate-400">followers</span></span>
                 <span className="text-sm text-slate-900 dark:text-white font-semibold">{followCounts.following} <span className="font-normal text-slate-500 dark:text-slate-400">following</span></span>
               </div>
-              <p className="text-xs text-slate-400 mt-2">Joined {joinDate}</p>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2">
+                {isMe && me?.email && (
+                  <span className="text-xs text-slate-500 dark:text-slate-400 inline-flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    {me.email}
+                  </span>
+                )}
+                <span className="text-xs text-slate-400 dark:text-slate-500">Member since {joinDate}</span>
+              </div>
             </div>
             {!isMe && (
               <div className="flex gap-2 sm:mt-8">
