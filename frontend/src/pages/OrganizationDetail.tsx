@@ -30,6 +30,7 @@ export default function OrganizationDetail() {
   const [showFollowers, setShowFollowers] = useState(false);
   const [followers, setFollowers] = useState<{ id: string; name: string | null; avatarUrl: string | null }[]>([]);
   const [followersLoading, setFollowersLoading] = useState(false);
+  const [showMembers, setShowMembers] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -169,14 +170,17 @@ export default function OrganizationDetail() {
                   </span>
                 )}
 
-                {/* Member count */}
+                {/* Member count — clickable */}
                 {stats && (
-                  <span className="inline-flex items-center gap-1">
-                    <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <button
+                    onClick={() => setShowMembers(true)}
+                    className="inline-flex items-center gap-1 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                     {stats.membersCount} member{stats.membersCount !== 1 ? 's' : ''}
-                  </span>
+                  </button>
                 )}
 
                 {stats && stats.followersCount > 0 && (
@@ -290,61 +294,6 @@ export default function OrganizationDetail() {
       {/* ═══ Tab: Overview ═══ */}
       {tab === 'overview' && (
         <div className="space-y-5">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Details card */}
-            <Card>
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-xs text-slate-400 uppercase tracking-wide font-medium">Details</p>
-              </div>
-              <div className="space-y-3">
-                {[
-                  { label: 'Name', value: org.name },
-                  { label: 'Industry', value: industryLabel },
-                  { label: 'Location', value: org.country ?? '—' },
-                  { label: 'Verified', value: org.isVerified ? 'Yes' : 'No' },
-                  { label: 'Created', value: joinDate },
-                  ...(stats ? [{ label: 'Total Requests', value: String(stats.totalRequests) }] : []),
-                ].map((row) => (
-                  <div key={row.label} className="flex items-center justify-between text-sm py-0.5">
-                    <span className="text-slate-400">{row.label}</span>
-                    <span className="text-slate-800 dark:text-slate-200 font-medium">{row.value}</span>
-                  </div>
-                ))}
-              </div>
-            </Card>
-
-            {/* Members card */}
-            <Card>
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-xs text-slate-400 uppercase tracking-wide font-medium">
-                  Members{org.members ? ` (${org.members.length})` : ''}
-                </p>
-                {isMember && (
-                  <Link to={`/orgs/${id}/members`} className="text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors">
-                    View all →
-                  </Link>
-                )}
-              </div>
-              {org.members && org.members.length > 0 ? (
-                <div className="space-y-3">
-                  {org.members.slice(0, 5).map((m) => (
-                    <div key={m.id} className="flex items-center gap-3">
-                      <Avatar name={m.name ?? 'User'} size="xs" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-slate-800 dark:text-slate-200 font-medium leading-none truncate">{m.name ?? 'User'}</p>
-                        <p className="text-xs text-slate-400 mt-0.5">{m.role}</p>
-                      </div>
-                    </div>
-                  ))}
-                  {org.members.length > 5 && (
-                    <p className="text-xs text-slate-400 pt-1">+{org.members.length - 5} more members</p>
-                  )}
-                </div>
-              ) : (
-                <p className="text-sm text-slate-400">No members yet</p>
-              )}
-            </Card>
-          </div>
 
           {/* Sourcing summary — visible for members with activity */}
           {isMember && stats && (stats.productsCount > 0 || stats.totalRequests > 0) && (
@@ -520,6 +469,35 @@ export default function OrganizationDetail() {
                   <div key={f.id} className="flex items-center gap-3">
                     <Avatar src={f.avatarUrl ?? undefined} name={f.name ?? '?'} size="sm" />
                     <span className="text-sm font-medium text-gray-900 dark:text-white">{f.name ?? 'Unknown'}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ─── Members Modal ─── */}
+      {showMembers && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={() => setShowMembers(false)}>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-sm max-h-[80vh] overflow-y-auto p-6" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                Members {org.members ? `(${org.members.length})` : ''}
+              </h2>
+              <button onClick={() => setShowMembers(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl">&times;</button>
+            </div>
+            {!org.members || org.members.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-6">No members yet</p>
+            ) : (
+              <div className="space-y-3">
+                {org.members.map(m => (
+                  <div key={m.id} className="flex items-center gap-3">
+                    <Avatar src={undefined} name={m.name ?? '?'} size="sm" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{m.name ?? 'Unknown'}</p>
+                      <p className="text-xs text-gray-400">{m.role === 'ORG_ADMIN' ? 'Admin' : m.role === 'ADMIN' ? 'Platform Admin' : 'Member'}</p>
+                    </div>
                   </div>
                 ))}
               </div>
