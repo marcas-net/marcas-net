@@ -83,6 +83,16 @@ export const getPosts = async (category?: string): Promise<Post[]> => {
   return res.data.posts;
 };
 
+export const getFollowingFeed = async (page = 1, limit = 20): Promise<{
+  posts: Post[];
+  page: number;
+  hasMore: boolean;
+  total: number;
+}> => {
+  const res = await api.get('/feed/following', { params: { page: String(page), limit: String(limit) } });
+  return res.data;
+};
+
 export const getRankedFeed = async (page = 1, limit = 20, searches?: string[]): Promise<{
   posts: Post[];
   page: number;

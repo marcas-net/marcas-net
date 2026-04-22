@@ -88,6 +88,57 @@ function mapPost(p: any, userId?: string, baseUrl?: string) {
   };
 }
 
+export const getFollowingFeed = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user.id as string;
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = 20;
+    const skip = (page - 1) * limit;
+
+    const follows = await prisma.follow.findMany({
+      where: { followerId: userId },
+      select: { followingUserId: true, followingOrgId: true },
+    });
+
+    const followedUserIds = follows.map(f => f.followingUserId).filter(Boolean) as string[];
+    const followedOrgIds = follows.map(f => f.followingOrgId).filter(Boolean) as string[];
+
+    if (followedUserIds.length === 0 && followedOrgIds.length === 0) {
+      return res.json({ posts: [], page: 1, hasMore: false, total: 0 });
+    }
+
+    const where: any = {
+      OR: [
+        ...(followedUserIds.length > 0 ? [{ authorId: { in: followedUserIds } }] : []),
+        ...(followedOrgIds.length > 0 ? [{ organizationId: { in: followedOrgIds } }] : []),
+      ],
+    };
+
+    const hasMedia = await checkMediaTable();
+    const [posts, total] = await Promise.all([
+      prisma.post.findMany({
+        where,
+        include: postInclude(userId, hasMedia),
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.post.count({ where }),
+    ]);
+
+    const baseUrl = getBaseUrl(req);
+    res.json({
+      posts: posts.map((p: any) => mapPost(p, userId, baseUrl)),
+      page,
+      hasMore: skip + posts.length < total,
+      total,
+    });
+  } catch (error) {
+    console.error('Following feed error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 export const getPosts = async (req: AuthRequest, res: Response) => {
   try {
     const category = req.query.category as string | undefined;

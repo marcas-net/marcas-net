@@ -28,13 +28,14 @@ interface CreatePostCardProps {
     eventLocation?: string;
     eventLink?: string;
   }) => Promise<void>;
+  defaultExpanded?: boolean;
 }
 
-export function CreatePostCard({ onSubmit }: CreatePostCardProps) {
+export function CreatePostCard({ onSubmit, defaultExpanded = false }: CreatePostCardProps) {
   const { user } = useAuth();
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('GENERAL');
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(defaultExpanded);
   const [submitting, setSubmitting] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
@@ -53,7 +54,16 @@ export function CreatePostCard({ onSubmit }: CreatePostCardProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const handler = () => { setExpanded(true); setTimeout(() => textareaRef.current?.focus(), 50); };
+    if (defaultExpanded) setTimeout(() => textareaRef.current?.focus(), 50);
+  }, [defaultExpanded]);
+
+  useEffect(() => {
+    const handler = () => {
+      if (window.innerWidth >= 768) {
+        setExpanded(true);
+        setTimeout(() => textareaRef.current?.focus(), 50);
+      }
+    };
     window.addEventListener('openCreatePost', handler);
     return () => window.removeEventListener('openCreatePost', handler);
   }, []);
