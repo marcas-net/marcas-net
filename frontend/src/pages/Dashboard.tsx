@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { Badge } from '../components/ui/Badge';
 import { roleVariant } from '../styles/design-system';
 import {
-  getOrgStats, getOrgAdminDashboard, getOrgLots, getOrgLoads,
+  getOrgAdminDashboard, getOrgLots, getOrgLoads,
   reviewSourcingRequest, createLot, createLoad, updateLotStatus, updateLoadStatus,
   type OrgAdminStats, type Lot, type Load,
 } from '../services/orgService';
