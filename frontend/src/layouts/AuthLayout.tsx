@@ -115,8 +115,12 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
             </Link>
           </div>
           <div className="flex items-center gap-2 sm:gap-3 text-sm flex-shrink-0">
-            <span className="hidden sm:block text-slate-500 dark:text-slate-400 text-xs sm:text-sm whitespace-nowrap">
-              {subtitle === 'register' ? 'Already have an account?' : "Don't have an account?"}
+            <span className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm whitespace-nowrap">
+              {subtitle === 'register' ? (
+                <><span className="hidden xs:inline">Already have an account? </span><span className="xs:hidden">Have account? </span></>
+              ) : (
+                <><span className="hidden xs:inline">Don&apos;t have an account? </span><span className="xs:hidden">New? </span></>
+              )}
             </span>
             <Link
               to={subtitle === 'register' ? '/login' : '/register'}

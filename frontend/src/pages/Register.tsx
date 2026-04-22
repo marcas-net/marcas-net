@@ -184,7 +184,13 @@ const Register = () => {
             <span className="text-blue-600 cursor-pointer hover:underline">Privacy Policy</span>.
           </span>
         </label>
-        <Button type="submit" loading={loading} fullWidth size="lg" className="mt-2" disabled={!agreed}>
+        <p className="text-xs text-center text-gray-400 dark:text-gray-500 leading-relaxed">
+          By creating an account, you agree to our{' '}
+          <span className="text-blue-600 cursor-pointer hover:underline">Terms of Service</span>
+          {' '}and{' '}
+          <span className="text-blue-600 cursor-pointer hover:underline">Privacy Policy</span>.
+        </p>
+        <Button type="submit" loading={loading} fullWidth size="lg" disabled={!agreed}>
           Create Account →
         </Button>
       </form>
