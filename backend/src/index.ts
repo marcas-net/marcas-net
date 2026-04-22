@@ -64,9 +64,8 @@ app.use('/uploads', (req, res, next) => {
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
     res.setHeader('Access-Control-Allow-Origin', '*');
   },
-}), (req, res) => {
-  // Custom 404 handler for missing files - return 404 status instead of HTML
-  res.status(404).json({ error: 'File not found' });
+}), (_req, res) => {
+  res.status(404).end();
 });
 
 // Middleware
