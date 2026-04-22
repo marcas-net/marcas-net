@@ -480,13 +480,20 @@ export const getOrgPosts = async (req: Request<{ id: string }>, res: Response) =
   }
 };
 
+const isOrgAdmin = async (userId: string, orgId: string): Promise<boolean> => {
+  const membership = await prisma.membership.findFirst({
+    where: { userId, organizationId: orgId, role: { in: ['OWNER', 'ADMIN'] } },
+  });
+  return !!membership;
+};
+
 export const uploadOrgCoverImage = async (req: AuthRequest, res: Response) => {
   try {
     const orgId = req.params['id'] as string;
     const file = req.file;
     if (!file) return res.status(400).json({ error: 'No file uploaded' });
 
-    if (req.user.organizationId !== orgId && req.user.role !== 'ADMIN') {
+    if (req.user.role !== 'ADMIN' && !(await isOrgAdmin(req.user.id, orgId))) {
       return res.status(403).json({ error: 'Not authorized' });
     }
 
@@ -504,6 +511,34 @@ export const uploadOrgCoverImage = async (req: AuthRequest, res: Response) => {
     res.json({ message: 'Cover image updated', coverImageUrl });
   } catch (error) {
     console.error('Upload org cover error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const uploadOrgLogoImage = async (req: AuthRequest, res: Response) => {
+  try {
+    const orgId = req.params['id'] as string;
+    const file = req.file;
+    if (!file) return res.status(400).json({ error: 'No file uploaded' });
+
+    if (req.user.role !== 'ADMIN' && !(await isOrgAdmin(req.user.id, orgId))) {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    let logoUrl: string;
+    if (cloudinaryConfigured()) {
+      const result = await uploadBuffer(file.buffer, { folder: 'marcasnet/org-logos', resourceType: 'image' });
+      logoUrl = result.url;
+    } else {
+      const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+      const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost:5000';
+      logoUrl = `${proto}://${host}/uploads/media/org-logo-${Date.now()}.jpg`;
+    }
+
+    await prisma.organization.update({ where: { id: orgId }, data: { logoUrl } });
+    res.json({ message: 'Logo updated', logoUrl });
+  } catch (error) {
+    console.error('Upload org logo error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

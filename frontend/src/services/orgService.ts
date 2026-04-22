@@ -226,3 +226,12 @@ export const uploadOrgCoverImage = async (orgId: string, file: File): Promise<{ 
   });
   return res.data;
 };
+
+export const uploadOrgLogoImage = async (orgId: string, file: File): Promise<{ logoUrl: string }> => {
+  const formData = new FormData();
+  formData.append('logo', file);
+  const res = await api.post(`/orgs/${orgId}/logo`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return res.data;
+};

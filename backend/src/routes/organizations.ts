@@ -15,6 +15,7 @@ import {
   getOrgPosts,
   getOrgStats,
   uploadOrgCoverImage,
+  uploadOrgLogoImage,
   updateMemberRole,
 } from '../controllers/organizations';
 import {
@@ -225,8 +226,9 @@ router.get('/:id/requests', authenticateToken, async (req, res) => {
 // Verify org (ADMIN only)
 router.post('/:id/verify', authenticateToken, requireRole('ADMIN'), verifyOrg);
 
-// Org cover image upload — memory storage, uploaded to Cloudinary in controller
-const orgCoverUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
-router.post('/:id/cover', authenticateToken, orgCoverUpload.single('cover'), uploadOrgCoverImage);
+// Org image uploads — memory storage, uploaded to Cloudinary in controller
+const orgImgUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
+router.post('/:id/cover', authenticateToken, orgImgUpload.single('cover'), uploadOrgCoverImage);
+router.post('/:id/logo', authenticateToken, orgImgUpload.single('logo'), uploadOrgLogoImage);
 
 export default router;

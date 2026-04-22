@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { getOrganization, joinOrganization, getOrgPosts, getOrgStats, getOrgFollowers, getOrgMembers, uploadOrgCoverImage, type Organization, type OrgStats, type OrgMember } from '../services/orgService';
+import { getOrganization, joinOrganization, getOrgPosts, getOrgStats, getOrgFollowers, getOrgMembers, uploadOrgCoverImage, uploadOrgLogoImage, type Organization, type OrgStats, type OrgMember } from '../services/orgService';
 import { getOrgProducts, type Product } from '../services/marketplaceService';
 import { followOrg, getFollowStatus } from '../services/feedService';
 import { useAuth } from '../context/AuthContext';
@@ -51,6 +51,9 @@ export default function OrganizationDetail() {
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
   const [pendingLoading, setPendingLoading] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   const manageMode = searchParams.get('mode') === 'manage';
 
@@ -132,12 +135,32 @@ export default function OrganizationDetail() {
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !id) return;
+    e.target.value = '';
+    setUploadingCover(true);
     try {
       const { coverImageUrl } = await uploadOrgCoverImage(id, file);
       setOrg(prev => prev ? { ...prev, coverImageUrl } : prev);
-      toast.success('Cover image updated');
+      toast.success('Cover updated successfully');
     } catch {
       toast.error('Failed to upload cover image');
+    } finally {
+      setUploadingCover(false);
+    }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !id) return;
+    e.target.value = '';
+    setUploadingLogo(true);
+    try {
+      const { logoUrl } = await uploadOrgLogoImage(id, file);
+      setOrg(prev => prev ? { ...prev, logoUrl } : prev);
+      toast.success('Logo updated successfully');
+    } catch {
+      toast.error('Failed to upload logo');
+    } finally {
+      setUploadingLogo(false);
     }
   };
 
@@ -170,7 +193,10 @@ export default function OrganizationDetail() {
       {/* ─── Public Identity Card ─── */}
       <Card padding="none">
         {/* Cover Image */}
-        <div className="relative rounded-t-2xl overflow-hidden h-28">
+        <div
+          className={`relative rounded-t-2xl overflow-hidden h-28 group ${canManage ? 'cursor-pointer' : ''}`}
+          onClick={canManage ? () => coverInputRef.current?.click() : undefined}
+        >
           {org.coverImageUrl ? (
             <img src={org.coverImageUrl} alt="Cover" className="w-full h-full object-cover" />
           ) : (
@@ -178,16 +204,20 @@ export default function OrganizationDetail() {
           )}
           {canManage && (
             <>
-              <button
-                onClick={() => coverInputRef.current?.click()}
-                className="absolute top-2 right-2 p-1.5 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors"
-                title="Change cover image"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </button>
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                <span className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 text-white text-xs font-medium">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  Change Cover
+                </span>
+              </div>
+              {uploadingCover && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
               <input ref={coverInputRef} type="file" accept="image/*" onChange={handleCoverUpload} className="hidden" />
             </>
           )}
@@ -196,19 +226,40 @@ export default function OrganizationDetail() {
         <div className="px-6 pb-6 -mt-8">
           <div className="flex flex-col sm:flex-row sm:items-start gap-4">
             {/* 1. Logo / Avatar */}
-            <div className="flex-shrink-0">
-              {org.logoUrl ? (
-                <img
-                  src={org.logoUrl}
-                  alt={`${org.name} logo`}
-                  className="w-16 h-16 rounded-2xl object-cover border-4 border-white dark:border-neutral-800 shadow"
-                />
-              ) : (
-                <div className="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center border-4 border-white dark:border-neutral-800 shadow">
-                  <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                    {org.name.charAt(0).toUpperCase()}
-                  </span>
-                </div>
+            <div className="flex-shrink-0 relative group">
+              <div
+                className={canManage ? 'cursor-pointer' : ''}
+                onClick={canManage ? () => logoInputRef.current?.click() : undefined}
+                title={canManage ? 'Change logo' : undefined}
+              >
+                {org.logoUrl ? (
+                  <img
+                    src={org.logoUrl}
+                    alt={`${org.name} logo`}
+                    className="w-16 h-16 rounded-2xl object-cover border-4 border-white dark:border-neutral-800 shadow"
+                  />
+                ) : (
+                  <div className="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center border-4 border-white dark:border-neutral-800 shadow">
+                    <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      {org.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+                {canManage && (
+                  <div className="absolute inset-0 rounded-2xl bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                    {uploadingLogo ? (
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <svg className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    )}
+                  </div>
+                )}
+              </div>
+              {canManage && (
+                <input ref={logoInputRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
               )}
             </div>
 
@@ -517,7 +568,8 @@ export default function OrganizationDetail() {
               {orgProducts.map((product) => (
                 <div
                   key={product.id}
-                  className="bg-white dark:bg-neutral-800 rounded-xl border border-gray-100 dark:border-neutral-700 p-5 hover:shadow-md dark:hover:shadow-black/30 hover:border-blue-200 dark:hover:border-blue-800 transition-all flex flex-col"
+                  onClick={() => navigate(`/product/${product.id}`)}
+                  className="bg-white dark:bg-neutral-800 rounded-xl border border-gray-100 dark:border-neutral-700 p-5 hover:shadow-md dark:hover:shadow-black/30 hover:border-blue-200 dark:hover:border-blue-800 transition-all flex flex-col cursor-pointer"
                 >
                   <div className="flex items-start justify-between mb-2">
                     <h3 className="font-semibold text-gray-900 dark:text-white text-sm truncate flex-1 min-w-0">
