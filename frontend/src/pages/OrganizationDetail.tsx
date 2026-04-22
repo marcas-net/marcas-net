@@ -358,19 +358,20 @@ export default function OrganizationDetail() {
               {/* Follow / Unfollow — only for non-members */}
               {!isMember && user && (
                 <button
+                  type="button"
                   onClick={handleFollow}
                   disabled={followLoading}
                   className={`px-4 py-2 text-sm font-medium rounded-xl transition-colors disabled:opacity-50 ${
                     isFollowing
                       ? 'border border-gray-200 dark:border-neutral-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-neutral-800'
-                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'border border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30'
                   }`}
                 >
                   {isFollowing ? 'Following' : 'Follow'}
                 </button>
               )}
               {!isMember && (
-                <Button onClick={handleJoin} loading={joining} size="md" variant={isFollowing ? 'outline' : 'primary'}>
+                <Button type="button" onClick={handleJoin} loading={joining} size="md" variant="primary">
                   Join
                 </Button>
               )}
@@ -568,7 +569,7 @@ export default function OrganizationDetail() {
               {orgProducts.map((product) => (
                 <div
                   key={product.id}
-                  onClick={() => navigate(`/product/${product.id}`)}
+                  onClick={() => navigate(`/products/${product.id}`)}
                   className="bg-white dark:bg-neutral-800 rounded-xl border border-gray-100 dark:border-neutral-700 p-5 hover:shadow-md dark:hover:shadow-black/30 hover:border-blue-200 dark:hover:border-blue-800 transition-all flex flex-col cursor-pointer"
                 >
                   <div className="flex items-start justify-between mb-2">
