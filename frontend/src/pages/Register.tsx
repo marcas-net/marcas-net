@@ -70,7 +70,7 @@ const Register = () => {
     <AuthLayout title="Create Your Account" subtitle="register">
       <SocialButtons mode="register" />
       <Divider />
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
         <Input
           label="Full Name"
           type="text"
@@ -169,27 +169,34 @@ const Register = () => {
             </svg>
           }
         />
-        <p className="text-xs text-gray-400 dark:text-gray-500 -mt-2">You must be at least 18 years old to create an account.</p>
-        <label className="flex items-start gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={agreed}
-            onChange={(e) => setAgreed(e.target.checked)}
-            className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 flex-shrink-0"
-          />
-          <span className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-            I agree to the{' '}
+        <p className="text-xs text-gray-400 dark:text-gray-500 -mt-2">
+          You must be at least 18 years old to create an account.
+        </p>
+
+        <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-gray-800 dark:bg-gray-900/60">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 flex-shrink-0"
+            />
+            <span className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+              I agree to the{' '}
+              <span className="text-blue-600 cursor-pointer hover:underline">Terms of Service</span>
+              {' '}and{' '}
+              <span className="text-blue-600 cursor-pointer hover:underline">Privacy Policy</span>.
+            </span>
+          </label>
+
+          <p className="text-xs text-left text-gray-500 dark:text-gray-400 leading-relaxed">
+            By creating an account, you agree to our{' '}
             <span className="text-blue-600 cursor-pointer hover:underline">Terms of Service</span>
             {' '}and{' '}
             <span className="text-blue-600 cursor-pointer hover:underline">Privacy Policy</span>.
-          </span>
-        </label>
-        <p className="text-xs text-center text-gray-400 dark:text-gray-500 leading-relaxed">
-          By creating an account, you agree to our{' '}
-          <span className="text-blue-600 cursor-pointer hover:underline">Terms of Service</span>
-          {' '}and{' '}
-          <span className="text-blue-600 cursor-pointer hover:underline">Privacy Policy</span>.
-        </p>
+          </p>
+        </div>
+
         <Button type="submit" loading={loading} fullWidth size="lg" disabled={!agreed}>
           Create Account →
         </Button>

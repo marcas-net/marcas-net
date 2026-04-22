@@ -1,4 +1,10 @@
-import { type InputHTMLAttributes, forwardRef, type ReactNode } from 'react';
+import {
+  type InputHTMLAttributes,
+  type SelectHTMLAttributes,
+  type TextareaHTMLAttributes,
+  forwardRef,
+  type ReactNode,
+} from 'react';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -49,7 +55,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 );
 Input.displayName = 'Input';
 
-interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   error?: string;
   options: { value: string; label: string }[];
@@ -83,7 +89,7 @@ export function Select({ label, error, options, className = '', ...props }: Sele
   );
 }
 
-interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   error?: string;
 }

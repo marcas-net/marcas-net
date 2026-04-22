@@ -197,7 +197,7 @@ model Organization {
   country     String?
   description String?
   logoUrl        String?
-  coverImageUrl  String?
+  coverImageUrl  String?      @map("cover_image_url")
   isVerified  Boolean      @default(false)
   verifiedAt  DateTime?
   verifiedBy  String?

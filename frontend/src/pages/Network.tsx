@@ -17,9 +17,6 @@ const ROLE_LABELS: Record<string, string> = {
 
 const VERIFIED_ROLES = new Set(['REGULATOR', 'LAB', 'UNIVERSITY', 'ADMIN']);
 
-// Org types that are "verified" companies on the platform
-const VERIFIED_ORG_TYPES = new Set(['SUPPLIER', 'CERTIFIER', 'REGULATOR', 'LAB']);
-
 type Tab = 'suggestions' | 'following' | 'followers';
 
 // ─── Skeleton ─────────────────────────────────────────────
@@ -194,7 +191,7 @@ function NetworkCard({
   onFollow: (id: string) => void;
 }) {
   const isVerifiedUser = VERIFIED_ROLES.has(person.role);
-  const isVerifiedOrg = person.organization ? VERIFIED_ORG_TYPES.has(person.organization.type) : false;
+  const isVerifiedOrg = Boolean(person.organization?.isVerified);
   const hasMutual = (person.mutualConnections ?? 0) > 0;
   const visibleAvatars = (person.mutualAvatars ?? []).slice(0, 3);
   const extraMutual = (person.mutualConnections ?? 0) - visibleAvatars.length;

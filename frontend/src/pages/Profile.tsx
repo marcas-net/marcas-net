@@ -67,40 +67,35 @@ export default function Profile() {
 
       {/* Profile card */}
       <Card padding="lg">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
           <Avatar name={display?.name ?? display?.email} size="xl" src={display?.avatarUrl ?? undefined} />
-          <div className="flex-1">
+          <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2 mb-1">
               <h2 className="text-xl font-bold text-slate-900 dark:text-white">{display?.name ?? 'No name set'}</h2>
               <Badge variant={roleVariant[role] ?? 'blue'}>{role}</Badge>
             </div>
-            <p className="text-slate-500 dark:text-slate-400 text-sm">{display?.email}</p>
-            {profile?.organization && (
-              <p className="text-sm text-blue-600 mt-1 font-medium">{profile.organization.name}</p>
-            )}
+            <p className="truncate text-sm text-slate-500 dark:text-slate-400">
+              {display?.name ?? display?.email}
+            </p>
+            <p className="truncate text-sm text-slate-500 dark:text-slate-400">{display?.email}</p>
+
+            <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-500 dark:text-slate-400">
+              <span>{role}</span>
+              <span className="text-slate-300 dark:text-slate-600">•</span>
+              <span>Member since {joinDate}</span>
+              {profile?.organization && (
+                <>
+                  <span className="text-slate-300 dark:text-slate-600">•</span>
+                  <span className="font-medium text-blue-600">{profile.organization.name}</span>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </Card>
 
-      {/* Info grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Card>
-          <p className="text-xs text-slate-400 uppercase tracking-wide font-medium mb-4">Account Details</p>
-          <div className="space-y-3">
-            {[
-              { label: 'Full Name', value: display?.name ?? '—' },
-              { label: 'Email', value: display?.email ?? '—' },
-              { label: 'Role', value: role },
-              { label: 'Member since', value: joinDate },
-            ].map((row) => (
-              <div key={row.label} className="flex justify-between text-sm py-1.5 border-b border-gray-50 dark:border-neutral-700/80 last:border-0">
-                <span className="text-slate-400">{row.label}</span>
-                <span className="text-slate-800 dark:text-slate-200 font-medium text-right max-w-[60%] truncate">{row.value}</span>
-              </div>
-            ))}
-          </div>
-        </Card>
-
+      {/* Organization */}
+      <div className="grid grid-cols-1 gap-4">
         <Card>
           <p className="text-xs text-slate-400 uppercase tracking-wide font-medium mb-4">Organization</p>
           {profile?.organization ? (

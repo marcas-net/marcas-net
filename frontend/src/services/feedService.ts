@@ -63,7 +63,7 @@ export interface NetworkPerson {
   role: string;
   bio: string | null;
   country: string | null;
-  organization: { id: string; name: string; type: string } | null;
+  organization: { id: string; name: string; type: string; isVerified: boolean } | null;
   followersCount: number;
   mutualConnections?: number;
   mutualAvatars?: { id: string; name: string; avatarUrl: string | null }[];

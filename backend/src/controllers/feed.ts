@@ -559,7 +559,7 @@ export const getMyNetwork = async (req: AuthRequest, res: Response) => {
 
     const userSelect = {
       id: true, name: true, role: true, avatarUrl: true, bio: true, country: true,
-      organization: { select: { id: true, name: true, type: true } },
+      organization: { select: { id: true, name: true, type: true, isVerified: true } },
       _count: { select: { followsReceived: true } },
     };
 
