@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Avatar } from '../ui/Avatar';
 
@@ -51,6 +51,12 @@ export function CreatePostCard({ onSubmit }: CreatePostCardProps) {
   const [eventLink, setEventLink] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handler = () => { setExpanded(true); setTimeout(() => textareaRef.current?.focus(), 50); };
+    window.addEventListener('openCreatePost', handler);
+    return () => window.removeEventListener('openCreatePost', handler);
+  }, []);
 
   const addFiles = (files: FileList | null) => {
     if (!files) return;

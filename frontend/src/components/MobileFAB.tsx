@@ -20,7 +20,11 @@ export function MobileFAB() {
       {open && (
         <div className="fixed bottom-24 right-4 z-50 md:hidden flex flex-col items-end gap-3">
           <button
-            onClick={() => { setOpen(false); /* scroll to create card */ window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            onClick={() => {
+              setOpen(false);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+              setTimeout(() => window.dispatchEvent(new CustomEvent('openCreatePost')), 200);
+            }}
             className="flex items-center gap-2 pl-3 pr-4 py-2.5 rounded-full bg-white dark:bg-neutral-800 shadow-lg border border-gray-200 dark:border-neutral-700"
           >
             <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">

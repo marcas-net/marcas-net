@@ -87,6 +87,12 @@ function App() {
             <Route path="/orgs/sourcing" element={<Sourcing />} />
             <Route path="/sourcing" element={<Sourcing />} />
             <Route path="/dashboard/settings" element={<Settings />} />
+            <Route path="/dashboard/content" element={<Feed />} />
+            <Route path="/dashboard/org/team" element={<OrgMembers />} />
+            <Route path="/dashboard/products" element={<OrgSourcingCatalog />} />
+            <Route path="/dashboard/sourcing" element={<OrgSourcingDashboard />} />
+            <Route path="/dashboard/operations" element={<OrgAdminDashboard />} />
+            <Route path="/dashboard/documents" element={<OrganizationDocuments />} />
             <Route path="/marketplace" element={<Marketplace />} />
             <Route path="/forms" element={<Forms />} />
             <Route path="/admin" element={<AdminDashboard />} />

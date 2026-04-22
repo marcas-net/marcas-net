@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getOrgProducts, type Product } from '../services/marketplaceService';
 import { getOrganization, type Organization } from '../services/orgService';
+import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 // ─── Category filter ────────────────────────────────────
@@ -17,7 +18,9 @@ function getCategoryFromProduct(p: Product): string {
 // ─── Main Component ─────────────────────────────────────
 
 export default function OrgSourcingCatalog() {
-  const { id: orgId } = useParams<{ id: string }>();
+  const { id: paramId } = useParams<{ id: string }>();
+  const { user } = useAuth();
+  const orgId = paramId ?? user?.organizationId;
 
   const [org, setOrg] = useState<Organization | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -234,7 +237,7 @@ function ProductCard({ product: p }: { product: Product }) {
           <img src={p.images[0].url} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
-            <span className="text-4xl">📦</span>
+            <svg className="w-10 h-10 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
           </div>
         )}
         {/* Availability badge */}
@@ -306,7 +309,9 @@ function ProductListItem({ product: p }: { product: Product }) {
         {p.images && p.images.length > 0 ? (
           <img src={p.images[0].url} alt={p.name} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-2xl">📦</div>
+          <div className="w-full h-full flex items-center justify-center">
+            <svg className="w-7 h-7 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+          </div>
         )}
       </div>
 

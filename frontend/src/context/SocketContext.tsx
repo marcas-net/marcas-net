@@ -27,7 +27,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     s.on('disconnect', () => setConnected(false));
 
     s.on('notification', (data: { title: string; message: string }) => {
-      toast(data.message, { icon: '🔔', duration: 4000 });
+      toast(data.message, { duration: 4000 });
     });
 
     s.on('document:uploaded', (data: { document: { title: string } }) => {
@@ -35,7 +35,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     });
 
     s.on('organization:memberJoined', () => {
-      toast('A new member joined the organization', { icon: '👋', duration: 3000 });
+      toast('A new member joined the organization', { duration: 3000 });
     });
 
     setSocket(s);

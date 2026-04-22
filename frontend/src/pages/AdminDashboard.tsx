@@ -21,10 +21,10 @@ export default function AdminDashboard() {
       {/* Tabs */}
       <div className="flex gap-1 overflow-x-auto">
         {([
-          { key: 'overview' as Tab, label: 'Overview', icon: '📊' },
-          { key: 'users' as Tab, label: 'Users', icon: '👤' },
-          { key: 'organizations' as Tab, label: 'Organizations', icon: '🏢' },
-          { key: 'audit' as Tab, label: 'Audit Logs', icon: '📋' },
+          { key: 'overview' as Tab, label: 'Overview' },
+          { key: 'users' as Tab, label: 'Users' },
+          { key: 'organizations' as Tab, label: 'Organizations' },
+          { key: 'audit' as Tab, label: 'Audit Logs' },
         ]).map(t => (
           <button
             key={t.key}
@@ -35,7 +35,7 @@ export default function AdminDashboard() {
                 : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
             }`}
           >
-            {t.icon} {t.label}
+            {t.label}
           </button>
         ))}
       </div>
@@ -63,14 +63,14 @@ function OverviewTab() {
   }
 
   const cards = [
-    { label: 'Total Users', value: stats.totals.users, icon: '👤', color: 'blue' },
-    { label: 'Organizations', value: stats.totals.organizations, icon: '🏢', color: 'green' },
-    { label: 'Products', value: stats.totals.products, icon: '📦', color: 'purple' },
-    { label: 'Posts', value: stats.totals.posts, icon: '📝', color: 'orange' },
-    { label: 'Jobs', value: stats.totals.jobs, icon: '💼', color: 'teal' },
-    { label: 'Documents', value: stats.totals.documents, icon: '📄', color: 'red' },
-    { label: 'Form Templates', value: stats.totals.formTemplates, icon: '📋', color: 'indigo' },
-    { label: 'Form Entries', value: stats.totals.formEntries, icon: '✅', color: 'pink' },
+    { label: 'Total Users', value: stats.totals.users, color: 'blue' },
+    { label: 'Organizations', value: stats.totals.organizations, color: 'green' },
+    { label: 'Products', value: stats.totals.products, color: 'purple' },
+    { label: 'Posts', value: stats.totals.posts, color: 'orange' },
+    { label: 'Jobs', value: stats.totals.jobs, color: 'teal' },
+    { label: 'Documents', value: stats.totals.documents, color: 'red' },
+    { label: 'Form Templates', value: stats.totals.formTemplates, color: 'indigo' },
+    { label: 'Form Entries', value: stats.totals.formEntries, color: 'pink' },
   ];
 
   return (
@@ -79,21 +79,15 @@ function OverviewTab() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {cards.map(c => (
           <div key={c.label} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-lg">{c.icon}</span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">{c.label}</span>
-            </div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">{c.label}</div>
             <div className="text-2xl font-bold text-gray-900 dark:text-white">{c.value.toLocaleString()}</div>
           </div>
         ))}
       </div>
 
-      {/* New Users Badge */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 flex items-center gap-3">
-        <span className="text-2xl">🆕</span>
-        <div>
-          <p className="font-semibold text-blue-900 dark:text-blue-200">{stats.recentUsers7d} new users in the last 7 days</p>
-        </div>
+      {/* New Users Banner */}
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
+        <p className="font-semibold text-blue-900 dark:text-blue-200">{stats.recentUsers7d} new users in the last 7 days</p>
       </div>
 
       {/* Role Distribution + Org Types */}
@@ -341,7 +335,7 @@ function AuditTab() {
     <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
       {items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-          <span className="text-5xl mb-3">📋</span>
+          <svg className="w-10 h-10 mb-3 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
           <p className="text-sm">No audit logs</p>
         </div>
       ) : (

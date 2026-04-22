@@ -577,13 +577,12 @@ export default function OrganizationDetail() {
           {/* Quick nav links */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: 'Settings', to: `/orgs/${id}/settings`, icon: '⚙' },
-              { label: 'Operations', to: `/orgs/${id}/admin`, icon: '📦' },
-              { label: 'Sourcing', to: '/sourcing', icon: '🔗' },
-              { label: 'Documents', to: '/documents', icon: '📄' },
+              { label: 'Settings', to: `/orgs/${id}/settings` },
+              { label: 'Operations', to: `/orgs/${id}/admin` },
+              { label: 'Sourcing', to: '/sourcing' },
+              { label: 'Documents', to: `/orgs/${id}/documents` },
             ].map(item => (
               <Link key={item.label} to={item.to} className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-xl bg-white dark:bg-neutral-800 border border-gray-100 dark:border-neutral-700 hover:border-blue-200 dark:hover:border-blue-800 hover:shadow-sm transition-all">
-                <span className="text-2xl">{item.icon}</span>
                 <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{item.label}</span>
               </Link>
             ))}

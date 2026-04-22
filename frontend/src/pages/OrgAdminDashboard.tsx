@@ -51,18 +51,19 @@ function timeAgo(iso: string): string {
 // ─── Tabs ─────────────────────────────────────────────────
 
 type Tab = 'overview' | 'requests' | 'lots' | 'loads';
-const TABS: { key: Tab; label: string; icon: string }[] = [
-  { key: 'overview', label: 'Overview', icon: '📊' },
-  { key: 'requests', label: 'Requests', icon: '📋' },
-  { key: 'lots', label: 'Lots', icon: '🏷️' },
-  { key: 'loads', label: 'Loads & Shipments', icon: '🚚' },
+const TABS: { key: Tab; label: string }[] = [
+  { key: 'overview', label: 'Overview' },
+  { key: 'requests', label: 'Requests' },
+  { key: 'lots', label: 'Lots' },
+  { key: 'loads', label: 'Loads & Shipments' },
 ];
 
 // ─── Main Component ───────────────────────────────────────
 
 export default function OrgAdminDashboard() {
-  const { id: orgId } = useParams<{ id: string }>();
+  const { id: paramId } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const orgId = paramId ?? user?.organizationId;
   const [tab, setTab] = useState<Tab>('overview');
   const [dashData, setDashData] = useState<OrgAdminStats | null>(null);
   const [requests, setRequests] = useState<SourcingRequest[]>([]);
@@ -162,15 +163,14 @@ export default function OrgAdminDashboard() {
       {stats && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {[
-            { label: 'Pending Requests', value: stats.pendingRequests, icon: '📥', warn: stats.pendingRequests > 0 },
-            { label: 'Active Requests', value: stats.activeRequests, icon: '🔄', warn: false },
-            { label: 'Confirmed', value: stats.confirmedRequests, icon: '✅', warn: false },
-            { label: 'Active Batches', value: stats.activeBatches, icon: '🏷️', warn: false },
-            { label: 'Open Lots', value: stats.pendingLots, icon: '📦', warn: false },
-            { label: 'In Transit', value: stats.transitLoads, icon: '🚚', warn: stats.transitLoads > 0 },
+            { label: 'Pending Requests', value: stats.pendingRequests, warn: stats.pendingRequests > 0 },
+            { label: 'Active Requests', value: stats.activeRequests, warn: false },
+            { label: 'Confirmed', value: stats.confirmedRequests, warn: false },
+            { label: 'Active Batches', value: stats.activeBatches, warn: false },
+            { label: 'Open Lots', value: stats.pendingLots, warn: false },
+            { label: 'In Transit', value: stats.transitLoads, warn: stats.transitLoads > 0 },
           ].map(c => (
             <div key={c.label} className={`bg-white dark:bg-gray-800 rounded-xl border ${c.warn ? 'border-amber-300 dark:border-amber-700' : 'border-gray-200 dark:border-gray-700'} p-4`}>
-              <div className="text-lg mb-1">{c.icon}</div>
               <div className={`text-2xl font-bold ${c.warn ? 'text-amber-600 dark:text-amber-400' : 'text-gray-900 dark:text-white'}`}>{c.value}</div>
               <div className="text-xs text-gray-500 mt-0.5">{c.label}</div>
             </div>
@@ -212,7 +212,7 @@ export default function OrgAdminDashboard() {
                 : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
             }`}
           >
-            {t.icon} {t.label}
+            {t.label}
           </button>
         ))}
       </div>
@@ -256,7 +256,7 @@ export default function OrgAdminDashboard() {
               ) : dashData?.recentActivity.map(a => (
                 <div key={a.id} className="px-4 py-2.5 flex items-start gap-2">
                   <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0 mt-0.5">
-                    <span className="text-[10px]">⚡</span>
+                    <svg className="w-3 h-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" /></svg>
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs text-gray-700 dark:text-gray-300">{a.user?.name ?? 'System'} <span className="text-gray-400">{a.action.replace(/_/g, ' ')}</span></p>
@@ -353,7 +353,7 @@ function RequestsTable({ requests, onReview, onCreateLot }: {
   if (requests.length === 0) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center py-16 text-gray-400">
-        <span className="text-5xl mb-3">📋</span>
+        <svg className="w-12 h-12 mb-3 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
         <p className="text-sm">No requests found</p>
       </div>
     );
@@ -422,7 +422,7 @@ function LotsPanel({ lots, onCreateLoad, onStatusChange }: {
   if (lots.length === 0) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center py-16 text-gray-400">
-        <span className="text-5xl mb-3">📦</span>
+        <svg className="w-12 h-12 mb-3 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
         <p className="text-sm">No lots yet — confirm requests to create lots</p>
       </div>
     );
@@ -491,7 +491,7 @@ function LoadsPanel({ loads, onStatusChange }: {
   if (loads.length === 0) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center py-16 text-gray-400">
-        <span className="text-5xl mb-3">🚚</span>
+        <svg className="w-12 h-12 mb-3 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
         <p className="text-sm">No loads yet</p>
       </div>
     );

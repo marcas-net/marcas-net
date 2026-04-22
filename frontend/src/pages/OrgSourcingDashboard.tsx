@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   getOrgProducts, getOrgSourcingRequests, getOrgRecalls,
   getProductBatches, updateSourcingStatus, createProduct, createBatch, createRecall,
+  uploadProductImages,
   type Product, type SourcingRequest, type Recall, type Batch, type BatchAllocation,
 } from '../services/marketplaceService';
 import { getOrgStats, getOrgLots, createLot, updateLotStatus, getOrgLoads, updateLoadStatus, type OrgStats, type Lot, type Load } from '../services/orgService';
@@ -41,21 +42,22 @@ function StatusBadge({ status }: { status: string }) {
 // ─── Tabs ───────────────────────────────────────────────
 
 type Tab = 'requests' | 'products' | 'batches' | 'allocations' | 'recalls' | 'lots' | 'loads';
-const TABS: { key: Tab; label: string; icon: string }[] = [
-  { key: 'requests', label: 'Requests', icon: '📋' },
-  { key: 'products', label: 'Products', icon: '📦' },
-  { key: 'batches', label: 'Batches', icon: '🏷️' },
-  { key: 'lots', label: 'Lots', icon: '📦' },
-  { key: 'loads', label: 'Loads', icon: '🚚' },
-  { key: 'allocations', label: 'Allocations', icon: '📊' },
-  { key: 'recalls', label: 'Recalls', icon: '⚠️' },
+const TABS: { key: Tab; label: string }[] = [
+  { key: 'requests', label: 'Requests' },
+  { key: 'products', label: 'Products' },
+  { key: 'batches', label: 'Batches' },
+  { key: 'lots', label: 'Lots' },
+  { key: 'loads', label: 'Loads' },
+  { key: 'allocations', label: 'Allocations' },
+  { key: 'recalls', label: 'Recalls' },
 ];
 
 // ─── Main Component ─────────────────────────────────────
 
 export default function OrgSourcingDashboard() {
-  const { id: orgId } = useParams<{ id: string }>();
+  const { id: paramId } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const orgId = paramId ?? user?.organizationId;
 
   const [tab, setTab] = useState<Tab>('requests');
   const [stats, setStats] = useState<OrgStats | null>(null);
@@ -199,7 +201,7 @@ export default function OrgSourcingDashboard() {
                   : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
               }`}
             >
-              <span>{t.icon}</span> {t.label}
+              {t.label}
               {t.key === 'requests' && <span className="ml-1 bg-white/20 px-1.5 rounded-full text-xs">{requests.length}</span>}
             </button>
           ))}
@@ -273,12 +275,12 @@ export default function OrgSourcingDashboard() {
 
 function KPICards({ stats }: { stats: OrgStats }) {
   const cards = [
-    { label: 'Products', value: stats.productsCount, icon: '📦', color: 'blue' },
-    { label: 'Active Batches', value: stats.activeBatches, icon: '🏷️', color: 'green' },
-    { label: 'Pending Requests', value: stats.pendingRequests, icon: '📋', color: 'yellow' },
-    { label: 'Confirmed Orders', value: stats.confirmedOrders, icon: '✅', color: 'emerald' },
-    { label: 'On-Hold Batches', value: stats.onHoldBatches, icon: '⏸️', color: 'orange' },
-    { label: 'Total Stock', value: stats.totalStockQty, icon: '📊', color: 'purple', suffix: ' units' },
+    { label: 'Products', value: stats.productsCount, color: 'blue' },
+    { label: 'Active Batches', value: stats.activeBatches, color: 'green' },
+    { label: 'Pending Requests', value: stats.pendingRequests, color: 'yellow' },
+    { label: 'Confirmed Orders', value: stats.confirmedOrders, color: 'emerald' },
+    { label: 'On-Hold Batches', value: stats.onHoldBatches, color: 'orange' },
+    { label: 'Total Stock', value: stats.totalStockQty, color: 'purple', suffix: ' units' },
   ];
   const colorMap: Record<string, string> = {
     blue: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800',
@@ -293,7 +295,6 @@ function KPICards({ stats }: { stats: OrgStats }) {
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
       {cards.map(c => (
         <div key={c.label} className={`rounded-xl border p-4 ${colorMap[c.color]}`}>
-          <div className="text-lg mb-1">{c.icon}</div>
           <div className="text-2xl font-bold text-gray-900 dark:text-white">{c.value}{c.suffix ?? ''}</div>
           <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{c.label}</div>
         </div>
@@ -405,7 +406,9 @@ function ProductsGrid({ products }: { products: Product[] }) {
               <img src={p.images[0].url} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
             </div>
           ) : (
-            <div className="h-36 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center text-3xl">📦</div>
+            <div className="h-36 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
+              <svg className="w-10 h-10 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+            </div>
           )}
           <div className="p-3">
             <div className="flex items-start justify-between">
@@ -658,13 +661,35 @@ function AddProductModal({ onClose, onCreated }: { onClose: () => void; onCreate
     leadTimeDays: '', isCertified: false, shelfLifeMonths: '', certifications: '', deliveryTerms: '', shippingPorts: '', packagingOptions: '',
   });
   const [saving, setSaving] = useState(false);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImages = (files: FileList | null) => {
+    if (!files) return;
+    const newFiles: File[] = [];
+    const newPreviews: string[] = [];
+    for (let i = 0; i < Math.min(files.length, 8 - imageFiles.length); i++) {
+      if (files[i].size > 10 * 1024 * 1024) continue;
+      newFiles.push(files[i]);
+      newPreviews.push(URL.createObjectURL(files[i]));
+    }
+    setImageFiles(prev => [...prev, ...newFiles]);
+    setImagePreviews(prev => [...prev, ...newPreviews]);
+  };
+
+  const removeImage = (idx: number) => {
+    URL.revokeObjectURL(imagePreviews[idx]);
+    setImageFiles(prev => prev.filter((_, i) => i !== idx));
+    setImagePreviews(prev => prev.filter((_, i) => i !== idx));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim()) { toast.error('Name is required'); return; }
     setSaving(true);
     try {
-      await createProduct({
+      const product = await createProduct({
         name: form.name.trim(),
         description: form.description || undefined,
         category: form.category || undefined,
@@ -681,6 +706,9 @@ function AddProductModal({ onClose, onCreated }: { onClose: () => void; onCreate
         shippingPorts: form.shippingPorts || undefined,
         packagingOptions: form.packagingOptions ? form.packagingOptions.split(',').map(s => s.trim()).filter(Boolean) : undefined,
       });
+      if (imageFiles.length > 0) {
+        await uploadProductImages(product.id, imageFiles);
+      }
       toast.success('Product created');
       onCreated();
       onClose();
@@ -691,6 +719,37 @@ function AddProductModal({ onClose, onCreated }: { onClose: () => void; onCreate
   return (
     <ModalWrapper title="Add Product" onClose={onClose}>
       <form onSubmit={handleSubmit} className="space-y-3">
+        {/* Product Images */}
+        <div>
+          <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Product Images</label>
+          <div className="flex flex-wrap gap-2">
+            {imagePreviews.map((src, idx) => (
+              <div key={idx} className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600">
+                <img src={src} alt="" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => removeImage(idx)}
+                  className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80"
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </div>
+            ))}
+            {imageFiles.length < 8 && (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-20 h-20 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center text-gray-400 hover:border-blue-400 hover:text-blue-500 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" /></svg>
+                <span className="text-[10px] mt-0.5">Add photo</span>
+              </button>
+            )}
+          </div>
+          <input ref={fileInputRef} type="file" multiple accept="image/jpeg,image/png,image/gif,image/webp" className="hidden"
+            onChange={e => { handleImages(e.target.files); e.target.value = ''; }} />
+        </div>
+
         <Input label="Name *" value={form.name} onChange={v => setForm(f => ({ ...f, name: v }))} />
         <Input label="Description" value={form.description} onChange={v => setForm(f => ({ ...f, description: v }))} multiline />
         <div className="grid grid-cols-2 gap-3">
@@ -841,7 +900,7 @@ function AddRecallModal({ batches, onClose, onCreated }: {
 function EmptyState({ message }: { message: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-gray-400">
-      <div className="text-4xl mb-2">📭</div>
+      <svg className="w-10 h-10 mb-2 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
       <p className="text-sm">{message}</p>
     </div>
   );

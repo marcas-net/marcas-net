@@ -1,8 +1,7 @@
 import { Request, Response } from 'express';
-import fs from 'fs';
-import path from 'path';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../config/database';
+import { uploadBuffer, isConfigured as cloudinaryConfigured } from '../utils/cloudinary';
 
 // ─── Product Images ─────────────────────────────────────
 
@@ -25,18 +24,16 @@ export const uploadProductImages = async (req: AuthRequest, res: Response) => {
     const existingCount = await prisma.productImage.count({ where: { productId } });
 
     const images = await Promise.all(
-      files.map((file, idx) =>
-        prisma.productImage.create({
-          data: {
-            url: `/uploads/media/${file.filename}`,
-            type: 'image',
-            filename: file.originalname,
-            size: file.size,
-            order: existingCount + idx,
-            productId,
-          },
-        })
-      )
+      files.map(async (file, idx) => {
+        let url = `/uploads/media/${file.originalname}`;
+        if (cloudinaryConfigured()) {
+          const result = await uploadBuffer(file.buffer, { folder: 'marcasnet/products', resourceType: 'image' });
+          url = result.url;
+        }
+        return prisma.productImage.create({
+          data: { url, type: 'image', filename: file.originalname, size: file.size, order: existingCount + idx, productId },
+        });
+      })
     );
 
     res.status(201).json({ images });
@@ -60,10 +57,6 @@ export const deleteProductImage = async (req: AuthRequest, res: Response) => {
     if (user?.organizationId !== image.product.organizationId && req.user.role !== 'ADMIN') {
       return res.status(403).json({ error: 'Not authorized' });
     }
-
-    // Delete file from disk
-    const filePath = path.join(__dirname, '../../uploads/media', path.basename(image.url));
-    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
 
     await prisma.productImage.delete({ where: { id: imageId } });
     res.json({ message: 'Image deleted' });

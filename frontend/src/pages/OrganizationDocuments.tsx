@@ -11,8 +11,9 @@ import toast from 'react-hot-toast';
 const FILE_TYPES = ['pdf', 'doc', 'docx', 'xls', 'xlsx'];
 
 export default function OrganizationDocuments() {
-  const { id } = useParams<{ id: string }>();
+  const { id: paramId } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const id = paramId ?? user?.organizationId;
   const [allDocs, setAllDocs] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [showUpload, setShowUpload] = useState(false);
@@ -21,7 +22,7 @@ export default function OrganizationDocuments() {
   const [filterType, setFilterType] = useState('');
   const [filterUploader, setFilterUploader] = useState('');
 
-  const isMember = user?.organizationId === id;
+  const isMember = user?.organizationId === id || user?.role === 'ADMIN';
   const canManage = user?.role === 'ADMIN' || user?.role === 'ORG_ADMIN';
 
   const load = () => {

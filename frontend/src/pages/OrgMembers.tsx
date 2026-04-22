@@ -17,8 +17,9 @@ const ASSIGNABLE_ROLES = [
 ];
 
 export default function OrgMembers() {
-  const { id } = useParams<{ id: string }>();
+  const { id: paramId } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const id = paramId ?? user?.organizationId;
   const [members, setMembers] = useState<OrgMember[]>([]);
   const [orgName, setOrgName] = useState('');
   const [loading, setLoading] = useState(true);
