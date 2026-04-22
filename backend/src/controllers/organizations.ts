@@ -6,7 +6,6 @@ import {
   findAllOrganizations,
   findOrganizationById,
   updateOrganization,
-  joinOrganization,
   findOrgMembers,
 } from '../models/organization';
 import { findUserByEmail } from '../models/user';
@@ -128,6 +127,20 @@ export const createOrg = async (req: AuthRequest, res: Response) => {
   try {
     const { name, type, country, description, logoUrl } = req.body;
     const org = await createOrganization({ name, type: type as OrgType, country, description, logoUrl });
+
+    // Assign the creator as ORG_ADMIN of the new organization
+    await prisma.user.update({
+      where: { id: req.user.id },
+      data: { organizationId: org.id, role: 'ORG_ADMIN' },
+    });
+
+    await logActivity({
+      userId: req.user.id,
+      action: 'organization_created',
+      entityType: 'organization',
+      entityId: org.id,
+    });
+
     res.status(201).json({ message: 'Organization created', organization: org });
   } catch (error) {
     console.error('Create organization error:', error);
@@ -159,7 +172,17 @@ export const joinOrg = async (req: AuthRequest, res: Response) => {
     const orgId = req.params['id'] as string;
     const org = await findOrganizationById(orgId);
     if (!org) return res.status(404).json({ error: 'Organization not found' });
-    await joinOrganization(req.user.id, orgId);
+
+    // Check not already a member
+    if (req.user.organizationId === orgId) {
+      return res.status(400).json({ error: 'You are already a member of this organization' });
+    }
+
+    // Join and set role to USER (free join = member role)
+    await prisma.user.update({
+      where: { id: req.user.id },
+      data: { organizationId: orgId, role: 'USER' },
+    });
 
     await logActivity({
       userId: req.user.id,
@@ -310,6 +333,46 @@ export const deleteOrg = async (req: AuthRequest, res: Response) => {
     res.json({ message: 'Organization deleted' });
   } catch (error) {
     console.error('Delete organization error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const updateMemberRole = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id: orgId, memberId } = req.params as { id: string; memberId: string };
+    const { role } = req.body;
+
+    const allowed = ['USER', 'ORG_ADMIN', 'LAB', 'REGULATOR', 'PROFESSIONAL'];
+    if (!allowed.includes(role)) {
+      return res.status(400).json({ error: 'Invalid role' });
+    }
+
+    const member = await prisma.user.findUnique({ where: { id: memberId } });
+    if (!member || member.organizationId !== orgId) {
+      return res.status(404).json({ error: 'Member not found in this organization' });
+    }
+
+    // Prevent demoting yourself
+    if (memberId === req.user.id) {
+      return res.status(400).json({ error: 'You cannot change your own role' });
+    }
+
+    const updated = await prisma.user.update({
+      where: { id: memberId },
+      data: { role },
+      select: { id: true, name: true, role: true },
+    });
+
+    await logActivity({
+      userId: req.user.id,
+      action: 'member_role_updated',
+      entityType: 'organization',
+      entityId: orgId,
+    });
+
+    res.json({ message: 'Role updated', member: updated });
+  } catch (error) {
+    console.error('Update member role error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

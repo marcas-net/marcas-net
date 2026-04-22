@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import { authService } from '../services/authService';
+import api from '../services/api';
 
 interface User {
   id: string;
@@ -21,6 +22,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string, role?: string, dateOfBirth?: string, country?: string) => Promise<void>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
   isAuthenticated: boolean;
   loading: boolean;
 }
@@ -64,8 +66,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setToken(null);
   };
 
+  const refreshUser = useCallback(async () => {
+    try {
+      const res = await api.get('/auth/me');
+      const fresh: User = res.data.user;
+      localStorage.setItem('user', JSON.stringify(fresh));
+      setUser(fresh);
+    } catch {
+      // If refresh fails, keep existing user state
+    }
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout, isAuthenticated: !!token, loading }}>
+    <AuthContext.Provider value={{ user, token, login, register, logout, refreshUser, isAuthenticated: !!token, loading }}>
       {children}
     </AuthContext.Provider>
   );

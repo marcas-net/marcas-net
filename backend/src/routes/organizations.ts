@@ -15,6 +15,7 @@ import {
   getOrgPosts,
   getOrgStats,
   uploadOrgCoverImage,
+  updateMemberRole,
 } from '../controllers/organizations';
 import {
   getOrgAdminDashboard,
@@ -177,6 +178,7 @@ router.post('/:id/invite', authenticateToken, requireOrgRole('ORG_ADMIN'), invit
 
 router.delete('/:id', authenticateToken, requireOrgRole('ORG_ADMIN'), deleteOrg);
 router.delete('/:id/members/:memberId', authenticateToken, requireOrgRole('ORG_ADMIN'), removeMember);
+router.put('/:id/members/:memberId/role', authenticateToken, requireOrgRole('ORG_ADMIN'), updateMemberRole);
 router.get('/:id/posts', getOrgPosts);
 router.get('/:id/stats', getOrgStats);
 

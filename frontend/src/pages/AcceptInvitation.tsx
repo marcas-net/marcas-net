@@ -12,7 +12,7 @@ import { orgTypeVariant, roleVariant } from '../styles/design-system';
 const AcceptInvitation = () => {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [invitation, setInvitation] = useState<InvitationInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [accepting, setAccepting] = useState(false);
@@ -31,8 +31,9 @@ const AcceptInvitation = () => {
     setAccepting(true);
     try {
       const result = await acceptInvitation(token);
+      await refreshUser();
       toast.success(result.message);
-      navigate(`/orgs/${result.organizationId}`);
+      navigate('/dashboard');
     } catch (err: any) {
       toast.error(err.response?.data?.error || 'Failed to accept invitation');
     } finally {

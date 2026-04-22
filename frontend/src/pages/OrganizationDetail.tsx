@@ -29,7 +29,7 @@ export default function OrganizationDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [org, setOrg] = useState<Organization | null>(null);
   const [stats, setStats] = useState<OrgStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -104,6 +104,7 @@ export default function OrganizationDetail() {
     setJoining(true);
     try {
       await joinOrganization(id);
+      await refreshUser();
       toast.success(`Joined ${org?.name}!`);
       navigate('/dashboard');
     } catch (err: unknown) {

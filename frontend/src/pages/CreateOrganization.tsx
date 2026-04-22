@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { createOrganization } from '../services/orgService';
+import { useAuth } from '../context/AuthContext';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input, Select } from '../components/ui/Input';
@@ -17,6 +18,7 @@ const ORG_TYPES = [
 
 export default function CreateOrganization() {
   const navigate = useNavigate();
+  const { refreshUser } = useAuth();
   const [form, setForm] = useState({ name: '', type: 'COMPANY', country: '', description: '' });
   const [loading, setLoading] = useState(false);
 
@@ -27,9 +29,10 @@ export default function CreateOrganization() {
     e.preventDefault();
     setLoading(true);
     try {
-      const org = await createOrganization(form);
+      await createOrganization(form);
+      await refreshUser();
       toast.success('Organization created!');
-      navigate(`/orgs/${org.id}`);
+      navigate('/dashboard');
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: string } } };
       toast.error(error.response?.data?.error ?? 'Failed to create organization');

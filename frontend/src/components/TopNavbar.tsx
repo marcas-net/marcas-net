@@ -152,10 +152,15 @@ export function TopNavbar() {
               className="flex items-center gap-2 p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
             >
               <Avatar name={user?.name ?? user?.email} size="sm" src={user?.avatarUrl ?? undefined} />
-              <div className="hidden lg:block text-left max-w-[100px]">
+              <div className="hidden lg:block text-left max-w-[120px]">
                 <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate leading-tight">
                   {user?.name ?? 'User'}
                 </p>
+                {user?.organization && (
+                  <p className="text-[10px] text-blue-600 dark:text-blue-400 truncate leading-tight">
+                    {user.organization.name}
+                  </p>
+                )}
               </div>
               <svg className="w-3 h-3 text-gray-400 hidden lg:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -189,7 +194,7 @@ export function TopNavbar() {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
                   </svg>
-                  Dashboard
+                  {user?.organization ? `${user.organization.name} — Ops` : 'Dashboard'}
                 </Link>
 
                 <Link
