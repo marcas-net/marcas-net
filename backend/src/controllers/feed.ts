@@ -1,10 +1,9 @@
 import { Request, Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../config/database';
-import fs from 'fs';
-import path from 'path';
 import { emitToAll } from '../utils/socket';
 import { invalidateFeedCache } from '../modules/feed/feed.controller';
+import { uploadBuffer, deleteResource, isConfigured as cloudinaryConfigured } from '../utils/cloudinary';
 
 const postInclude = (userId?: string, includeMedia = false) => {
   const base: Record<string, any> = {
@@ -30,9 +29,9 @@ const postInclude = (userId?: string, includeMedia = false) => {
     },
   };
   if (includeMedia) {
-    base.media = { select: { id: true, url: true, type: true, filename: true, size: true } };
+    base.media = { select: { id: true, url: true, publicId: true, type: true, filename: true, size: true } };
     if (base.repostOf?.include) {
-      base.repostOf.include.media = { select: { id: true, url: true, type: true, filename: true, size: true } };
+      base.repostOf.include.media = { select: { id: true, url: true, publicId: true, type: true, filename: true, size: true } };
     }
   }
   if (userId) {
@@ -141,14 +140,20 @@ export const createPost = async (req: AuthRequest, res: Response) => {
 
     let mediaData: any = undefined;
     if (hasMedia && files.length > 0) {
-      mediaData = {
-        create: files.map((f) => ({
-          url: `/uploads/media/${f.filename}`,
-          type: f.mimetype.startsWith('image/') ? 'image' : 'video',
-          filename: f.originalname,
-          size: f.size,
-        })),
-      };
+      const uploaded = await Promise.all(
+        files.map(async (f) => {
+          const isVideo = f.mimetype.startsWith('video/');
+          if (cloudinaryConfigured()) {
+            const result = await uploadBuffer(f.buffer, {
+              folder: 'marcasnet/posts',
+              resourceType: isVideo ? 'video' : 'image',
+            });
+            return { url: result.url, publicId: result.publicId, type: isVideo ? 'video' : 'image', filename: f.originalname, size: f.size };
+          }
+          return { url: `/uploads/media/${f.originalname}`, publicId: null, type: isVideo ? 'video' : 'image', filename: f.originalname, size: f.size };
+        })
+      );
+      mediaData = { create: uploaded };
     }
 
     let pollData: any = {};
@@ -289,8 +294,9 @@ export const deletePost = async (req: AuthRequest, res: Response) => {
     }
 
     for (const m of ((post as any).media ?? [])) {
-      const filePath = path.join(__dirname, '../..', m.url);
-      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+      if (m.publicId) {
+        await deleteResource(m.publicId, m.type === 'video' ? 'video' : 'image');
+      }
     }
 
     await prisma.post.delete({ where: { id } });

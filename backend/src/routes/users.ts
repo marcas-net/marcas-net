@@ -1,27 +1,14 @@
 import express from 'express';
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
 import { getProfile, updateProfile, changePassword, getUserById, listUsers, getUserPosts, uploadAvatar, uploadCoverImage } from '../controllers/users';
 import { authenticateToken } from '../middleware/auth';
 
 const router = express.Router();
 
-// Avatar upload config
-const mediaDir = path.join(__dirname, '../../uploads/media');
-if (!fs.existsSync(mediaDir)) fs.mkdirSync(mediaDir, { recursive: true });
-
-const avatarStorage = multer.diskStorage({
-  destination: mediaDir,
-  filename: (_req, file, cb) => {
-    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    const ext = path.extname(file.originalname) || '.jpg';
-    cb(null, `avatar-${unique}${ext}`);
-  },
-});
-
-const avatarUpload = multer({
-  storage: avatarStorage,
+// Memory storage — images are uploaded to Cloudinary in the controller
+const imageUpload = multer({
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
   fileFilter: (_req, file, cb) => {
     const allowed = /\.(jpg|jpeg|png|gif|webp)$/i;
@@ -42,7 +29,7 @@ router.get('/:id', getUserById);
 router.get('/:id/posts', getUserPosts);
 router.put('/profile', authenticateToken, updateProfile);
 router.put('/password', authenticateToken, changePassword);
-router.post('/avatar', authenticateToken, avatarUpload.single('avatar'), uploadAvatar);
-router.post('/cover', authenticateToken, avatarUpload.single('cover'), uploadCoverImage);
+router.post('/avatar', authenticateToken, imageUpload.single('avatar'), uploadAvatar);
+router.post('/cover', authenticateToken, imageUpload.single('cover'), uploadCoverImage);
 
 export default router;

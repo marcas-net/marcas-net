@@ -1,6 +1,5 @@
 import express from 'express';
 import multer from 'multer';
-import path from 'path';
 import prisma from '../config/database';
 import {
   getOrganizations,
@@ -224,17 +223,8 @@ router.get('/:id/requests', authenticateToken, async (req, res) => {
 // Verify org (ADMIN only)
 router.post('/:id/verify', authenticateToken, requireRole('ADMIN'), verifyOrg);
 
-// Org cover image upload
-const mediaDir = path.join(__dirname, '../../uploads/media');
-const orgCoverStorage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, mediaDir),
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    cb(null, `org-cover-${unique}${ext}`);
-  },
-});
-const orgCoverUpload = multer({ storage: orgCoverStorage, limits: { fileSize: 5 * 1024 * 1024 } });
+// Org cover image upload — memory storage, uploaded to Cloudinary in controller
+const orgCoverUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 router.post('/:id/cover', authenticateToken, orgCoverUpload.single('cover'), uploadOrgCoverImage);
 
 export default router;

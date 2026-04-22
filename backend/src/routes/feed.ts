@@ -1,7 +1,6 @@
 import express from 'express';
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
 import {
   getPosts, getPostById, createPost, deletePost, editPost,
   addComment, deleteComment,
@@ -13,40 +12,17 @@ import { authenticateToken } from '../middleware/auth';
 
 const router = express.Router();
 
-// ─── Media upload config ─────────────────────────────────
-const mediaDir = path.join(__dirname, '../../uploads/media');
-if (!fs.existsSync(mediaDir)) fs.mkdirSync(mediaDir, { recursive: true });
-
-const storage = multer.diskStorage({
-  destination: mediaDir,
-  filename: (_req, file, cb) => {
-    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    // Use original extension, fallback to MIME-based extension for mobile uploads
-    let ext = path.extname(file.originalname);
-    if (!ext || ext === '.') {
-      const mimeMap: Record<string, string> = {
-        'image/jpeg': '.jpg', 'image/png': '.png', 'image/gif': '.gif', 'image/webp': '.webp',
-        'video/mp4': '.mp4', 'video/webm': '.webm', 'video/quicktime': '.mov', 'video/x-m4v': '.mp4', 'video/3gpp': '.mp4',
-      };
-      ext = mimeMap[file.mimetype] || '.bin';
-    }
-    cb(null, `${unique}${ext}`);
-  },
-});
-
+// Memory storage — files are uploaded to Cloudinary in the controller
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB for videos
   fileFilter: (_req, file, cb) => {
-    const allowedImage = /\.(jpg|jpeg|png|gif|webp)$/i;
-    const allowedVideo = /\.(mp4|webm|mov)$/i;
-    const ext = path.extname(file.originalname);
-    // Check extension OR MIME type (mobile browsers may send files without proper extensions)
-    const allowedMimeTypes = [
+    const allowedExt = /\.(jpg|jpeg|png|gif|webp|mp4|webm|mov)$/i;
+    const allowedMime = [
       'image/jpeg', 'image/png', 'image/gif', 'image/webp',
       'video/mp4', 'video/webm', 'video/quicktime', 'video/x-m4v', 'video/3gpp',
     ];
-    if (allowedImage.test(ext) || allowedVideo.test(ext) || allowedMimeTypes.includes(file.mimetype)) {
+    if (allowedExt.test(path.extname(file.originalname)) || allowedMime.includes(file.mimetype)) {
       cb(null, true);
     } else {
       cb(new Error('Only images (jpg, png, gif, webp) and videos (mp4, webm, mov) are allowed'));

@@ -17,6 +17,7 @@ import { sendInvitationEmail } from '../utils/email';
 import { emitToUser } from '../utils/socket';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../config/database';
+import { uploadBuffer, isConfigured as cloudinaryConfigured } from '../utils/cloudinary';
 
 export const getOrganizations = async (_req: Request, res: Response) => {
   try {
@@ -422,18 +423,21 @@ export const uploadOrgCoverImage = async (req: AuthRequest, res: Response) => {
     const file = req.file;
     if (!file) return res.status(400).json({ error: 'No file uploaded' });
 
-    // Only org admin or platform admin
     if (req.user.organizationId !== orgId && req.user.role !== 'ADMIN') {
       return res.status(403).json({ error: 'Not authorized' });
     }
 
-    const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
-    const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost:5000';
-    const baseUrl = `${proto}://${host}`;
-    const coverImageUrl = `${baseUrl}/uploads/media/${file.filename}`;
+    let coverImageUrl: string;
+    if (cloudinaryConfigured()) {
+      const result = await uploadBuffer(file.buffer, { folder: 'marcasnet/org-covers', resourceType: 'image' });
+      coverImageUrl = result.url;
+    } else {
+      const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+      const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost:5000';
+      coverImageUrl = `${proto}://${host}/uploads/media/org-cover-${Date.now()}.jpg`;
+    }
 
     await prisma.organization.update({ where: { id: orgId }, data: { coverImageUrl } });
-
     res.json({ message: 'Cover image updated', coverImageUrl });
   } catch (error) {
     console.error('Upload org cover error:', error);

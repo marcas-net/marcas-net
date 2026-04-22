@@ -339,6 +339,7 @@ model Post {
 model PostMedia {
   id        String   @id @default(cuid())
   url       String
+  publicId  String?
   type      String   // "image" or "video"
   filename  String
   size      Int

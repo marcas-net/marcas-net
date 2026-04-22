@@ -1,5 +1,6 @@
 -- Ensure all required columns exist (idempotent)
 ALTER TABLE "organizations" ADD COLUMN IF NOT EXISTS "cover_image_url" TEXT;
+ALTER TABLE "post_media" ADD COLUMN IF NOT EXISTS "publicId" TEXT;
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "headline" TEXT;
 DO $$
 BEGIN

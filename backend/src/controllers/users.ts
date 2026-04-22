@@ -3,7 +3,7 @@ import { findUserById, updateUser, updateUserPassword, findPublicUserById, findA
 import { hashPassword, comparePassword } from '../utils/auth';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../config/database';
-import path from 'path';
+import { uploadBuffer, isConfigured as cloudinaryConfigured } from '../utils/cloudinary';
 
 export const getProfile = async (req: AuthRequest, res: Response) => {
   try {
@@ -119,13 +119,17 @@ export const uploadAvatar = async (req: AuthRequest, res: Response) => {
     const file = req.file;
     if (!file) return res.status(400).json({ error: 'No file uploaded' });
 
-    const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
-    const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost:5000';
-    const baseUrl = `${proto}://${host}`;
-    const avatarUrl = `${baseUrl}/uploads/media/${file.filename}`;
+    let avatarUrl: string;
+    if (cloudinaryConfigured()) {
+      const result = await uploadBuffer(file.buffer, { folder: 'marcasnet/avatars', resourceType: 'image' });
+      avatarUrl = result.url;
+    } else {
+      const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+      const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost:5000';
+      avatarUrl = `${proto}://${host}/uploads/media/avatar-${Date.now()}${require('path').extname(file.originalname) || '.jpg'}`;
+    }
 
     await prisma.user.update({ where: { id: req.user.id }, data: { avatarUrl } });
-
     res.json({ message: 'Avatar updated', avatarUrl });
   } catch (error) {
     console.error('Upload avatar error:', error);
@@ -138,13 +142,17 @@ export const uploadCoverImage = async (req: AuthRequest, res: Response) => {
     const file = req.file;
     if (!file) return res.status(400).json({ error: 'No file uploaded' });
 
-    const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
-    const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost:5000';
-    const baseUrl = `${proto}://${host}`;
-    const coverImageUrl = `${baseUrl}/uploads/media/${file.filename}`;
+    let coverImageUrl: string;
+    if (cloudinaryConfigured()) {
+      const result = await uploadBuffer(file.buffer, { folder: 'marcasnet/covers', resourceType: 'image' });
+      coverImageUrl = result.url;
+    } else {
+      const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+      const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost:5000';
+      coverImageUrl = `${proto}://${host}/uploads/media/cover-${Date.now()}${require('path').extname(file.originalname) || '.jpg'}`;
+    }
 
     await prisma.user.update({ where: { id: req.user.id }, data: { coverImageUrl } });
-
     res.json({ message: 'Cover image updated', coverImageUrl });
   } catch (error) {
     console.error('Upload cover image error:', error);
