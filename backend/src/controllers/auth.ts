@@ -39,7 +39,7 @@ export const register = async (req: Request, res: Response) => {
     res.status(201).json({
       message: 'User registered successfully',
       token,
-      user: { id: user.id, email: user.email, name: user.name, role: user.role, avatarUrl: user.avatarUrl },
+      user: { id: user.id, email: user.email, name: user.name, username: user.username, role: user.role, avatarUrl: user.avatarUrl },
     });
   } catch (error) {
     console.error('Registration error:', error);
@@ -69,7 +69,7 @@ export const login = async (req: Request, res: Response) => {
     res.json({
       message: 'Login successful',
       token,
-      user: { id: user.id, email: user.email, name: user.name, role: user.role, avatarUrl: user.avatarUrl },
+      user: { id: user.id, email: user.email, name: user.name, username: user.username, role: user.role, avatarUrl: user.avatarUrl },
     });
   } catch (error: any) {
     console.error('Login error:', error?.message || error, error?.stack);
@@ -91,6 +91,7 @@ export const getMe = async (req: AuthRequest, res: Response) => {
         id: user.id,
         email: user.email,
         name: user.name,
+        username: user.username,
         role: user.role,
         avatarUrl: user.avatarUrl,
         organizationId: user.organizationId,

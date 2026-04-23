@@ -8,6 +8,7 @@ import { useSocket } from '../context/SocketContext';
 import { RightPanel } from '../components/feed/RightPanel';
 import { CreatePostCard } from '../components/feed/CreatePostCard';
 import { PostCard } from '../components/feed/PostCard';
+import { StoryCircles } from '../components/feed/StoryCircles';
 import { Avatar } from '../components/ui/Avatar';
 import toast from 'react-hot-toast';
 
@@ -174,6 +175,12 @@ export default function Feed() {
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-5">
       {/* ─── Center Feed ─── */}
       <div className="space-y-3 min-w-0">
+        {/* Story Circles */}
+        <StoryCircles
+          newPostAuthors={newPostAuthors}
+          onRefresh={() => loadPosts(feedTab, category)}
+        />
+
         {/* Create Post — hidden on mobile (FAB handles it) */}
         <div className="hidden md:block">
           <CreatePostCard onSubmit={handleCreate} />

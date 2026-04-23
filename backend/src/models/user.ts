@@ -1,6 +1,21 @@
 import { Role } from '@prisma/client';
 import prisma from '../config/database';
 
+function baseUsername(name?: string | null, email?: string): string {
+  const src = name || email?.split('@')[0] || 'user';
+  return src.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '') || 'user';
+}
+
+async function uniqueUsername(name?: string | null, email?: string): Promise<string> {
+  const base = baseUsername(name, email);
+  const existing = await prisma.user.findUnique({ where: { username: base } });
+  if (!existing) return base;
+  // Append random 4-digit suffix
+  let attempt = `${base}_${Math.floor(1000 + Math.random() * 9000)}`;
+  const conflict = await prisma.user.findUnique({ where: { username: attempt } });
+  return conflict ? `${base}_${Date.now().toString(36)}` : attempt;
+}
+
 export const createUser = async (data: {
   email: string;
   password: string;
@@ -10,7 +25,8 @@ export const createUser = async (data: {
   dateOfBirth?: Date;
   country?: string;
 }) => {
-  return await prisma.user.create({ data });
+  const username = await uniqueUsername(data.name, data.email);
+  return await prisma.user.create({ data: { ...data, username } });
 };
 
 export const findUserByEmail = async (email: string) => {
@@ -27,7 +43,7 @@ export const findUserById = async (id: string) => {
   });
 };
 
-export const updateUser = async (id: string, data: { name?: string; email?: string; bio?: string; country?: string; headline?: string; skills?: string[] }) => {
+export const updateUser = async (id: string, data: { name?: string; username?: string; email?: string; bio?: string; country?: string; headline?: string; skills?: string[] }) => {
   return await prisma.user.update({
     where: { id },
     data,
@@ -48,6 +64,7 @@ export const findPublicUserById = async (id: string) => {
     select: {
       id: true,
       name: true,
+      username: true,
       bio: true,
       headline: true,
       skills: true,

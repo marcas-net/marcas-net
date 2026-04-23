@@ -255,6 +255,9 @@ export function LeftSidebar() {
               {user?.name ?? 'User'}
             </p>
           </Link>
+          {user?.username && (
+            <p className="text-xs text-gray-400 dark:text-gray-500 leading-tight">@{user.username}</p>
+          )}
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
             {ROLE_LABELS[user?.role ?? ''] ?? user?.role}
           </p>

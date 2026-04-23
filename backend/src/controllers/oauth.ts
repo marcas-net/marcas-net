@@ -3,6 +3,20 @@ import crypto from 'crypto';
 import prisma from '../config/database';
 import { generateToken } from '../utils/auth';
 
+function baseUsername(name?: string | null, email?: string): string {
+  const src = name || email?.split('@')[0] || 'user';
+  return src.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '') || 'user';
+}
+
+async function uniqueUsername(name?: string | null, email?: string): Promise<string> {
+  const base = baseUsername(name, email);
+  const existing = await prisma.user.findUnique({ where: { username: base } });
+  if (!existing) return base;
+  let attempt = `${base}_${Math.floor(1000 + Math.random() * 9000)}`;
+  const conflict = await prisma.user.findUnique({ where: { username: attempt } });
+  return conflict ? `${base}_${Date.now().toString(36)}` : attempt;
+}
+
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID;
@@ -77,7 +91,7 @@ export const googleCallback = async (req: Request, res: Response) => {
 
     const jwt = generateToken({ id: user.id, email: user.email, role: user.role });
     const userData = encodeURIComponent(
-      JSON.stringify({ id: user.id, email: user.email, name: user.name, role: user.role, avatarUrl: user.avatarUrl })
+      JSON.stringify({ id: user.id, email: user.email, name: user.name, username: (user as any).username ?? null, role: user.role, avatarUrl: user.avatarUrl })
     );
 
     res.redirect(`${FRONTEND_URL}/auth/callback?token=${jwt}&user=${userData}`);
@@ -169,7 +183,7 @@ export const githubCallback = async (req: Request, res: Response) => {
 
     const jwt = generateToken({ id: user.id, email: user.email, role: user.role });
     const userData = encodeURIComponent(
-      JSON.stringify({ id: user.id, email: user.email, name: user.name, role: user.role, avatarUrl: user.avatarUrl })
+      JSON.stringify({ id: user.id, email: user.email, name: user.name, username: (user as any).username ?? null, role: user.role, avatarUrl: user.avatarUrl })
     );
 
     res.redirect(`${FRONTEND_URL}/auth/callback?token=${jwt}&user=${userData}`);
@@ -224,11 +238,13 @@ async function findOrCreateOAuthUser(data: {
     });
   }
 
-  // Create new user
+  // Create new user with auto-generated username
+  const username = await uniqueUsername(data.name, data.email);
   return prisma.user.create({
     data: {
       email: data.email,
       name: data.name,
+      username,
       avatarUrl: data.avatarUrl,
       provider: data.provider,
       providerId: data.providerId,

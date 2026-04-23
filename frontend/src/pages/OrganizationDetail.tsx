@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { getOrganization, joinOrganization, getOrgPosts, getOrgStats, getOrgFollowers, getOrgMembers, uploadOrgCoverImage, uploadOrgLogoImage, type Organization, type OrgStats, type OrgMember } from '../services/orgService';
+import { getOrganization, joinOrganization, getOrgPosts, getOrgStats, getOrgFollowers, getOrgMembers, uploadOrgCoverImage, uploadOrgLogoImage, updateOrganization, type Organization, type OrgStats, type OrgMember } from '../services/orgService';
 import { getOrgProducts, type Product } from '../services/marketplaceService';
 import { followOrg, getFollowStatus } from '../services/feedService';
 import { useAuth } from '../context/AuthContext';
@@ -54,6 +54,11 @@ export default function OrganizationDetail() {
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [editingDesc, setEditingDesc] = useState(false);
+  const [nameValue, setNameValue] = useState('');
+  const [descValue, setDescValue] = useState('');
+  const [savingField, setSavingField] = useState(false);
 
   const manageMode = searchParams.get('mode') === 'manage';
 
@@ -164,6 +169,24 @@ export default function OrganizationDetail() {
     }
   };
 
+  const saveField = async (field: 'name' | 'description', value: string) => {
+    if (!id) return;
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    setSavingField(true);
+    try {
+      const updated = await updateOrganization(id, { [field]: trimmed });
+      setOrg(prev => prev ? { ...prev, ...updated } : prev);
+      toast.success('Saved');
+    } catch {
+      toast.error('Failed to save');
+    } finally {
+      setSavingField(false);
+      if (field === 'name') setEditingName(false);
+      if (field === 'description') setEditingDesc(false);
+    }
+  };
+
   const isMember = user?.organizationId === id;
   const canManage = isMember && (user?.role === 'ADMIN' || user?.role === 'ORG_ADMIN');
   const isManaging = canManage && manageMode;
@@ -267,7 +290,33 @@ export default function OrganizationDetail() {
             <div className="flex-1 min-w-0">
               {/* 2. Name + 5. Verification badge */}
               <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                <h1 className="text-xl font-bold text-slate-900 dark:text-white truncate">{org.name}</h1>
+                {editingName ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      autoFocus
+                      className="text-xl font-bold bg-transparent border-b-2 border-blue-500 outline-none text-slate-900 dark:text-white w-64"
+                      value={nameValue}
+                      onChange={e => setNameValue(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') saveField('name', nameValue); if (e.key === 'Escape') setEditingName(false); }}
+                      onBlur={() => saveField('name', nameValue)}
+                      disabled={savingField}
+                    />
+                    {savingField && <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />}
+                  </div>
+                ) : (
+                  <h1
+                    className={`text-xl font-bold text-slate-900 dark:text-white truncate ${canManage ? 'cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 group' : ''}`}
+                    onClick={canManage ? () => { setNameValue(org.name); setEditingName(true); } : undefined}
+                    title={canManage ? 'Click to edit name' : undefined}
+                  >
+                    {org.name}
+                    {canManage && (
+                      <svg className="w-3.5 h-3.5 inline ml-1.5 opacity-0 group-hover:opacity-60 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    )}
+                  </h1>
+                )}
                 {org.isVerified && (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50">
                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -388,10 +437,54 @@ export default function OrganizationDetail() {
             </div>
           </div>
 
-          {/* Description */}
-          {org.description && (
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-4 leading-relaxed sm:pl-20">{org.description}</p>
-          )}
+          {/* Description — click-to-edit for admins */}
+          <div className="mt-4 sm:pl-20">
+            {editingDesc ? (
+              <div className="flex flex-col gap-2">
+                <textarea
+                  autoFocus
+                  rows={3}
+                  className="w-full text-sm bg-transparent border border-blue-400 rounded-lg px-3 py-2 outline-none text-slate-700 dark:text-slate-300 resize-none"
+                  value={descValue}
+                  onChange={e => setDescValue(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Escape') setEditingDesc(false); }}
+                  disabled={savingField}
+                />
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => saveField('description', descValue)}
+                    disabled={savingField}
+                    className="px-3 py-1 text-xs font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {savingField ? 'Saving…' : 'Save'}
+                  </button>
+                  <button onClick={() => setEditingDesc(false)} className="px-3 py-1 text-xs font-medium text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : org.description ? (
+              <p
+                className={`text-sm text-slate-600 dark:text-slate-400 leading-relaxed ${canManage ? 'cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 group inline-block' : ''}`}
+                onClick={canManage ? () => { setDescValue(org.description ?? ''); setEditingDesc(true); } : undefined}
+                title={canManage ? 'Click to edit description' : undefined}
+              >
+                {org.description}
+                {canManage && (
+                  <svg className="w-3 h-3 inline ml-1.5 opacity-0 group-hover:opacity-50 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                )}
+              </p>
+            ) : canManage ? (
+              <button
+                onClick={() => { setDescValue(''); setEditingDesc(true); }}
+                className="text-sm text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 italic transition-colors"
+              >
+                + Add a description
+              </button>
+            ) : null}
+          </div>
 
           {/* Manage Mode badge */}
           {isManaging && (
