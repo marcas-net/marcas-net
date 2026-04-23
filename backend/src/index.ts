@@ -167,9 +167,66 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
   });
 });
 
-httpServer.listen(PORT, () => {
-  logger.info(`MarcasNet server running on port ${PORT}`);
-});
+async function runStartupMigrations() {
+  try {
+    // Add any columns the schema requires that may be missing in production.
+    // All statements are idempotent – safe to run on every startup.
+    await prisma.$executeRawUnsafe(`ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "headline" TEXT`);
+    await prisma.$executeRawUnsafe(`ALTER TABLE "organizations" ADD COLUMN IF NOT EXISTS "cover_image_url" TEXT`);
+    await prisma.$executeRawUnsafe(`ALTER TABLE "post_media" ADD COLUMN IF NOT EXISTS "publicId" TEXT`);
+    await prisma.$executeRawUnsafe(`ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "username" TEXT`);
+
+    // Skills array column needs special handling (NOT NULL DEFAULT)
+    await prisma.$executeRawUnsafe(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'users' AND column_name = 'skills'
+        ) THEN
+          ALTER TABLE "users" ADD COLUMN "skills" TEXT[] NOT NULL DEFAULT '{}';
+        END IF;
+      END
+      $$
+    `);
+
+    // Backfill usernames for users that don't have one
+    await prisma.$executeRawUnsafe(`
+      UPDATE "users"
+      SET "username" = LOWER(REGEXP_REPLACE(
+        COALESCE(NULLIF(TRIM("name"), ''), SPLIT_PART("email", '@', 1)),
+        '[^a-zA-Z0-9]', '_', 'g'
+      )) || '_' || SUBSTRING("id", 1, 6)
+      WHERE "username" IS NULL
+    `);
+
+    // Unique index on username (idempotent)
+    await prisma.$executeRawUnsafe(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_indexes WHERE tablename = 'users' AND indexname = 'users_username_key'
+        ) THEN
+          CREATE UNIQUE INDEX users_username_key ON "users"("username");
+        END IF;
+      END
+      $$
+    `);
+
+    logger.info('[startup] DB migrations applied');
+  } catch (err: any) {
+    logger.error('[startup] Migration error (non-fatal):', err?.message ?? err);
+  }
+}
+
+async function start() {
+  await runStartupMigrations();
+  httpServer.listen(PORT, () => {
+    logger.info(`MarcasNet server running on port ${PORT}`);
+  });
+}
+
+start();
 
 // Graceful shutdown
 process.on('SIGINT', async () => {
