@@ -382,8 +382,8 @@ export const getProductBatches = async (req: AuthRequest, res: Response) => {
 export const createSourcingRequest = async (req: AuthRequest, res: Response) => {
   try {
     const { productId, quantity, unit, message } = req.body;
-    if (!productId || !quantity) {
-      return res.status(400).json({ error: 'Product and quantity are required' });
+    if (!productId || quantity == null || Number(quantity) <= 0) {
+      return res.status(400).json({ error: 'Product and a valid quantity are required' });
     }
 
     const product = await prisma.product.findUnique({ where: { id: productId } });

@@ -29,10 +29,17 @@ export default function ProductDetail() {
     if (!id) return;
     setLoading(true);
     try {
-      const [p, b] = await Promise.all([getProduct(id), getProductBatches(id)]);
+      const p = await getProduct(id);
       setProduct(p);
-      setBatches(b);
       setSelectedImage(0);
+
+      // Only fetch batches if the current user belongs to the supplier org (supplier-only endpoint)
+      if (user?.organizationId === p.organizationId || user?.role === 'ADMIN') {
+        try {
+          const b = await getProductBatches(id);
+          setBatches(b);
+        } catch { /* non-critical */ }
+      }
 
       // Load similar products (same category)
       try {
@@ -45,7 +52,7 @@ export default function ProductDetail() {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, user?.organizationId, user?.role]);
 
   useEffect(() => { load(); }, [load]);
 

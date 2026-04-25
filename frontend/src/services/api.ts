@@ -21,13 +21,15 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401 || error.response?.status === 403) {
+    if (error.response?.status === 401) {
+      // 401 = invalid/expired token — clear session and redirect
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';
       }
     }
+    // 403 = valid token but insufficient permission — do NOT logout
     // Enhance error message
     if (error.response?.data?.error) {
       error.message = error.response.data.error;
