@@ -4,6 +4,7 @@ import {
   getProducts, getProduct, getOrgProducts, createProduct, updateProduct,
   createBatch, getProductBatches,
   createSourcingRequest, getOrgSourcingRequests, updateSourcingStatus, getMySourcingRequests,
+  getSourcingRequest, confirmDelivery,
   createRecall, getOrgRecalls,
   uploadProductImages, deleteProductImage,
   getOrgSourcingActivity, getOrgAllocations,
@@ -42,6 +43,8 @@ router.get('/batches/product/:productId', authenticateToken, getProductBatches);
 router.post('/sourcing', authenticateToken, createSourcingRequest);
 router.get('/sourcing/mine', authenticateToken, getMySourcingRequests);
 router.get('/sourcing/org/:orgId', authenticateToken, getOrgSourcingRequests);
+router.get('/sourcing/:requestId', authenticateToken, getSourcingRequest);
+router.post('/sourcing/:requestId/confirm-delivery', authenticateToken, confirmDelivery);
 router.put('/sourcing/:requestId/status', authenticateToken, updateSourcingStatus);
 
 // Allocations

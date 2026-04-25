@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../config/database';
 import { uploadBuffer, isConfigured as cloudinaryConfigured } from '../utils/cloudinary';
+import { emitToUser } from '../utils/socket';
 
 // ─── Product Images ─────────────────────────────────────
 
@@ -467,6 +468,7 @@ export const getOrgSourcingRequests = async (req: AuthRequest, res: Response) =>
         allocations: {
           include: { batch: { select: { id: true, batchCode: true } } },
         },
+        lot: { select: { id: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -499,10 +501,104 @@ export const getMySourcingRequests = async (req: AuthRequest, res: Response) => 
   }
 };
 
+export const getSourcingRequest = async (req: AuthRequest, res: Response) => {
+  try {
+    const requestId = req.params.requestId as string;
+    const request = await prisma.sourcingRequest.findUnique({
+      where: { id: requestId },
+      include: {
+        product: { select: { id: true, name: true, category: true, unit: true, origin: true } },
+        requester: { select: { id: true, name: true, avatarUrl: true } },
+        organization: { select: { id: true, name: true, type: true, logoUrl: true, isVerified: true } },
+        allocations: {
+          include: { batch: { select: { id: true, batchCode: true, productionDate: true, expiryDate: true } } },
+        },
+        lot: {
+          include: {
+            loads: { orderBy: { createdAt: 'asc' } },
+          },
+        },
+      },
+    });
+    if (!request) return res.status(404).json({ error: 'Request not found' });
+
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    const isRequester = request.requesterId === req.user.id;
+    const isSupplierMember = user?.organizationId === request.organizationId;
+    const isAdmin = req.user.role === 'ADMIN';
+    if (!isRequester && !isSupplierMember && !isAdmin) {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    res.json({ request });
+  } catch (error) {
+    console.error('Get sourcing request error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const confirmDelivery = async (req: AuthRequest, res: Response) => {
+  try {
+    const requestId = req.params.requestId as string;
+    const request = await prisma.sourcingRequest.findUnique({
+      where: { id: requestId },
+      include: { product: { select: { name: true } } },
+    });
+    if (!request) return res.status(404).json({ error: 'Request not found' });
+
+    if (request.requesterId !== req.user.id) {
+      return res.status(403).json({ error: 'Only the buyer can confirm delivery' });
+    }
+    if (request.status !== 'DELIVERED_PENDING_CONFIRMATION') {
+      return res.status(400).json({ error: 'Request is not pending delivery confirmation' });
+    }
+
+    const updated = await prisma.sourcingRequest.update({
+      where: { id: requestId },
+      data: { status: 'COMPLETED' },
+      include: {
+        product: { select: { id: true, name: true, category: true, unit: true, origin: true } },
+        requester: { select: { id: true, name: true, avatarUrl: true } },
+        organization: { select: { id: true, name: true, type: true, logoUrl: true, isVerified: true } },
+        allocations: {
+          include: { batch: { select: { id: true, batchCode: true, productionDate: true, expiryDate: true } } },
+        },
+        lot: { include: { loads: { orderBy: { createdAt: 'asc' } } } },
+      },
+    });
+
+    // Notify supplier org admins
+    const orgMembers = await prisma.membership.findMany({
+      where: { organizationId: request.organizationId, role: { in: ['OWNER', 'ADMIN', 'MANAGER'] } },
+      select: { userId: true },
+    });
+    if (orgMembers.length > 0) {
+      await prisma.notification.createMany({
+        data: orgMembers.map(m => ({
+          userId: m.userId,
+          type: 'SOURCING' as const,
+          title: 'Order Completed',
+          message: `The buyer has confirmed receipt for order of ${updated.product.name}.`,
+          link: `/orders/${requestId}`,
+        })),
+      });
+      for (const m of orgMembers) {
+        emitToUser(m.userId, 'sourcing:request_updated', { requestId, status: 'COMPLETED' });
+      }
+    }
+    emitToUser(request.requesterId, 'sourcing:request_updated', { requestId, status: 'COMPLETED' });
+
+    res.json({ request: updated });
+  } catch (error) {
+    console.error('Confirm delivery error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 export const updateSourcingStatus = async (req: AuthRequest, res: Response) => {
   try {
     const { status, supplierNotes } = req.body;
-    const validStatuses = ['UNDER_REVIEW', 'APPROVED', 'REJECTED', 'CONFIRMED', 'IN_FULFILMENT', 'DELIVERED', 'CLOSED', 'WITHDRAWN'];
+    const validStatuses = ['UNDER_REVIEW', 'APPROVED', 'REJECTED', 'CONFIRMED', 'IN_FULFILMENT', 'DELIVERED', 'CLOSED', 'WITHDRAWN', 'DELIVERED_PENDING_CONFIRMATION', 'COMPLETED'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ error: 'Invalid status' });
     }

@@ -169,6 +169,10 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
 
 async function runStartupMigrations() {
   try {
+    // Extend SourcingStatus enum with new lifecycle values (must run before column-addition statements)
+    await prisma.$executeRawUnsafe(`ALTER TYPE "SourcingStatus" ADD VALUE IF NOT EXISTS 'DELIVERED_PENDING_CONFIRMATION'`);
+    await prisma.$executeRawUnsafe(`ALTER TYPE "SourcingStatus" ADD VALUE IF NOT EXISTS 'COMPLETED'`);
+
     // Add any columns the schema requires that may be missing in production.
     // All statements are idempotent – safe to run on every startup.
     await prisma.$executeRawUnsafe(`ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "headline" TEXT`);

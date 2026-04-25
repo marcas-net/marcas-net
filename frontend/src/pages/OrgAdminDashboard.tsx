@@ -24,6 +24,8 @@ const STATUS_STYLES: Record<string, string> = {
   CLOSED: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300',
   REJECTED: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
   WITHDRAWN: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
+  DELIVERED_PENDING_CONFIRMATION: 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300',
+  COMPLETED: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
   OPEN: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
   LOADING: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
   IN_TRANSIT: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
@@ -396,7 +398,7 @@ function RequestsTable({ requests, onReview, onCreateLot }: {
                         Review
                       </button>
                     )}
-                    {r.status === 'CONFIRMED' && (
+                    {r.status === 'CONFIRMED' && !r.lot && (
                       <button onClick={() => onCreateLot(r)} className="px-2 py-1 text-[11px] bg-emerald-600 text-white rounded hover:bg-emerald-700">
                         + Lot
                       </button>

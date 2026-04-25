@@ -88,6 +88,8 @@ enum SourcingStatus {
   CLOSED
   REJECTED
   WITHDRAWN
+  DELIVERED_PENDING_CONFIRMATION
+  COMPLETED
 }
 
 enum BatchStatus {

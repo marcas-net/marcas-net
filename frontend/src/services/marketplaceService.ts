@@ -77,11 +77,11 @@ export interface BatchAllocation {
 export interface SourcingRequest {
   id: string;
   productId: string;
-  product: { id: string; name: string; unit?: string | null; category?: string | null };
+  product: { id: string; name: string; unit?: string | null; category?: string | null; origin?: string | null };
   requesterId: string;
   requester: { id: string; name: string; avatarUrl?: string | null };
   organizationId: string;
-  organization: { id: string; name: string; type?: string };
+  organization: { id: string; name: string; type?: string; logoUrl?: string | null; isVerified?: boolean };
   buyerOrgId: string | null;
   quantity: number;
   unit: string | null;
@@ -89,6 +89,25 @@ export interface SourcingRequest {
   status: string;
   supplierNotes: string | null;
   allocations: BatchAllocation[];
+  lot?: {
+    id: string;
+    lotCode: string;
+    status: string;
+    totalQuantity: number;
+    notes: string | null;
+    createdAt: string;
+    loads?: {
+      id: string;
+      loadCode: string;
+      destination: string;
+      quantity: number;
+      status: string;
+      eta: string | null;
+      notes: string | null;
+      createdAt: string;
+      updatedAt: string;
+    }[];
+  } | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -203,6 +222,16 @@ export const updateSourcingStatus = async (
   supplierNotes?: string
 ): Promise<SourcingRequest> => {
   const res = await api.put(`/marketplace/sourcing/${requestId}/status`, { status, supplierNotes });
+  return res.data.request;
+};
+
+export const getSourcingRequest = async (requestId: string): Promise<SourcingRequest> => {
+  const res = await api.get(`/marketplace/sourcing/${requestId}`);
+  return res.data.request;
+};
+
+export const confirmDelivery = async (requestId: string): Promise<SourcingRequest> => {
+  const res = await api.post(`/marketplace/sourcing/${requestId}/confirm-delivery`);
   return res.data.request;
 };
 

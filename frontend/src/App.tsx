@@ -30,6 +30,8 @@ import ResetPassword from './pages/ResetPassword';
 import Marketplace from './pages/Marketplace';
 import Forms from './pages/Forms';
 import AdminDashboard from './pages/AdminDashboard';
+import RequestDetail from './pages/RequestDetail';
+import OrderDetail from './pages/OrderDetail';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { DashboardLayout } from './layouts/DashboardLayout';
@@ -86,6 +88,8 @@ function App() {
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/orgs/sourcing" element={<Sourcing />} />
             <Route path="/sourcing" element={<Sourcing />} />
+            <Route path="/requests/:id" element={<RequestDetail />} />
+            <Route path="/orders/:id" element={<OrderDetail />} />
             <Route path="/dashboard/settings" element={<Settings />} />
             <Route path="/dashboard/content" element={<Feed />} />
             <Route path="/dashboard/org/team" element={<OrgMembers />} />

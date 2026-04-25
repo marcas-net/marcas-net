@@ -23,6 +23,8 @@ const STATUS_STYLES: Record<string, string> = {
   CLOSED: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
   REJECTED: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
   WITHDRAWN: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
+  DELIVERED_PENDING_CONFIRMATION: 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300',
+  COMPLETED: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
 };
 
 function StatusBadge({ status }: { status: string }) {
@@ -367,7 +369,7 @@ function MyRequests({ requests }: { requests: SourcingRequest[] }) {
       <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">{requests.length} request{requests.length !== 1 ? 's' : ''}</p>
       <div className="space-y-3">
         {requests.map(req => (
-          <div key={req.id} className="bg-white dark:bg-neutral-800 rounded-xl border border-gray-100 dark:border-neutral-700 p-5 hover:border-gray-200 dark:hover:border-neutral-600 transition-colors">
+          <Link key={req.id} to={`/requests/${req.id}`} className="block bg-white dark:bg-neutral-800 rounded-xl border border-gray-100 dark:border-neutral-700 p-5 hover:border-blue-200 dark:hover:border-blue-800 hover:shadow-sm transition-all">
             <div className="flex items-start justify-between gap-3 mb-2">
               <div className="min-w-0 flex-1">
                 <h3 className="font-semibold text-gray-900 dark:text-white text-sm truncate">{req.product.name}</h3>
@@ -382,28 +384,16 @@ function MyRequests({ requests }: { requests: SourcingRequest[] }) {
               <span className="text-gray-300 dark:text-neutral-600">·</span>
               <span>{new Date(req.createdAt).toLocaleDateString()}</span>
             </div>
-          {req.message && (
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-2 italic">"{req.message}"</p>
-          )}
-          {req.allocations.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-gray-100 dark:border-neutral-700">
-              <p className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Allocated Batches</p>
-              <div className="flex flex-wrap gap-1.5">
-                {req.allocations.map(a => (
-                  <span key={a.id} className="text-[10px] bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-md font-medium">
-                    {a.batch?.batchCode}: {Number(a.allocatedQuantity)} {req.unit ?? ''}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-          {req.supplierNotes && (
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              <span className="font-semibold">Supplier note:</span> {req.supplierNotes}
-            </p>
-          )}
-        </div>
-      ))}
+            {req.message && (
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-2 italic">"{req.message}"</p>
+            )}
+            {req.supplierNotes && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                <span className="font-semibold">Supplier note:</span> {req.supplierNotes}
+              </p>
+            )}
+          </Link>
+        ))}
       </div>
     </div>
   );

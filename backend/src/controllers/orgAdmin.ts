@@ -84,6 +84,62 @@ export const getOrgAdminDashboard = async (req: AuthRequest, res: Response) => {
 
 // ─── Lots ───────────────────────────────────────────────
 
+async function allocateBatchesForRequest(request: { id: string; productId: string; quantity: any }) {
+  const existing = await prisma.batchAllocation.count({ where: { requestId: request.id } });
+  if (existing > 0) return; // already allocated, idempotent
+
+  const batches = await prisma.batch.findMany({
+    where: { productId: request.productId, status: 'ACTIVE', availableQuantity: { gt: 0 } },
+    orderBy: [{ expiryDate: 'asc' }, { createdAt: 'asc' }],
+  });
+
+  const needed = Number(request.quantity);
+  let remaining = needed;
+  const ops: { batchId: string; allocated: number }[] = [];
+
+  for (const batch of batches) {
+    if (remaining <= 0) break;
+    const available = Number(batch.availableQuantity);
+    const take = Math.min(available, remaining);
+    ops.push({ batchId: batch.id, allocated: take });
+    remaining -= take;
+  }
+
+  if (remaining > 0) {
+    throw new Error(`Insufficient stock: need ${needed}, available ${needed - remaining}`);
+  }
+
+  await prisma.$transaction(async (tx) => {
+    for (const op of ops) {
+      await tx.batchAllocation.create({
+        data: { batchId: op.batchId, requestId: request.id, allocatedQuantity: op.allocated },
+      });
+      const newQty = (await tx.batch.findUnique({ where: { id: op.batchId }, select: { availableQuantity: true } }))!;
+      const updatedQty = Number(newQty.availableQuantity) - op.allocated;
+      await tx.batch.update({
+        where: { id: op.batchId },
+        data: {
+          availableQuantity: updatedQty,
+          ...(updatedQty <= 0 ? { status: 'DEPLETED' } : {}),
+        },
+      });
+    }
+  });
+}
+
+async function createLotForRequest(requestId: string, orgId: string, buyerOrgId: string | null, quantity: any, requesterId: string) {
+  const existing = await prisma.lot.findUnique({ where: { requestId } });
+  if (existing) return existing;
+
+  const lotCode = `LOT-${Date.now()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+  const lot = await prisma.lot.create({
+    data: { lotCode, requestId, organizationId: orgId, buyerOrgId, totalQuantity: quantity },
+  });
+
+  emitToUser(requesterId, 'sourcing:lot_created', { lotId: lot.id, lotCode: lot.lotCode, requestId });
+  return lot;
+}
+
 export const getOrgLots = async (req: AuthRequest, res: Response) => {
   try {
     const orgId = req.params['id'] as string;
@@ -251,6 +307,7 @@ export const updateLoadStatus = async (req: AuthRequest, res: Response) => {
 
     const load = await prisma.load.findFirst({
       where: { id: loadId, lot: { organizationId: orgId } },
+      include: { lot: { include: { request: { select: { id: true, requesterId: true, status: true } } } } },
     });
     if (!load) return res.status(404).json({ error: 'Load not found' });
 
@@ -262,6 +319,36 @@ export const updateLoadStatus = async (req: AuthRequest, res: Response) => {
         ...(notes !== undefined ? { notes } : {}),
       },
     });
+
+    // Cascade: if all sibling loads are now DELIVERED, mark lot + request as delivered
+    if (status === 'DELIVERED') {
+      const siblingLoads = await prisma.load.findMany({
+        where: { lotId: load.lotId },
+        select: { id: true, status: true },
+      });
+      const allDelivered = siblingLoads.every(l => l.id === loadId ? true : l.status === 'DELIVERED');
+      if (allDelivered) {
+        await prisma.lot.update({ where: { id: load.lotId }, data: { status: 'DELIVERED' } });
+        const requestId = load.lot.request.id;
+        const requesterId = load.lot.request.requesterId;
+        await prisma.sourcingRequest.update({
+          where: { id: requestId },
+          data: { status: 'DELIVERED_PENDING_CONFIRMATION' },
+        });
+        emitToUser(requesterId, 'sourcing:request_updated', {
+          requestId, status: 'DELIVERED_PENDING_CONFIRMATION',
+        });
+        await prisma.notification.create({
+          data: {
+            userId: requesterId,
+            type: 'SOURCING',
+            title: 'Shipment Delivered',
+            message: 'All shipments for your order have been delivered. Please confirm receipt.',
+            link: `/orders/${requestId}`,
+          },
+        });
+      }
+    }
 
     res.json({ load: updated });
   } catch (error) {
@@ -337,16 +424,30 @@ export const reviewSourcingRequest = async (req: AuthRequest, res: Response) => 
     const newStatus = statusMap[action];
     if (!newStatus) return res.status(400).json({ error: 'Invalid action' });
 
+    // On confirm: allocate stock and auto-create lot
+    if (action === 'confirm') {
+      try {
+        await allocateBatchesForRequest(request);
+      } catch (allocErr: any) {
+        return res.status(400).json({ error: allocErr.message });
+      }
+    }
+
     const updated = await prisma.sourcingRequest.update({
       where: { id: requestId },
       data: { status: newStatus, ...(supplierNotes !== undefined ? { supplierNotes } : {}) },
     });
+
+    if (action === 'confirm') {
+      await createLotForRequest(requestId, orgId, request.buyerOrgId, request.quantity, request.requesterId);
+    }
 
     const full = await prisma.sourcingRequest.findUnique({
       where: { id: requestId },
       include: {
         product: { select: { name: true } },
         requester: { select: { id: true, name: true } },
+        lot: { select: { id: true, lotCode: true } },
       },
     });
 
