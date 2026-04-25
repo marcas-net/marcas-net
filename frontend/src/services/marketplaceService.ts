@@ -65,7 +65,7 @@ export interface BatchAllocation {
   batchId: string;
   requestId: string;
   allocatedQuantity: number;
-  batch?: { id: string; batchCode: string };
+  batch?: { id: string; batchCode: string; productionDate?: string | null; expiryDate?: string | null };
   request?: {
     id: string;
     requester: { id: string; name: string };
